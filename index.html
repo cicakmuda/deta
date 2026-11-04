@@ -1,0 +1,880 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meta Ads Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+.mar-app{--bg:#f4f5f7;--card:#fff;--ink:#16181d;--ink2:#5b6270;--ink3:#8a909c;--line:#e4e6eb;--acc:#3b5bdb;--acc-soft:#e7ecff;
+  --g:#1f9d55;--g-soft:#e3f6ea;--y:#c27c0e;--y-soft:#fdf1dc;--r:#d63c3c;--r-soft:#fde6e6;--n-soft:#eef0f3;
+  font:14px/1.45 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);min-height:100vh;-webkit-font-smoothing:antialiased}
+.mar-app *{box-sizing:border-box}
+.mar-app [hidden]{display:none!important}
+.mar-app button,.mar-app input,.mar-app select,.mar-app textarea{font:inherit;color:inherit}
+.mar-app button{cursor:pointer}
+.mar-app h1,.mar-app h2,.mar-app h3{margin:0;font-weight:600}
+.mar-app h2{font-size:16px}
+.mar-app h3{font-size:14px}
+.mar-app .muted{color:var(--ink2)}
+.mar-app .small{font-size:12px}
+.mar-app .num{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+
+/* login */
+.mar-app .login{max-width:360px;margin:12vh auto;padding:28px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+.mar-app .login h1{font-size:20px;margin-bottom:4px}
+.mar-app .login label{display:block;font-size:12px;color:var(--ink2);margin:14px 0 4px}
+.mar-app .inp{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.mar-app .inp:focus{outline:2px solid var(--acc-soft);border-color:var(--acc)}
+.mar-app .btn{padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:#fff;font-weight:500}
+.mar-app .btn:hover{border-color:#c9cdd5}
+.mar-app .btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.mar-app .btn.sm{padding:5px 10px;font-size:12px}
+.mar-app .err{color:var(--r);font-size:13px;margin-top:10px}
+
+/* header */
+.mar-app .top{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--line)}
+.mar-app .bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 20px;max-width:1400px;margin:0 auto}
+.mar-app .brand{font-weight:700;font-size:15px;margin-right:auto}
+.mar-app .pills{display:flex;flex-wrap:wrap;gap:4px}
+.mar-app .pill{padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:12px;font-weight:500}
+.mar-app .pill.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.mar-app .dates{display:flex;align-items:center;gap:4px;font-size:12px}
+.mar-app .dates input{padding:4px 6px;border:1px solid var(--line);border-radius:6px;font-size:12px}
+.mar-app select.inp{width:auto;padding:6px 8px;font-size:13px}
+.mar-app .upd{font-size:12px;color:var(--ink2);white-space:nowrap}
+.mar-app .tabs{display:flex;gap:2px;overflow-x:auto;padding:0 20px;max-width:1400px;margin:0 auto;scrollbar-width:none}
+.mar-app .tab{padding:9px 12px;border:0;background:none;border-bottom:2px solid transparent;color:var(--ink2);font-weight:500;white-space:nowrap}
+.mar-app .tab.on{color:var(--ink);border-bottom-color:var(--acc)}
+.mar-app .spin{display:inline-block;width:12px;height:12px;border:2px solid var(--line);border-top-color:var(--acc);border-radius:50%;animation:marspin .8s linear infinite;vertical-align:-2px}
+@keyframes marspin{to{transform:rotate(360deg)}}
+
+/* layout */
+.mar-app main{max-width:1400px;margin:0 auto;padding:18px 20px 60px}
+.mar-app .sec-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;margin:22px 0 10px}
+.mar-app .sec-h:first-child{margin-top:0}
+.mar-app .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.mar-app .grid{display:grid;gap:12px}
+.mar-app .kpis{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.mar-app .two{grid-template-columns:1fr 1fr}
+.mar-app .kpi .lab{font-size:12px;color:var(--ink2)}
+.mar-app .kpi .val{font-size:22px;font-weight:600;margin:2px 0;font-variant-numeric:tabular-nums}
+.mar-app .kpi .sub{font-size:12px;color:var(--ink3)}
+.mar-app .up{color:var(--g)} .mar-app .dn{color:var(--r)} .mar-app .flat{color:var(--ink3)}
+
+/* table */
+.mar-app .tw{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.mar-app table{border-collapse:collapse;width:100%;font-size:13px}
+.mar-app th{position:sticky;top:0;background:#fafbfc;text-align:left;font-weight:600;font-size:12px;color:var(--ink2);padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
+.mar-app th.num{text-align:right}
+.mar-app td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.mar-app tr:last-child td{border-bottom:0}
+.mar-app tbody tr.click{cursor:pointer}
+.mar-app tbody tr.click:hover td{background:#f8f9fb}
+.mar-app .nm{max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mar-app .chip{display:inline-block;padding:2px 7px;border-radius:6px;font-size:12px;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.mar-app .c-g{background:var(--g-soft);color:var(--g)} .mar-app .c-y{background:var(--y-soft);color:var(--y)}
+.mar-app .c-r{background:var(--r-soft);color:var(--r)} .mar-app .c-n{background:var(--n-soft);color:var(--ink2)}
+.mar-app .c-b{background:var(--acc-soft);color:var(--acc)}
+.mar-app .tag{display:inline-block;padding:1px 6px;border-radius:5px;font-size:11px;background:var(--n-soft);color:var(--ink2);margin-right:4px}
+.mar-app .why{font-size:12px;color:var(--ink2);min-width:220px}
+
+/* alerts */
+.mar-app .alerts{display:flex;flex-direction:column;gap:6px}
+.mar-app .alert{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);cursor:pointer}
+.mar-app .alert .dot{flex:0 0 8px;height:8px;border-radius:50%;margin-top:6px}
+.mar-app .alert.r .dot{background:var(--r)} .mar-app .alert.y .dot{background:var(--y)} .mar-app .alert.b .dot{background:var(--acc)}
+
+/* diagnosis */
+.mar-app .fbar{height:8px;border-radius:4px;background:var(--n-soft);position:relative;min-width:120px}
+.mar-app .fbar i{position:absolute;top:0;height:8px;border-radius:4px}
+.mar-app .fbar .mid{position:absolute;left:50%;top:-3px;width:1px;height:14px;background:#c9cdd5}
+.mar-app .callout{padding:12px 14px;border-radius:10px;background:var(--acc-soft);color:#1f3a9e;font-size:13px}
+.mar-app .callout.r{background:var(--r-soft);color:#8f2424} .mar-app .callout.g{background:var(--g-soft);color:#14663a}
+
+/* filters */
+.mar-app .filters{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-bottom:10px;font-size:13px}
+.mar-app .filters input[type=number]{width:70px;padding:5px 7px;border:1px solid var(--line);border-radius:6px}
+.mar-app .filters input[type=search]{padding:6px 9px;border:1px solid var(--line);border-radius:6px;min-width:180px}
+.mar-app .filters label{display:flex;align-items:center;gap:5px;white-space:nowrap}
+
+/* pixel */
+.mar-app .pix{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}
+.mar-app .ev{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.mar-app .ev:last-child{border-bottom:0}
+
+/* misc */
+.mar-app .prog{height:6px;background:var(--n-soft);border-radius:3px;overflow:hidden;min-width:80px}
+.mar-app .prog i{display:block;height:6px;background:var(--acc)}
+.mar-app .notes li{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--line)}
+.mar-app .notes ul{list-style:none;margin:8px 0 0;padding:0}
+.mar-app .notes li.done span{text-decoration:line-through;color:var(--ink3)}
+.mar-app .empty{padding:30px;text-align:center;color:var(--ink3)}
+.mar-app .loading{padding:40px;text-align:center;color:var(--ink2)}
+.mar-app svg text{font-family:Inter,system-ui,sans-serif}
+.mar-app .thumb{width:44px;height:44px;border-radius:6px;object-fit:cover;background:var(--n-soft)}
+.mar-app .idc{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--ink2);cursor:pointer;border-bottom:1px dotted var(--ink3)}
+
+/* modal */
+.mar-app .modal{position:fixed;inset:0;background:rgba(15,17,21,.45);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:5vh 16px;overflow:auto}
+.mar-app .mbox{background:var(--card);border-radius:14px;max-width:980px;width:100%;padding:20px;position:relative}
+.mar-app .mclose{position:absolute;right:12px;top:10px;border:0;background:none;font-size:22px;color:var(--ink3)}
+.mar-app .set-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}
+.mar-app .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:8px;font-size:13px;z-index:60}
+
+@media (max-width:760px){
+  .mar-app .top{position:static}
+  .mar-app .bar{padding:10px 16px}
+  .mar-app .tabs{padding:0 16px}
+  .mar-app main{padding:14px 16px 60px}
+  .mar-app .two{grid-template-columns:1fr}
+  .mar-app .set-grid{grid-template-columns:1fr}
+  .mar-app .kpi .val{font-size:19px}
+}
+</style>
+</head>
+<body style="margin:0;background:#f4f5f7">
+<div class="mar-app" id="app">
+
+  <!-- LOGIN -->
+  <div class="login" id="login" hidden>
+    <h1>Meta Ads Dashboard</h1>
+    <div class="muted small">Masuk untuk melihat performa iklan.</div>
+    <div id="apiWrap">
+      <label for="apiInp">URL Web App (Apps Script)</label>
+      <input class="inp" id="apiInp" placeholder="https://script.google.com/macros/s/.../exec">
+    </div>
+    <label for="pwInp">Password</label>
+    <input class="inp" id="pwInp" type="password" autocomplete="current-password">
+    <div style="margin-top:16px"><button class="btn pri" id="loginBtn" style="width:100%">Masuk</button></div>
+    <div class="err" id="loginErr"></div>
+  </div>
+
+  <!-- APP -->
+  <div id="shell" hidden>
+    <div class="top">
+      <div class="bar">
+        <div class="brand">Meta Ads</div>
+        <select class="inp" id="accSel" aria-label="Akun"></select>
+        <div class="pills" id="pills"></div>
+        <div class="dates">
+          <input type="date" id="dSince" aria-label="Tanggal awal"> – <input type="date" id="dUntil" aria-label="Tanggal akhir">
+          <button class="btn sm" id="dApply">Terapkan</button>
+        </div>
+        <span class="upd" id="upd"></span>
+        <button class="btn sm" id="refBtn">Refresh</button>
+        <button class="btn sm" id="setBtn" aria-label="Pengaturan">⚙</button>
+      </div>
+      <div class="tabs" id="tabs"></div>
+    </div>
+    <main id="view"><div class="loading"><span class="spin"></span> Memuat data…</div></main>
+  </div>
+
+  <div class="modal" id="modal" hidden><div class="mbox"><button class="mclose" id="mclose" aria-label="Tutup">×</button><div id="mbody"></div></div></div>
+  <div class="toast" id="toast" hidden></div>
+</div>
+
+<script>
+/* =====================================================================
+   KONFIGURASI — isi URL Web App Apps Script di sini (boleh juga lewat
+   halaman login). URL ini bukan rahasia: data tetap dilindungi password.
+   ===================================================================== */
+const CONFIG = { API_URL: '' };
+
+/* ---------- storage aman ---------- */
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem('mad_' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('mad_' + k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem('mad_' + k); } catch (e) {} }
+};
+const DEF = { bep: 2, target: 2.5, minAge: 7, maxCpc: 250000, maxCpa: {}, auto: true };
+let S = Object.assign({}, DEF, LS.get('settings', {}));
+let API = LS.get('api', '') || CONFIG.API_URL;
+let SESSION = LS.get('session', null);
+
+/* ---------- state ---------- */
+const ST = { main: null, ds: null, life: null, hourly: {}, reach: {}, pixels: null,
+  acc: LS.get('acc', -1), preset: LS.get('preset', '7d'), since: null, until: null,
+  page: LS.get('page', 'today'), diagCamp: '', showInactive: false,
+  cf: LS.get('cf', { minCtr: 0, cheap: false, minPurch: 0, roasOk: false, scored: false, q: '' }),
+  sort: {}, busy: false };
+const M = { spend: 0, impr: 1, reach: 2, clicks: 3, link: 4, lpv: 5, atc: 6, ic: 7, purch: 8, val: 9, contact: 10, plays: 11, p25: 12, p50: 13, p75: 14, p100: 15, thru: 16 };
+const NM = 17;
+
+/* ---------- utils ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fin = v => typeof v === 'number' && isFinite(v);
+const rp = v => { if (!fin(v)) return '–'; const a = Math.abs(v);
+  if (a >= 1e9) return 'Rp' + (v / 1e9).toFixed(2).replace('.', ',') + 'M';
+  if (a >= 1e6) return 'Rp' + (v / 1e6).toFixed(a >= 1e8 ? 0 : a >= 1e7 ? 1 : 2).replace('.', ',') + 'jt';
+  if (a >= 1e3) return 'Rp' + Math.round(v / 1e3) + 'rb';
+  return 'Rp' + Math.round(v); };
+const nf = v => fin(v) ? Math.round(v).toLocaleString('id-ID') : '–';
+const pc = (v, d = 2) => fin(v) ? (v * 100).toFixed(d).replace('.', ',') + '%' : '–';
+const xx = v => fin(v) ? v.toFixed(2).replace('.', ',') + '×' : '–';
+const dv = (a, b) => b ? a / b : NaN;
+function todayJkt() { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); }
+function hourJkt() { return parseInt(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Jakarta', hour: '2-digit', hour12: false }).format(new Date()), 10) % 24; }
+function addD(s, n) { const p = s.split('-').map(Number); return new Date(Date.UTC(p[0], p[1] - 1, p[2] + n, 12)).toISOString().slice(0, 10); }
+function diffD(a, b) { return Math.round((Date.parse(b + 'T12:00:00Z') - Date.parse(a + 'T12:00:00Z')) / 864e5); }
+const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+function fd(s) { if (!s || s === 'lifetime') return 'Lifetime'; const p = s.split('-'); return +p[2] + ' ' + BULAN[+p[1] - 1]; }
+function roasCls(r) { return !fin(r) ? 'c-n' : r >= S.target ? 'c-g' : r >= S.bep ? 'c-y' : 'c-r'; }
+function roasChip(r, spend) { if (!spend) return '<span class="chip c-n">–</span>'; return `<span class="chip ${roasCls(r)}">${xx(r)}</span>`; }
+function delta(cur, prev, higherBetter = true) {
+  if (!fin(cur) || !fin(prev) || prev === 0) return '<span class="flat">–</span>';
+  const d = cur / prev - 1; if (Math.abs(d) < 0.005) return '<span class="flat">0%</span>';
+  const good = (d > 0) === higherBetter;
+  return `<span class="${good ? 'up' : 'dn'}">${d > 0 ? '▲' : '▼'} ${Math.abs(d * 100).toFixed(0)}%</span>`;
+}
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(t._h); t._h = setTimeout(() => t.hidden = true, 2600); }
+function copy(txt) { try { navigator.clipboard.writeText(txt).then(() => toast('Disalin: ' + txt), () => toast(txt)); } catch (e) { toast(txt); } }
+const OFFSET1 = { IDR: 1, JPY: 1, KRW: 1, VND: 1, CLP: 1, COP: 1, CRC: 1, HUF: 1, ISK: 1, PYG: 1, TWD: 1 };
+function budgetOf(amount, accIdx, ds) { if (!amount) return 0; const cur = (ds.accounts[accIdx] || {}).cur || 'IDR'; return OFFSET1[cur] ? amount : amount / 100; }
+
+/* ---------- API ---------- */
+async function api(action, params = {}) {
+  if (!API) throw new Error('URL Web App belum diisi');
+  const r = await fetch(API, { method: 'POST', body: JSON.stringify(Object.assign({ action, session: SESSION }, params)) });
+  let j; try { j = await r.json(); } catch (e) { throw new Error('Respon server tidak valid (HTTP ' + r.status + ')'); }
+  if (j.error === 'AUTH') { logout(); throw new Error('Sesi habis, silakan masuk lagi'); }
+  if (j.error) throw new Error(j.error);
+  return j;
+}
+
+/* ---------- data prep & aggregation ---------- */
+function prep(ds) {
+  if (!ds || ds._prep) return ds;
+  ds._prep = true;
+  ds.adsByCamp = {};
+  ds.ads.forEach((a, i) => { (ds.adsByCamp[a.c] = ds.adsByCamp[a.c] || []).push(i); });
+  ds.campIds = Object.keys(ds.campaigns);
+  return ds;
+}
+function idxRange(ds, since, until) {
+  if (ds.lifetime) return [0, 0];
+  let lo = Infinity, hi = -1;
+  ds.dates.forEach((d, i) => { if (d >= since && d <= until) { if (i < lo) lo = i; if (i > hi) hi = i; } });
+  return [lo, hi];
+}
+/** jumlahkan baris → Map(key → vektor 17 metrik) */
+function agg(ds, since, until, keyFn, acc = ST.acc) {
+  const [lo, hi] = idxRange(ds, since, until), out = new Map();
+  if (hi < 0) return out;
+  for (const r of ds.rows) {
+    if (r[0] < lo || r[0] > hi) continue;
+    const ad = ds.ads[r[1]];
+    if (acc >= 0 && ad.a !== acc) continue;
+    const k = keyFn(ad, r); if (k == null) continue;
+    let v = out.get(k); if (!v) { v = new Array(NM).fill(0); out.set(k, v); }
+    for (let i = 0; i < NM; i++) v[i] += r[i + 2];
+  }
+  return out;
+}
+const Z = () => new Array(NM).fill(0);
+function tot(ds, since, until, filt, acc) { return agg(ds, since, until, (ad, r) => (!filt || filt(ad, r)) ? 't' : null, acc).get('t') || Z(); }
+function der(v) {
+  return { spend: v[M.spend], impr: v[M.impr], purch: v[M.purch], val: v[M.val], link: v[M.link], lpv: v[M.lpv], ic: v[M.ic], contact: v[M.contact],
+    roas: dv(v[M.val], v[M.spend]), cpa: dv(v[M.spend], v[M.purch]), cpm: dv(v[M.spend], v[M.impr]) * 1000,
+    ctr: dv(v[M.link], v[M.impr]), ctrAll: dv(v[M.clicks], v[M.impr]), cLpv: dv(v[M.spend], v[M.lpv]),
+    lpvRate: dv(v[M.lpv], v[M.link]), icRate: dv(v[M.ic], v[M.lpv]), close: dv(v[M.purch], v[M.ic]), aov: dv(v[M.val], v[M.purch]),
+    hook: dv(v[M.p25], v[M.impr]), hold: dv(v[M.thru], v[M.impr]), r50: dv(v[M.p50], v[M.p25]), cpc: dv(v[M.spend], v[M.contact]) };
+}
+
+/* ---------- range ---------- */
+const PRESETS = [['today', 'Hari ini'], ['yday', 'Kemarin'], ['3d', '3D'], ['7d', '7D'], ['14d', '14D'], ['30d', '30D'], ['life', 'Lifetime']];
+function presetRange(p) {
+  const t = todayJkt();
+  if (p === 'today') return [t, t];
+  if (p === 'yday') return [addD(t, -1), addD(t, -1)];
+  const n = { '3d': 3, '7d': 7, '14d': 14, '30d': 30 }[p];
+  if (n) return [addD(t, -n), addD(t, -1)];           // N hari penuh, s/d kemarin (seperti Ads Manager)
+  return ['lifetime', 'lifetime'];
+}
+function curRange() { return ST.preset === 'custom' ? [ST.since, ST.until] : presetRange(ST.preset); }
+function prevRange() { const [s, u] = curRange(); if (s === 'lifetime') return null; const len = diffD(s, u) + 1; return [addD(s, -len), addD(s, -1)]; }
+function rangeLabel() { const [s, u] = curRange(); if (s === 'lifetime') return 'Lifetime (seumur iklan)'; return s === u ? fd(s) : fd(s) + ' – ' + fd(u); }
+
+async function ensureDs() {
+  if (ST.preset === 'life') {
+    if (!ST.life) ST.life = prep(await api('lifetime'));
+    ST.ds = ST.life; return;
+  }
+  const pr = prevRange(), [, u] = curRange();
+  if (ST.main && pr[0] >= ST.main.since) { ST.ds = ST.main; return; }
+  const key = pr[0] + '_' + u;
+  if (!ST.ds || ST.ds._key !== key) { const d = prep(await api('data', { since: pr[0], until: u })); d._key = key; ST.ds = d; }
+}
+
+/* ---------- campaign helpers ---------- */
+function campStart(c) { return ((c.sd || c.ct || '') + '').slice(0, 10) || null; }
+function campAge(c) { const s = campStart(c); return s ? diffD(s, todayJkt()) : null; }
+function campActive(c) { return c.st === 'ACTIVE' || c.st === 'IN_PROCESS' || c.st === 'WITH_ISSUES'; }
+function campBudget(ds, cid) {
+  const c = ds.campaigns[cid]; if (!c) return 0;
+  if (c.db) return budgetOf(c.db, c.a, ds);
+  let s = 0; Object.values(ds.adsets).forEach(a => { if (a.c === cid && a.st === 'ACTIVE' && a.db) s += budgetOf(a.db, a.a, ds); });
+  return s;
+}
+function maxCpa(accIdx, ds) {
+  const a = ds.accounts[accIdx]; const set = a && S.maxCpa[a.label];
+  if (set) return +set;
+  const t = todayJkt(), v = der(tot(ds, addD(t, -30), addD(t, -1), null, accIdx));
+  return fin(v.aov) ? v.aov / S.bep : 650000;   // default: CPA titik impas = AOV ÷ BEP ROAS
+}
+function accChip(ds, i) { const a = ds.accounts[i]; return a ? `<span class="tag">${esc(a.label)}</span>` : ''; }
+function shortCamp(n, max) { let t = String(n || '').replace(/\s*-\s*\d{4}$/, ''); if (max && t.length > max) t = t.slice(0, max - 1) + '…'; return esc(t); }
+
+/* =====================================================================
+   PAGES
+   ===================================================================== */
+const PAGES = [['today', 'Hari Ini'], ['decide', 'Papan Keputusan'], ['diag', 'Diagnosis'], ['creative', 'Creative Lab'], ['cpa', 'CPA & Profit'], ['pixel', 'Pixel'], ['new', 'Campaign Baru']];
+
+/* ---------- 1. HARI INI ---------- */
+async function pageToday() {
+  const ds = ST.main, t = todayJkt(), y = addD(t, -1);
+  await Promise.all([t, y].map(async d => { if (!ST.hourly[d]) ST.hourly[d] = await api('hourly', { date: d }); }));
+  const H = d => { const out = Array.from({ length: 24 }, () => [0, 0, 0, 0, 0]);
+    (ST.hourly[d].acc || []).forEach((rows, ai) => { if (ST.acc >= 0 && ai !== ST.acc) return; rows.forEach(r => { for (let k = 0; k < 5; k++) out[r[0]][k] += r[k + 1]; }); });
+    return out; };
+  const ht = H(t), hy = H(y), h = hourJkt();
+  const sumTo = (arr, hh) => arr.slice(0, hh + 1).reduce((s, r) => s.map((x, i) => x + r[i]), [0, 0, 0, 0, 0]);
+  const a = sumTo(ht, h), b = sumTo(hy, h), bFull = sumTo(hy, 23);
+  const k = (lab, cur, prev, fmt, hb = true, sub = '') => `<div class="card kpi"><div class="lab">${lab}</div><div class="val">${fmt(cur)}</div><div class="sub">${delta(cur, prev, hb)} vs kemarin jam sama · ${sub || fmt(prev)}</div></div>`;
+  let html = `<div class="sec-h"><h2>Hari ini, ${fd(t)}</h2><span class="muted small">s/d pukul ${String(h).padStart(2, '0')}:59 WIB · dibandingkan kemarin pada jam yang sama</span></div>
+  <div class="grid kpis">
+    ${k('Spend', a[0], b[0], rp)}
+    ${k('Purchase', a[3], b[3], nf)}
+    ${k('ROAS', dv(a[4], a[0]), dv(b[4], b[0]), xx)}
+    ${k('CPA', dv(a[0], a[3]), dv(b[0], b[3]), rp, false)}
+    ${k('Link CTR', dv(a[2], a[1]), dv(b[2], b[1]), v => pc(v))}
+    <div class="card kpi"><div class="lab">Kemarin (1 hari penuh)</div><div class="val">${rp(bFull[0])}</div><div class="sub">${nf(bFull[3])} purchase · ROAS ${xx(dv(bFull[4], bFull[0]))}</div></div>
+  </div>`;
+  // chart kumulatif
+  const cum = arr => { let s = 0; return arr.map(r => (s += r[0])); };
+  const ct = cum(ht).map((v, i) => i <= h ? v : null), cy = cum(hy);
+  html += `<div class="grid two" style="margin-top:12px">
+    <div class="card"><h3>Spend kumulatif per jam</h3><div class="small muted" style="margin:2px 0 8px"><span style="color:var(--acc)">━</span> hari ini &nbsp; <span style="color:#b8bdc7">━</span> kemarin</div>${lineChart([{ v: cy, c: '#b8bdc7' }, { v: ct, c: '#3b5bdb' }], i => i % 3 === 0 ? String(i).padStart(2, '0') : '', rp)}</div>
+    <div class="card"><h3>Purchase per jam</h3><div class="small muted" style="margin:2px 0 8px"><span style="color:var(--acc)">■</span> hari ini &nbsp; <span style="color:#b8bdc7">■</span> kemarin</div>${barPair(ht.map(r => r[3]), hy.map(r => r[3]), h)}</div>
+  </div>`;
+  // alerts
+  const al = alerts();
+  html += `<div class="sec-h"><h2>Perlu perhatian</h2><span class="muted small">${al.length ? al.length + ' temuan · klik untuk diagnosis' : ''}</span></div>`;
+  html += al.length ? `<div class="alerts">${al.map(x => `<div class="alert ${x.lv}" data-camp="${x.cid || ''}" data-go="${x.go || 'diag'}"><span class="dot"></span><div><b>${esc(x.title)}</b><div class="small muted">${x.why}</div></div></div>`).join('')}</div>` : '<div class="card muted">Tidak ada yang mendesak. 👍</div>';
+  // campaign hari ini
+  if (ds.dates[ds.dates.length - 1] === t) {
+    const today = agg(ds, t, t, ad => ad.c), d3 = agg(ds, addD(t, -3), y, ad => ad.c);
+    const ids = [...new Set([...today.keys()])].filter(id => ds.campaigns[id]).sort((p, q) => today.get(q)[0] - today.get(p)[0]);
+    html += `<div class="sec-h"><h2>Campaign hari ini</h2></div><div class="tw"><table><thead><tr><th>Campaign</th><th class="num">Spend</th><th class="num">Purchase</th><th class="num">ROAS hari ini</th><th class="num">CPA</th><th class="num">ROAS 3D</th></tr></thead><tbody>
+      ${ids.map(id => { const c = ds.campaigns[id], v = der(today.get(id)), w = der(d3.get(id) || Z());
+        return `<tr class="click" data-camp="${id}" data-go="diag"><td class="nm">${accChip(ds, c.a)}${shortCamp(c.n)}</td><td class="num">${rp(v.spend)}</td><td class="num">${nf(v.purch)}</td><td class="num">${roasChip(v.roas, v.spend)}</td><td class="num">${rp(v.cpa)}</td><td class="num">${roasChip(w.roas, w.spend)}</td></tr>`; }).join('') || '<tr><td colspan="6" class="empty">Belum ada spend hari ini</td></tr>'}
+      </tbody></table></div>`;
+  }
+  return html;
+}
+
+function alerts() {
+  const ds = ST.main, t = todayJkt(), y = addD(t, -1), out = [];
+  const w3 = agg(ds, addD(t, -3), y, ad => ad.c), w7 = agg(ds, addD(t, -7), y, ad => ad.c);
+  ds.campIds.forEach(id => {
+    const c = ds.campaigns[id]; if (!campActive(c) || (ST.acc >= 0 && c.a !== ST.acc)) return;
+    const v3 = der(w3.get(id) || Z()), v7 = der(w7.get(id) || Z()), age = campAge(c), mc = maxCpa(c.a, ds);
+    if (age != null && age < S.minAge) {
+      if (age === S.minAge - 1) out.push({ lv: 'b', cid: id, go: 'new', title: shortCamp(c.n) + ' — besok sudah bisa dievaluasi', why: `Umur ${age} hari · ROAS sejauh ini ${xx(v7.roas)}` });
+      return;
+    }
+    if (v3.spend > mc * 0.5 && v3.purch === 0) {
+      const p = noise(ds, id);
+      out.push({ lv: p.p > 0.1 ? 'y' : 'r', cid: id, title: shortCamp(c.n) + ' — 0 purchase 3 hari', why: `Spend 3D ${rp(v3.spend)} · ${p.text}` });
+    } else if (v3.spend > mc && v3.roas < S.bep) {
+      out.push({ lv: v7.roas < S.bep ? 'r' : 'y', cid: id, title: shortCamp(c.n) + ' — ROAS 3D di bawah BEP', why: `ROAS 3D ${xx(v3.roas)} · 7D ${xx(v7.roas)} · BEP ${xx(S.bep)}` });
+    }
+  });
+  // CPM akun hari ini vs rata-rata 7 hari
+  ds.accounts.forEach((a, i) => {
+    if (ST.acc >= 0 && i !== ST.acc) return;
+    const td = der(tot(ds, t, t, null, i)), wk = der(tot(ds, addD(t, -7), y, null, i));
+    if (td.impr > 3000 && wk.cpm && td.cpm > wk.cpm * 1.4) out.push({ lv: 'y', go: 'cpa', title: a.label + ' — CPM hari ini melonjak', why: `CPM ${rp(td.cpm)} vs rata-rata 7D ${rp(wk.cpm)} (+${Math.round((td.cpm / wk.cpm - 1) * 100)}%)` });
+  });
+  if (ST.pixels) ST.pixels.pixels.forEach(p => {
+    if (ST.acc >= 0 && p.a !== ST.acc) return;
+    const e = p.events || {}; if (!Object.keys(e).length) return;
+    if (!e.AddToCart) out.push({ lv: 'y', go: 'pixel', title: 'Pixel ' + p.name + ' — AddToCart = 0 (7 hari)', why: 'Optimasi & retargeting kehilangan sinyal tengah funnel' });
+  });
+  const rank = { r: 0, y: 1, b: 2 };
+  return out.sort((p, q) => rank[p.lv] - rank[q.lv]);
+}
+
+/** peluang 0 purchase N hari berturut-turut kalau performa normal (Poisson) */
+function noise(ds, cid) {
+  const t = todayJkt(); const daily = agg(ds, addD(t, -45), addD(t, -1), (ad, r) => ad.c === cid ? ds.dates[r[0]] : null);
+  let n = 0; for (let d = addD(t, -1); n < 30; d = addD(d, -1)) { const v = daily.get(d); if (!v || v[M.spend] <= 0) break; if (v[M.purch] > 0) break; n++; }
+  if (!n) return { n: 0, p: 1, text: 'Tidak ada hari kosong beruntun' };
+  let p14 = 0, s14 = 0; const end = addD(t, -1 - n);
+  for (let i = 0; i < 14; i++) { const v = daily.get(addD(end, -i)); if (v) { p14 += v[M.purch]; s14 += v[M.spend]; } }
+  const lam = p14 / 14, p = Math.exp(-lam * n);
+  const text = !p14 ? `${n} hari tanpa purchase; 14 hari sebelumnya juga 0` :
+    `${n} hari tanpa purchase; rata-rata sebelumnya ${lam.toFixed(1).replace('.', ',')}/hari → peluang kebetulan ${Math.round(p * 100)}% (${p > 0.1 ? 'masih wajar / noise' : 'tidak wajar, ada masalah'})`;
+  return { n, p, lam, text };
+}
+
+/* ---------- 2. PAPAN KEPUTUSAN ---------- */
+function decide(ds, id, W) {
+  const c = ds.campaigns[id], age = campAge(c), mc = maxCpa(c.a, ds);
+  const v = n => der(W[n].get(id) || Z());
+  const r3 = v(3).roas, r7 = v(7).roas, r14 = v(14).roas, p7 = v(7).purch, s7 = v(7).spend;
+  if (!campActive(c)) return { k: 'c-n', t: 'Tidak aktif', why: 'Status ' + (c.st || '-') };
+  if (age != null && age < S.minAge) return { k: 'c-b', t: 'Tunggu', why: `Umur ${age} hari — evaluasi ${fd(addD(campStart(c), S.minAge))}` };
+  if (s7 < mc) return { k: 'c-n', t: 'Data kurang', why: `Spend 7D ${rp(s7)} < 1× CPA maks (${rp(mc)})` };
+  const R = x => fin(x) ? x : 0, a3 = R(r3), a7 = R(r7), a14 = R(r14);
+  if (p7 >= 3 && a7 >= S.target && a3 >= S.target) return { k: 'c-g', t: 'Scale +20%', why: `ROAS 3D ${xx(a3)} & 7D ${xx(a7)} ≥ target ${xx(S.target)}, ${p7} purchase/7D` };
+  if (a7 < S.bep && a14 < S.bep) {
+    if (a7 < S.bep * 0.5 && a14 < S.bep * 0.6) return { k: 'c-r', t: 'Matikan', why: `ROAS 7D ${xx(a7)} & 14D ${xx(a14)} jauh di bawah BEP ${xx(S.bep)}` };
+    return { k: 'c-r', t: 'Turunkan 20–30%', why: `ROAS 7D ${xx(a7)} & 14D ${xx(a14)} di bawah BEP ${xx(S.bep)}` };
+  }
+  if (a3 < S.bep && a7 >= S.bep) { const n = noise(ds, id); return { k: 'c-y', t: 'Pantau', why: `ROAS 3D turun ke ${xx(a3)}, 7D masih ${xx(a7)}.${n.n ? ' ' + n.text : ''}` }; }
+  if (a7 >= S.bep) return { k: 'c-g', t: 'Hold', why: `ROAS 7D ${xx(a7)} di atas BEP${a3 > a7 * 1.1 ? ', tren 3D naik' : a3 < a7 * 0.9 ? ', 3D melemah' : ''}` };
+  return { k: 'c-y', t: 'Pantau', why: `ROAS 7D ${xx(a7)} di bawah BEP tapi 14D ${xx(a14)} masih di atas` };
+}
+function pageDecide() {
+  const ds = ST.main, t = todayJkt(), y = addD(t, -1);
+  const W = {}; [3, 7, 14, 30].forEach(n => W[n] = agg(ds, addD(t, -n), y, ad => ad.c));
+  const ids = ds.campIds.filter(id => { const c = ds.campaigns[id]; if (ST.acc >= 0 && c.a !== ST.acc) return false;
+    return ST.showInactive ? (W[30].get(id) || Z())[0] > 0 || campActive(c) : campActive(c); });
+  const rows = ids.map(id => ({ id, c: ds.campaigns[id], d: decide(ds, id, W), v: n => der(W[n].get(id) || Z()) }));
+  const order = { 'Matikan': 0, 'Turunkan 20–30%': 1, 'Pantau': 2, 'Scale +20%': 3, 'Hold': 4, 'Tunggu': 5, 'Data kurang': 6, 'Tidak aktif': 7 };
+  rows.sort((a, b) => (order[a.d.t] - order[b.d.t]) || (b.v(7).spend - a.v(7).spend));
+  const cnt = {}; rows.forEach(r => cnt[r.d.t] = (cnt[r.d.t] || 0) + 1);
+  let html = `<div class="sec-h"><h2>Papan Keputusan</h2><span class="muted small">Periode tetap: 3/7/14/30 hari penuh s/d kemarin (${fd(y)}) · BEP ${xx(S.bep)} · target ${xx(S.target)} · campaign &lt; ${S.minAge} hari = Tunggu</span>
+    <label class="small" style="margin-left:auto"><input type="checkbox" id="inact" ${ST.showInactive ? 'checked' : ''}> tampilkan yang tidak aktif</label></div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">${Object.keys(order).filter(k => cnt[k]).map(k => { const r = rows.find(x => x.d.t === k); return `<span class="chip ${r.d.k}">${k}: ${cnt[k]}</span>`; }).join('')}</div>
+    <div class="tw"><table><thead><tr><th>Campaign</th><th class="num">Umur</th><th class="num">Budget/hari</th><th class="num">Spend 7D</th><th class="num">ROAS 3D</th><th class="num">7D</th><th class="num">14D</th><th class="num">30D</th><th class="num">CPA 7D</th><th class="num">Purch 7D</th><th>Rekomendasi</th><th>Alasan</th></tr></thead><tbody>
+    ${rows.map(r => { const v7 = r.v(7), mc = maxCpa(r.c.a, ds), age = campAge(r.c);
+      return `<tr class="click" data-camp="${r.id}" data-go="diag"><td class="nm" title="${esc(r.c.n)}">${accChip(ds, r.c.a)}${shortCamp(r.c.n)}</td>
+      <td class="num">${age != null ? age + ' hr' : '–'}</td><td class="num">${rp(campBudget(ds, r.id)) }</td><td class="num">${rp(v7.spend)}</td>
+      ${[3, 7, 14, 30].map(n => { const v = r.v(n); return `<td class="num">${roasChip(v.roas, v.spend)}</td>`; }).join('')}
+      <td class="num"><span class="chip ${!v7.purch ? 'c-n' : v7.cpa <= mc ? 'c-g' : 'c-r'}">${rp(v7.cpa)}</span></td><td class="num">${nf(v7.purch)}</td>
+      <td><span class="chip ${r.d.k}">${r.d.t}</span></td><td class="why">${r.d.why}</td></tr>`; }).join('') || '<tr><td colspan="12" class="empty">Tidak ada campaign aktif</td></tr>'}
+    </tbody></table></div>`;
+  // catatan keputusan
+  const notes = LS.get('notes', []);
+  html += `<div class="sec-h"><h2>Catatan & menunggu persetujuan</h2><span class="muted small">tersimpan di browser ini</span></div>
+    <div class="card notes"><div style="display:flex;gap:8px"><input class="inp" id="noteInp" placeholder="mis. Matikan Harbolnas NOVIA — tunggu OK"><button class="btn pri" id="noteAdd">Tambah</button></div>
+    <ul>${notes.map((n, i) => `<li class="${n.d ? 'done' : ''}"><input type="checkbox" data-note="${i}" ${n.d ? 'checked' : ''}><span style="flex:1">${esc(n.t)} <span class="small muted">· ${esc(n.at)}</span></span><button class="btn sm" data-del="${i}">Hapus</button></li>`).join('')}</ul></div>`;
+  return html;
+}
+
+/* ---------- 3. DIAGNOSIS ---------- */
+async function pageDiag() {
+  const ds = ST.ds, [s, u] = curRange(), pr = prevRange();
+  const cur = agg(ds, s, u, ad => ad.c), prev = pr ? agg(ds, pr[0], pr[1], ad => ad.c) : new Map();
+  const ids = [...new Set([...cur.keys(), ...prev.keys()])].filter(id => ds.campaigns[id]).sort((a, b) => ((cur.get(b) || Z())[0] - (cur.get(a) || Z())[0]));
+  if (ST.diagCamp && !ids.includes(ST.diagCamp) && ds.campaigns[ST.diagCamp]) ids.unshift(ST.diagCamp);
+  const cid = ST.diagCamp, filt = cid ? ad => ad.c === cid : null;
+  const A = der(tot(ds, s, u, filt)), B = der(pr ? tot(ds, pr[0], pr[1], filt) : Z());
+  let html = `<div class="sec-h"><h2>Diagnosis</h2><span class="muted small">${rangeLabel()}${pr ? ' vs ' + fd(pr[0]) + ' – ' + fd(pr[1]) : ''}</span></div>
+    <div class="filters"><select class="inp" id="diagSel" style="max-width:100%"><option value="">Semua campaign${ST.acc >= 0 ? ' (' + esc(ds.accounts[ST.acc].label) + ')' : ''}</option>
+    ${ids.map(id => `<option value="${id}" ${id === cid ? 'selected' : ''}>${esc(ds.accounts[ds.campaigns[id].a].label)} · ${shortCamp(ds.campaigns[id].n)}</option>`).join('')}</select></div>`;
+  const kk = (l, a, b, f, hb = true) => `<div class="card kpi"><div class="lab">${l}</div><div class="val">${f(a)}</div><div class="sub">${delta(a, b, hb)} · sebelumnya ${f(b)}</div></div>`;
+  html += `<div class="grid kpis">${kk('Spend', A.spend, B.spend, rp)}${kk('Purchase', A.purch, B.purch, nf)}${kk('ROAS', A.roas, B.roas, xx)}${kk('CPA', A.cpa, B.cpa, rp, false)}${kk('CPM', A.cpm, B.cpm, rp, false)}${kk('Link CTR', A.ctr, B.ctr, v => pc(v))}</div>`;
+  if (pr) {
+    const useIc = A.ic > 0 && B.ic > 0;
+    const F = [['Biaya tayang (CPM)', 1 / A.cpm, 1 / B.cpm, A.cpm, B.cpm, rp, 'CPM naik = iklan makin mahal ditayangkan (kompetisi/lelang, audiens sempit)'],
+      ['Link CTR', A.ctr, B.ctr, A.ctr, B.ctr, pc, 'Hook/konten makin kurang menarik klik'],
+      ['LPV per klik', A.lpvRate, B.lpvRate, A.lpvRate, B.lpvRate, pc, 'Orang klik tapi tidak menunggu halaman terbuka (kecepatan LP / klik tidak sengaja)']]
+      .concat(useIc ? [['Checkout per LPV', A.icRate, B.icRate, A.icRate, B.icRate, pc, 'Landing page / penawaran kurang meyakinkan'],
+        ['Purchase per checkout', A.close, B.close, A.close, B.close, pc, 'Masalah di proses checkout / closing']]
+        : [['Purchase per LPV', dv(A.purch, A.lpv), dv(B.purch, B.lpv), dv(A.purch, A.lpv), dv(B.purch, B.lpv), pc, 'Landing page / penawaran / closing kurang meyakinkan']])
+      .concat([['Nilai per order (AOV)', A.aov, B.aov, A.aov, B.aov, rp, 'Pembeli ambil paket lebih kecil']]);
+    const rows = F.map(f => ({ f, c: (fin(f[1]) && fin(f[2]) && f[1] > 0 && f[2] > 0) ? Math.log(f[1] / f[2]) : null }));
+    const valid = rows.filter(r => r.c != null), worst = valid.slice().sort((a, b) => a.c - b.c)[0];
+    const lr = fin(A.roas) && fin(B.roas) && A.roas > 0 && B.roas > 0 ? Math.log(A.roas / B.roas) : null;
+    const maxAbs = Math.max(0.05, ...valid.map(r => Math.abs(r.c)));
+    html += `<div class="sec-h"><h2>Di tahap mana ROAS berubah?</h2><span class="muted small">ROAS = (1/CPM) × CTR × LPV/klik × konversi × AOV — tiap batang = sumbangan ke perubahan ROAS</span></div>`;
+    if (lr != null && worst && worst.c < -0.05) html += `<div class="callout ${lr < 0 ? 'r' : 'g'}" style="margin-bottom:10px">ROAS ${lr < 0 ? 'turun' : 'naik'} ${Math.abs(Math.round((A.roas / B.roas - 1) * 100))}%. Penurunan terbesar ada di <b>${worst.f[0]}</b> (${delta(worst.f[3], worst.f[4], worst.f[0].indexOf('CPM') < 0)}). ${worst.f[6]}.</div>`;
+    else if (A.purch === 0 && B.purch === 0) html += `<div class="callout" style="margin-bottom:10px">Belum ada purchase di kedua periode, jadi analisis per tahap belum bisa dihitung penuh.</div>`;
+    html += `<div class="tw"><table><thead><tr><th>Tahap</th><th class="num">Sebelumnya</th><th class="num">Sekarang</th><th class="num">Perubahan</th><th style="min-width:160px">Sumbangan ke ROAS</th></tr></thead><tbody>
+      ${rows.map(r => { const f = r.f, w = r.c == null ? 0 : Math.abs(r.c) / maxAbs * 50, col = r.c == null ? '' : r.c < 0 ? 'var(--r)' : 'var(--g)';
+        return `<tr${r === worst && worst.c < -0.05 ? ' style="background:#fff7f7"' : ''}><td>${f[0]}</td><td class="num">${f[5](f[4])}</td><td class="num">${f[5](f[3])}</td><td class="num">${delta(f[3], f[4], f[0].indexOf('CPM') < 0)}</td>
+        <td><div class="fbar"><span class="mid"></span>${r.c == null ? '' : `<i style="background:${col};${r.c < 0 ? 'right:50%' : 'left:50%'};width:${w}%"></i>`}</div></td></tr>`; }).join('')}
+      </tbody></table></div>`;
+  }
+  // kejenuhan
+  const t = todayJkt(), y = addD(t, -1);
+  const md = ST.main, daily = agg(md, addD(t, -14), y, (ad, r) => (!cid || ad.c === cid) ? md.dates[r[0]] : null);
+  const days = []; for (let d = addD(t, -14); d <= y; d = addD(d, 1)) days.push(d);
+  const ctrs = days.map(d => { const v = daily.get(d); return v && v[M.impr] ? v[M.link] / v[M.impr] : null; });
+  const half = a => { const x = a.filter(v => v != null); return x.length ? x.reduce((p, q) => p + q, 0) / x.length : NaN; };
+  const c1 = half(ctrs.slice(0, 7)), c2 = half(ctrs.slice(7));
+  let fr = null;
+  if (!ds.lifetime) { const key = s + '_' + u; if (!ST.reach[key]) { try { ST.reach[key] = await api('reach', { since: s, until: u }); } catch (e) { ST.reach[key] = { err: e.message }; } } fr = ST.reach[key]; }
+  const accI = cid ? ds.campaigns[cid].a : (ST.acc >= 0 ? ST.acc : null);
+  const fCamp = fr && fr.camp && cid ? (fr.camp[cid] || [0, 0])[1] : null;
+  const fAcc = fr && fr.acc && accI != null ? (fr.acc[accI] || [0, 0])[1] : null;
+  const adIdx = cid ? (md.adsByCamp[cid] || []) : md.ads.map((a, i) => i).filter(i => ST.acc < 0 || md.ads[i].a === ST.acc);
+  const live = adIdx.map(i => md.ads[i]).filter(a => a.st === 'ACTIVE');
+  const newest = live.map(a => (a.ct || '').slice(0, 10)).filter(Boolean).sort().pop();
+  const ctrDrop = fin(c1) && fin(c2) ? c2 / c1 - 1 : NaN;
+  let verdict = '';
+  if (fin(ctrDrop) && ctrDrop < -0.2) verdict = `CTR turun ${Math.round(-ctrDrop * 100)}% dalam 2 minggu${fCamp != null && fCamp < 2.5 ? ' walau frequency campaign masih ' + fCamp.toFixed(2).replace('.', ',') : ''}. Ini tanda konten mulai basi untuk audiens yang paling responsif${fAcc ? ' — frequency akun ' + fAcc.toFixed(2).replace('.', ',') + ' (orang yang sama juga melihat iklan dari campaign lain)' : ''}. Solusinya konten/hook baru, bukan memotong budget.`;
+  else if (fin(ctrDrop)) verdict = `CTR relatif stabil (${ctrDrop >= 0 ? '+' : ''}${Math.round(ctrDrop * 100)}%) — belum ada tanda kejenuhan konten.`;
+  html += `<div class="sec-h"><h2>Tanda kejenuhan</h2></div><div class="grid two">
+    <div class="card"><h3>Link CTR harian (14 hari s/d kemarin)</h3><div style="margin-top:8px">${sparkBars(ctrs, days, v => pc(v))}</div>
+      <div class="small muted" style="margin-top:6px">Minggu lalu ${pc(c1)} → minggu ini ${pc(c2)} ${delta(c2, c1)}</div></div>
+    <div class="card"><div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">
+      <div class="kpi"><div class="lab">Frequency campaign</div><div class="val">${fCamp != null ? fCamp.toFixed(2).replace('.', ',') : '–'}</div><div class="sub">${rangeLabel()}</div></div>
+      <div class="kpi"><div class="lab">Frequency akun</div><div class="val">${fAcc != null ? fAcc.toFixed(2).replace('.', ',') : '–'}</div><div class="sub">gabungan semua campaign</div></div>
+      <div class="kpi"><div class="lab">Iklan aktif</div><div class="val">${live.length}</div><div class="sub">${cid ? 'di campaign ini' : 'di akun'}</div></div>
+      <div class="kpi"><div class="lab">Iklan terbaru dibuat</div><div class="val">${newest ? diffD(newest, t) + ' hr' : '–'}</div><div class="sub">${newest ? 'lalu (' + fd(newest) + ')' : ''}</div></div>
+    </div></div></div>
+    ${verdict ? `<div class="callout" style="margin-top:10px">${verdict}</div>` : ''}`;
+  if (cid) { const n = noise(md, cid); if (n.n) html += `<div class="callout ${n.p > 0.1 ? '' : 'r'}" style="margin-top:8px"><b>Noise atau masalah?</b> ${n.text}</div>`; }
+  // tabel harian
+  html += `<div class="sec-h"><h2>Harian</h2></div><div class="tw"><table><thead><tr><th>Tanggal</th><th class="num">Spend</th><th class="num">Purchase</th><th class="num">ROAS</th><th class="num">CPA</th><th class="num">CPM</th><th class="num">Link CTR</th><th class="num">Biaya/LPV</th></tr></thead><tbody>
+    ${days.slice().reverse().map(d => { const v = der(daily.get(d) || Z()); return `<tr><td>${fd(d)}</td><td class="num">${rp(v.spend)}</td><td class="num">${nf(v.purch)}</td><td class="num">${roasChip(v.roas, v.spend)}</td><td class="num">${rp(v.cpa)}</td><td class="num">${rp(v.cpm)}</td><td class="num">${pc(v.ctr)}</td><td class="num">${rp(v.cLpv)}</td></tr>`; }).join('')}
+    </tbody></table></div>`;
+  return html;
+}
+
+/* ---------- 4. CREATIVE LAB ---------- */
+function conceptKey(name) {
+  return String(name || '').toLowerCase()
+    .replace(/^\s*\d{1,2}\s?[a-z]{3}\s?\d{2,4}\s*/, '')
+    .replace(/\s*[–—-]?\s*copy(\s*\d+)?/g, '')
+    .replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim() || String(name || '');
+}
+function buildConcepts(ds, s, u) {
+  const per = agg(ds, s, u, (ad, r) => r[1]);
+  const G = new Map();
+  per.forEach((v, ai) => {
+    const ad = ds.ads[ai], key = ad.a + '|' + conceptKey(ad.n);
+    let g = G.get(key); if (!g) { g = { key, a: ad.a, name: ad.n.replace(/\s*[–—-]\s*Copy.*$/i, '').replace(/^\s*\d{1,2}\s?[A-Za-z]{3}\s?\d{2,4}\s+/, '').trim() || ad.n, v: Z(), ads: [] }; G.set(key, g); }
+    for (let i = 0; i < NM; i++) g.v[i] += v[i];
+    g.ads.push({ ai, v });
+  });
+  const list = [...G.values()].map(g => { g.d = der(g.v); g.active = g.ads.filter(x => ds.ads[x.ai].st === 'ACTIVE');
+    g.camps = [...new Set(g.active.map(x => ds.ads[x.ai].c))]; g.ok = g.d.purch >= 2 || g.d.spend >= 3e6; return g; });
+  // skor persentil per akun
+  const byAcc = {}; list.filter(g => g.ok).forEach(g => (byAcc[g.a] = byAcc[g.a] || []).push(g));
+  Object.values(byAcc).forEach(arr => {
+    const prc = f => { const vals = arr.map(g => fin(g.d[f]) ? g.d[f] : 0).sort((a, b) => a - b);
+      return x => { const v = fin(x) ? x : 0; let lo = 0; while (lo < vals.length && vals[lo] < v) lo++; let hi = lo; while (hi < vals.length && vals[hi] === v) hi++; return vals.length > 1 ? ((lo + hi - 1) / 2) / (vals.length - 1) : 0.5; }; };
+    const H = prc('hook'), D = prc('hold'), R = prc('r50'), O = prc('roas');
+    arr.forEach(g => { g.score = Math.round(100 * (0.30 * H(g.d.hook) + 0.20 * D(g.d.hold) + 0.15 * R(g.d.r50) + 0.35 * O(g.d.roas)));
+      g.label = g.score >= 75 ? 'Winning' : g.score >= 50 ? 'Bagus' : g.score >= 25 ? 'Average' : 'Jelek'; });
+  });
+  // median biaya/LPV per akun
+  const med = {}; Object.entries(list.reduce((m, g) => { if (g.d.lpv >= 20) (m[g.a] = m[g.a] || []).push(g.d.cLpv); return m; }, {}))
+    .forEach(([a, arr]) => { arr.sort((x, y) => x - y); med[a] = arr[Math.floor(arr.length / 2)]; });
+  return { list, med };
+}
+const LABCLS = { Winning: 'c-g', Bagus: 'c-b', Average: 'c-y', Jelek: 'c-r' };
+function pageCreative() {
+  const ds = ST.ds, [s, u] = curRange(), { list, med } = buildConcepts(ds, s, u), f = ST.cf;
+  let rows = list.filter(g => (ST.acc < 0 || g.a === ST.acc) && g.d.spend > 0);
+  rows = rows.filter(g => (!f.minCtr || g.d.ctr * 100 >= f.minCtr) && (!f.cheap || (med[g.a] && g.d.cLpv <= med[g.a]))
+    && (!f.minPurch || g.d.purch >= f.minPurch) && (!f.roasOk || g.d.roas >= S.bep) && (!f.scored || g.score != null)
+    && (!f.q || g.name.toLowerCase().includes(f.q.toLowerCase())));
+  const cols = [['name', 'Konsep', 0], ['score', 'Skor', 1], ['spend', 'Spend', 1], ['ctr', 'Link CTR', 1], ['ctrAll', 'CTR (all)', 1], ['hook', 'Hook', 1], ['hold', 'Hold', 1], ['r50', 'Retensi 50%', 1], ['cLpv', 'Biaya/LPV', 1], ['purch', 'Purchase', 1], ['roas', 'ROAS', 1], ['cpa', 'CPA', 1]];
+  const so = ST.sort.creative || { k: 'score', d: -1 };
+  const gv = (g, k) => k === 'score' ? (g.score == null ? -1 : g.score) : k === 'name' ? g.name : (fin(g.d[k]) ? g.d[k] : -1);
+  rows.sort((a, b) => { const x = gv(a, so.k), y = gv(b, so.k); return (x > y ? 1 : x < y ? -1 : 0) * so.d; });
+  let html = `<div class="sec-h"><h2>Creative Lab</h2><span class="muted small">${rangeLabel()} · konten dikelompokkan per konsep (semua copy digabung) · skor = 30% hook + 20% hold + 15% retensi + 35% ROAS, persentil per akun · minimal 2 purchase atau Rp3jt spend</span></div>
+  <div class="filters">
+    <input type="search" id="cfQ" placeholder="Cari konten…" value="${esc(f.q)}">
+    <label>Link CTR ≥ <input type="number" step="0.1" min="0" id="cfCtr" value="${f.minCtr || ''}">%</label>
+    <label>Purchase ≥ <input type="number" min="0" id="cfP" value="${f.minPurch || ''}"></label>
+    <label><input type="checkbox" id="cfCheap" ${f.cheap ? 'checked' : ''}> Biaya/LPV ≤ median akun</label>
+    <label><input type="checkbox" id="cfRoas" ${f.roasOk ? 'checked' : ''}> ROAS ≥ BEP</label>
+    <label><input type="checkbox" id="cfScored" ${f.scored ? 'checked' : ''}> Hanya yang punya skor</label>
+    <span class="muted small">${rows.length} konsep</span>
+  </div>
+  <div class="tw"><table id="crTable"><thead><tr>${cols.map(c => `<th class="${c[2] ? 'num' : ''}" data-sort="${c[0]}">${c[1]}${so.k === c[0] ? (so.d < 0 ? ' ↓' : ' ↑') : ''}</th>`).join('')}<th>Aktif di</th></tr></thead><tbody>
+  ${rows.slice(0, 400).map((g, i) => { const d = g.d, m = med[g.a];
+    return `<tr class="click" data-concept="${esc(g.key)}"><td class="nm" title="${esc(g.name)}">${accChip(ds, g.a)}${esc(g.name)} <span class="small muted">${g.ads.length > 1 ? '×' + g.ads.length : ''}</span></td>
+    <td class="num">${g.score != null ? `<span class="chip ${LABCLS[g.label]}">${g.label} ${g.score}</span>` : '<span class="chip c-n">–</span>'}</td>
+    <td class="num">${rp(d.spend)}</td><td class="num">${pc(d.ctr)}</td><td class="num">${pc(d.ctrAll)}</td><td class="num">${pc(d.hook, 1)}</td><td class="num">${pc(d.hold, 1)}</td><td class="num">${pc(d.r50, 0)}</td>
+    <td class="num"><span class="chip ${!d.lpv ? 'c-n' : m && d.cLpv <= m ? 'c-g' : 'c-n'}">${rp(d.cLpv)}</span></td><td class="num">${nf(d.purch)}</td><td class="num">${roasChip(d.roas, d.spend)}</td><td class="num">${rp(d.cpa)}</td>
+    <td class="small">${g.camps.length ? g.camps.map(c => '<span class="tag">' + shortCamp((ds.campaigns[c] || {}).n || c, 28) + '</span>').join('') : '<span class="muted">–</span>'}</td></tr>`; }).join('') || '<tr><td colspan="13" class="empty">Tidak ada konten yang cocok dengan filter</td></tr>'}
+  </tbody></table></div>
+  <div class="small muted" style="margin-top:8px">Hook = 25% video ditonton ÷ impresi · Hold = ThruPlay ÷ impresi · Retensi 50% = tonton 50% ÷ tonton 25% · CTR (all) termasuk like/komentar/buka profil, Link CTR hanya klik ke website. Klik baris untuk melihat creative ID & post ID.</div>`;
+  ST._concepts = list;
+  return html;
+}
+function showConcept(key) {
+  const ds = ST.ds, g = (ST._concepts || []).find(x => x.key === key); if (!g) return;
+  const ads = g.ads.slice().sort((a, b) => b.v[0] - a.v[0]);
+  const html = `<h2 style="margin-right:30px">${esc(g.name)}</h2><div class="muted small" style="margin:4px 0 14px">${esc(ds.accounts[g.a].label)} · ${rangeLabel()} · ${g.ads.length} iklan · ${g.score != null ? g.label + ' (' + g.score + ')' : 'belum ada skor'}</div>
+  <div class="grid kpis" style="margin-bottom:14px">${[['Spend', rp(g.d.spend)], ['Purchase', nf(g.d.purch)], ['ROAS', xx(g.d.roas)], ['CPA', rp(g.d.cpa)], ['Link CTR', pc(g.d.ctr)], ['Biaya/LPV', rp(g.d.cLpv)]].map(x => `<div class="card kpi"><div class="lab">${x[0]}</div><div class="val" style="font-size:18px">${x[1]}</div></div>`).join('')}</div>
+  <div class="tw"><table><thead><tr><th></th><th>Iklan</th><th>Status</th><th>Campaign</th><th class="num">Spend</th><th class="num">Purch</th><th class="num">ROAS</th><th class="num">Link CTR</th><th>Creative ID</th><th>Post ID</th></tr></thead><tbody>
+  ${ads.map(x => { const a = ds.ads[x.ai], d = der(x.v); return `<tr><td>${a.th ? `<img class="thumb" src="${esc(a.th)}" alt="" loading="lazy">` : ''}</td><td class="nm" title="${esc(a.n)}">${esc(a.n)}</td>
+    <td><span class="chip ${a.st === 'ACTIVE' ? 'c-g' : 'c-n'}">${esc((a.st || '–').replace('_', ' ').toLowerCase())}</span></td><td class="nm small">${shortCamp((ds.campaigns[a.c] || {}).n)}</td>
+    <td class="num">${rp(d.spend)}</td><td class="num">${nf(d.purch)}</td><td class="num">${roasChip(d.roas, d.spend)}</td><td class="num">${pc(d.ctr)}</td>
+    <td>${a.cr ? `<span class="idc" data-copy="${a.cr}">${a.cr}</span>` : '–'}</td><td>${a.post ? `<span class="idc" data-copy="${a.post}">${a.post}</span>` : '–'}</td></tr>`; }).join('')}
+  </tbody></table></div>
+  <div class="small muted" style="margin-top:8px">Klik ID untuk menyalin. Pakai <b>post ID</b> (bukan duplikat jadi post baru) supaya like & komentar ikut terbawa.</div>`;
+  openModal(html);
+}
+
+/* ---------- 5. CPA & PROFIT ---------- */
+function pageCpa() {
+  const ds = ST.ds, [s, u] = curRange(), pr = prevRange();
+  let html = `<div class="sec-h"><h2>CPA & Profit</h2><span class="muted small">${rangeLabel()} · CPA maks = AOV 30D ÷ BEP (bisa diubah di ⚙) · cost per contact maks ${rp(S.maxCpc)}</span></div><div class="grid kpis">`;
+  ds.accounts.forEach((a, i) => {
+    const A = der(tot(ds, s, u, null, i)), B = der(pr ? tot(ds, pr[0], pr[1], null, i) : Z()), mc = maxCpa(i, ST.main || ds);
+    if (!A.spend && !B.spend) return;
+    html += `<div class="card" style="${ST.acc === i ? 'outline:2px solid var(--acc)' : ''}"><div style="display:flex;justify-content:space-between;align-items:baseline"><h3>${esc(a.label)}</h3><span class="small muted">${rp(A.spend)} ${delta(A.spend, B.spend)}</span></div>
+      <div class="ev"><span>CPA</span><span><span class="chip ${!A.purch ? 'c-n' : A.cpa <= mc ? 'c-g' : 'c-r'}">${rp(A.cpa)}</span> <span class="small muted">maks ${rp(mc)}</span></span></div>
+      <div class="ev"><span>ROAS</span><span>${roasChip(A.roas, A.spend)} ${delta(A.roas, B.roas)}</span></div>
+      <div class="ev"><span>Purchase</span><span>${nf(A.purch)} ${delta(A.purch, B.purch)}</span></div>
+      <div class="ev"><span>AOV</span><span>${rp(A.aov)}</span></div>
+      <div class="ev"><span>Contact</span><span>${nf(A.contact)} · <span class="chip ${!A.contact ? 'c-n' : A.cpc <= S.maxCpc ? 'c-g' : 'c-r'}">${rp(A.cpc)}</span></span></div></div>`;
+  });
+  html += `</div>`;
+  const per = agg(ds, s, u, ad => ad.c);
+  const ids = [...per.keys()].filter(id => ds.campaigns[id]).sort((a, b) => per.get(b)[0] - per.get(a)[0]);
+  html += `<div class="sec-h"><h2>Per campaign</h2></div><div class="tw"><table><thead><tr><th>Campaign</th><th class="num">Spend</th><th class="num">Purchase</th><th class="num">CPA</th><th class="num">ROAS</th><th class="num">AOV</th><th class="num">Contact</th><th class="num">Biaya/contact</th></tr></thead><tbody>
+    ${ids.map(id => { const c = ds.campaigns[id], v = der(per.get(id)), mc = maxCpa(c.a, ST.main || ds);
+      return `<tr class="click" data-camp="${id}" data-go="diag"><td class="nm" title="${esc(c.n)}">${accChip(ds, c.a)}${shortCamp(c.n)}</td><td class="num">${rp(v.spend)}</td><td class="num">${nf(v.purch)}</td>
+      <td class="num"><span class="chip ${!v.purch ? 'c-n' : v.cpa <= mc ? 'c-g' : 'c-r'}">${rp(v.cpa)}</span></td><td class="num">${roasChip(v.roas, v.spend)}</td><td class="num">${rp(v.aov)}</td><td class="num">${nf(v.contact)}</td><td class="num">${rp(v.cpc)}</td></tr>`; }).join('') || '<tr><td colspan="8" class="empty">Tidak ada data</td></tr>'}
+    </tbody></table></div>`;
+  const ads = agg(ds, s, u, (ad, r) => r[1]);
+  const arr = [...ads.entries()].map(([ai, v]) => ({ a: ds.ads[ai], d: der(v) }));
+  const best = arr.filter(x => x.d.purch >= 2).sort((a, b) => a.d.cpa - b.d.cpa).slice(0, 10);
+  const leak = arr.filter(x => x.d.purch === 0 && x.d.spend >= maxCpa(x.a.a, ST.main || ds) * 0.5).sort((a, b) => b.d.spend - a.d.spend).slice(0, 10);
+  const mini = (title, list, sub) => `<div><div class="sec-h"><h2>${title}</h2><span class="muted small">${sub}</span></div><div class="tw"><table><thead><tr><th>Iklan</th><th class="num">Spend</th><th class="num">Purch</th><th class="num">CPA</th><th class="num">ROAS</th><th>Status</th></tr></thead><tbody>
+    ${list.map(x => `<tr><td class="nm" title="${esc(x.a.n)}">${accChip(ds, x.a.a)}${esc(x.a.n)}</td><td class="num">${rp(x.d.spend)}</td><td class="num">${nf(x.d.purch)}</td><td class="num">${rp(x.d.cpa)}</td><td class="num">${roasChip(x.d.roas, x.d.spend)}</td><td><span class="chip ${x.a.st === 'ACTIVE' ? 'c-g' : 'c-n'}">${esc((x.a.st || '–').toLowerCase())}</span></td></tr>`).join('') || '<tr><td colspan="6" class="empty">–</td></tr>'}
+    </tbody></table></div></div>`;
+  html += `<div class="grid two">${mini('CPA termurah', best, 'minimal 2 purchase')}${mini('Bocor: spend tanpa purchase', leak, '≥ ½ CPA maks, 0 purchase')}</div>`;
+  return html;
+}
+
+/* ---------- 6. PIXEL ---------- */
+async function pagePixel(force) {
+  if (!ST.pixels || force) ST.pixels = await api('pixels', { force: !!force });
+  const P = ST.pixels.pixels.filter(p => ST.acc < 0 || p.a === ST.acc);
+  const KEY = ['PageView', 'ViewContent', 'AddToCart', 'InitiateCheckout', 'AddPaymentInfo', 'Purchase', 'Contact', 'Lead'];
+  const MUST = { AddToCart: 'Retargeting & optimasi mid-funnel kehilangan sinyal', InitiateCheckout: 'Tidak bisa ukur drop-off checkout', Purchase: 'Optimasi purchase tidak punya data' };
+  let html = `<div class="sec-h"><h2>Kesehatan Pixel</h2><span class="muted small">7 hari terakhir · data pixel diperbarui maksimal tiap 30 menit</span><button class="btn sm" id="pixRef" style="margin-left:auto">Muat ulang pixel</button></div><div class="pix">`;
+  P.forEach(p => {
+    const e = p.events || {}, src = p.sources || {}, hrs = p.last ? Math.round((Date.now() - Date.parse(p.last)) / 36e5) : null;
+    const issues = [];
+    if (hrs == null || hrs > 24) issues.push(['r', 'Pixel tidak menyala ' + (hrs == null ? '(belum pernah)' : hrs + ' jam')]);
+    Object.keys(MUST).forEach(k => { if (Object.keys(e).length && !e[k]) issues.push([k === 'Purchase' ? 'r' : 'y', k + ' = 0 — ' + MUST[k]]); });
+    const sk = Object.keys(src); const stot = sk.reduce((a, k) => a + src[k], 0);
+    if (stot && sk.length === 1) issues.push(['y', 'Semua event hanya dari ' + sk[0] + ' — cek pemasangan ' + (sk[0].toLowerCase().indexOf('server') >= 0 ? 'browser pixel' : 'Conversions API')]);
+    html += `<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><div><h3>${esc(p.name)}</h3><div class="small muted"><span class="idc" data-copy="${p.id}">${p.id}</span> · ${esc((ST.main.accounts[p.a] || {}).label || '')}</div></div>
+      <span class="chip ${hrs != null && hrs <= 24 ? 'c-g' : 'c-r'}">${hrs == null ? 'mati' : hrs <= 1 ? 'aktif' : hrs + ' jam lalu'}</span></div>
+      <div style="margin:10px 0">${KEY.filter(k => k in e || MUST[k]).map(k => `<div class="ev"><span>${k}</span><b class="${!e[k] && MUST[k] ? 'dn' : ''}">${nf(e[k] || 0)}</b></div>`).join('')}
+      ${Object.keys(e).filter(k => KEY.indexOf(k) < 0).map(k => `<div class="ev"><span class="muted">${esc(k)}</span><span>${nf(e[k])}</span></div>`).join('')}</div>
+      ${stot ? `<div class="small muted">Sumber: ${sk.map(k => esc(k) + ' ' + Math.round(src[k] / stot * 100) + '%').join(' · ')}</div>` : ''}
+      ${issues.length ? `<div style="margin-top:10px">${issues.map(x => `<div class="callout ${x[0] === 'r' ? 'r' : ''}" style="margin-top:6px;padding:8px 10px">${esc(x[1])}</div>`).join('')}</div>` : '<div class="callout g" style="margin-top:10px;padding:8px 10px">Tidak ada masalah terdeteksi</div>'}
+    </div>`;
+  });
+  html += P.length ? '</div>' : '</div><div class="card empty">Tidak ada pixel di akun ini</div>';
+  html += `<div class="small muted" style="margin-top:10px">Event Match Quality hanya bisa dilihat di Events Manager.</div>`;
+  return html;
+}
+
+/* ---------- 7. CAMPAIGN BARU ---------- */
+function pageNew() {
+  const ds = ST.main, t = todayJkt();
+  const ids = ds.campIds.filter(id => { const c = ds.campaigns[id], age = campAge(c); return age != null && age <= 14 && (ST.acc < 0 || c.a === ST.acc); })
+    .sort((a, b) => (campStart(ds.campaigns[b]) || '').localeCompare(campStart(ds.campaigns[a]) || ''));
+  const life = agg(ds, ds.since, t, ad => ad.c), l7 = agg(ds, addD(t, -7), addD(t, -1), ad => ad.c);
+  let html = `<div class="sec-h"><h2>Campaign Baru</h2><span class="muted small">dibuat ≤ 14 hari · hasil sebelum ${S.minAge} hari belum valid untuk keputusan · learning selesai di ±50 hasil/minggu</span></div>
+  <div class="tw"><table><thead><tr><th>Campaign</th><th>Mulai</th><th class="num">Umur</th><th>Evaluasi</th><th>Status</th><th class="num">Budget/hari</th><th class="num">Spend</th><th class="num">Purch</th><th class="num">ROAS</th><th class="num">CPA</th><th class="num">CPM</th><th>Learning</th><th>Progres 50/minggu</th></tr></thead><tbody>
+  ${ids.map(id => { const c = ds.campaigns[id], age = campAge(c), st = campStart(c), ev = addD(st, S.minAge), left = diffD(t, ev), v = der(life.get(id) || Z()), p7 = (l7.get(id) || Z())[M.purch];
+    const sets = Object.values(ds.adsets).filter(a => a.c === id && a.st === 'ACTIVE'); const ls = {}; sets.forEach(a => { const k = a.learn || '–'; ls[k] = (ls[k] || 0) + 1; });
+    return `<tr class="click" data-camp="${id}" data-go="diag"><td class="nm" title="${esc(c.n)}">${accChip(ds, c.a)}${shortCamp(c.n)}</td><td>${fd(st)}</td><td class="num">${age} hr</td>
+    <td>${left > 0 ? `<span class="chip c-b">${fd(ev)} · ${left} hr lagi</span>` : '<span class="chip c-g">bisa dievaluasi</span>'}</td>
+    <td><span class="chip ${campActive(c) ? 'c-g' : 'c-n'}">${esc((c.st || '–').toLowerCase())}</span></td><td class="num">${rp(campBudget(ds, id))}</td>
+    <td class="num">${rp(v.spend)}</td><td class="num">${nf(v.purch)}</td><td class="num">${roasChip(v.roas, v.spend)}${age < S.minAge ? '<div class="small muted">belum valid</div>' : ''}</td><td class="num">${rp(v.cpa)}</td><td class="num">${rp(v.cpm)}</td>
+    <td class="small">${Object.entries(ls).map(([k, n]) => `<span class="chip ${k === 'SUCCESS' ? 'c-g' : k === 'FAIL' ? 'c-r' : k === 'LEARNING' ? 'c-y' : 'c-n'}">${esc(k.toLowerCase())}${n > 1 ? ' ×' + n : ''}</span>`).join(' ') || '–'}</td>
+    <td><div class="prog"><i style="width:${Math.min(100, p7 / 50 * 100)}%"></i></div><div class="small muted">${nf(p7)}/50</div></td></tr>`; }).join('') || '<tr><td colspan="13" class="empty">Tidak ada campaign baru dalam 14 hari</td></tr>'}
+  </tbody></table></div>`;
+  return html;
+}
+
+/* =====================================================================
+   CHARTS (SVG)
+   ===================================================================== */
+function lineChart(series, xlab, yfmt) {
+  const W = 560, H = 190, L = 54, R = 10, T = 10, B = 24, n = series[0].v.length;
+  const max = Math.max(1, ...series.flatMap(s => s.v.filter(v => v != null)));
+  const X = i => L + (W - L - R) * i / (n - 1), Y = v => T + (H - T - B) * (1 - v / max);
+  let g = '';
+  for (let k = 0; k <= 4; k++) { const v = max * k / 4, y = Y(v); g += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" stroke="#eef0f3"/><text x="${L - 6}" y="${y + 4}" text-anchor="end" font-size="10" fill="#8a909c">${yfmt(v)}</text>`; }
+  for (let i = 0; i < n; i++) { const l = xlab(i); if (l) g += `<text x="${X(i)}" y="${H - 6}" text-anchor="middle" font-size="10" fill="#8a909c">${l}</text>`; }
+  series.forEach(s => { let d = ''; s.v.forEach((v, i) => { if (v == null) return; d += (d ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); }); g += `<path d="${d}" fill="none" stroke="${s.c}" stroke-width="2.2" stroke-linejoin="round"/>`; });
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="grafik">${g}</svg>`;
+}
+function barPair(a, b, h) {
+  const W = 560, H = 170, L = 26, R = 6, T = 10, B = 24, n = 24, bw = (W - L - R) / n;
+  const max = Math.max(1, ...a, ...b); let g = '';
+  for (let k = 0; k <= Math.min(4, max); k++) { const v = Math.round(max * k / Math.min(4, max)), y = T + (H - T - B) * (1 - v / max); g += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" stroke="#eef0f3"/><text x="${L - 5}" y="${y + 4}" text-anchor="end" font-size="10" fill="#8a909c">${v}</text>`; }
+  for (let i = 0; i < n; i++) {
+    const x = L + i * bw, hy = (H - T - B) * b[i] / max, ha = (H - T - B) * a[i] / max;
+    g += `<rect x="${x + bw * 0.12}" y="${H - B - hy}" width="${bw * 0.36}" height="${hy}" fill="#c9cdd5" rx="1.5"><title>Kemarin ${i}:00 — ${b[i]}</title></rect>`;
+    if (i <= h) g += `<rect x="${x + bw * 0.5}" y="${H - B - ha}" width="${bw * 0.36}" height="${ha}" fill="#3b5bdb" rx="1.5"><title>Hari ini ${i}:00 — ${a[i]}</title></rect>`;
+    if (i % 3 === 0) g += `<text x="${x + bw / 2}" y="${H - 6}" text-anchor="middle" font-size="10" fill="#8a909c">${String(i).padStart(2, '0')}</text>`;
+  }
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="purchase per jam">${g}</svg>`;
+}
+function sparkBars(vals, labels, fmt) {
+  const W = 560, H = 120, B = 20, n = vals.length, bw = W / n, max = Math.max(1e-9, ...vals.filter(v => v != null));
+  let g = '';
+  vals.forEach((v, i) => { const h = v == null ? 0 : (H - B - 14) * v / max, x = i * bw;
+    g += `<rect x="${x + bw * 0.15}" y="${H - B - h}" width="${bw * 0.7}" height="${h}" rx="2" fill="${i >= n - 7 ? '#3b5bdb' : '#b8c4f0'}"><title>${fd(labels[i])}: ${fmt(v)}</title></rect>`;
+    if (i % 2 === 0) g += `<text x="${x + bw / 2}" y="${H - 5}" text-anchor="middle" font-size="10" fill="#8a909c">${fd(labels[i]).split(' ')[0]}</text>`; });
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="CTR harian">${g}</svg>`;
+}
+
+/* =====================================================================
+   RENDER & EVENTS
+   ===================================================================== */
+const PERIOD_PAGES = { diag: 1, creative: 1, cpa: 1 };
+async function render() {
+  const v = $('view');
+  $('tabs').innerHTML = PAGES.map(p => `<button class="tab ${ST.page === p[0] ? 'on' : ''}" data-page="${p[0]}">${p[1]}</button>`).join('');
+  $('pills').innerHTML = PRESETS.map(p => `<button class="pill ${ST.preset === p[0] ? 'on' : ''}" data-preset="${p[0]}">${p[1]}</button>`).join('');
+  const [s, u] = curRange();
+  if (s !== 'lifetime') { $('dSince').value = s; $('dUntil').value = u; }
+  document.querySelector('.mar-app .pills').style.opacity = PERIOD_PAGES[ST.page] ? 1 : .45;
+  if (!ST.main) return;
+  try {
+    let html;
+    if (ST.page === 'today') html = await pageToday();
+    else if (ST.page === 'decide') html = pageDecide();
+    else if (ST.page === 'new') html = pageNew();
+    else if (ST.page === 'pixel') html = await pagePixel(false);
+    else {
+      if (ST.preset === 'life' && ST.page !== 'creative') { ST.preset = '30d'; return render(); }
+      v.innerHTML = '<div class="loading"><span class="spin"></span> Memuat periode…</div>';
+      await ensureDs();
+      html = ST.page === 'diag' ? await pageDiag() : ST.page === 'creative' ? pageCreative() : pageCpa();
+    }
+    v.innerHTML = html;
+  } catch (e) {
+    v.innerHTML = `<div class="card"><b>Gagal memuat:</b> ${esc(e.message)}</div>`;
+  }
+  updLabel();
+}
+function updLabel() {
+  if (!ST.main) return;
+  const m = Math.round((Date.now() - ST.main.gen) / 60000), d = new Date(ST.main.gen);
+  const hh = new Intl.DateTimeFormat('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }).format(d);
+  $('upd').innerHTML = ST.busy ? '<span class="spin"></span> memperbarui…' : `Data ${hh} · ${m < 1 ? 'baru saja' : m + ' mnt lalu'}`;
+}
+async function loadMain(force) {
+  ST.busy = true; updLabel(); $('refBtn').disabled = true;
+  try {
+    const d = prep(await api('data', { force: !!force }));
+    const wasMain = ST.ds === ST.main;
+    ST.main = d; if (wasMain || !ST.ds) ST.ds = d;
+    ST.hourly = {}; ST.reach = {};
+    if (force) { ST.pixels = null; ST.life = null; }
+    const sel = $('accSel'), cur = ST.acc;
+    sel.innerHTML = `<option value="-1">Semua akun</option>` + d.accounts.map((a, i) => `<option value="${i}">${esc(a.label)}</option>`).join('');
+    sel.value = String(cur >= 0 && cur < d.accounts.length ? cur : -1); ST.acc = +sel.value;
+  } catch (e) { toast(e.message); if (!ST.main) $('view').innerHTML = `<div class="card"><b>Gagal memuat data:</b> ${esc(e.message)}</div>`; }
+  ST.busy = false; $('refBtn').disabled = false;
+  await render();
+}
+
+document.addEventListener('click', async e => {
+  const el = e.target.closest('[data-page],[data-preset],[data-camp],[data-concept],[data-copy],[data-sort],[data-del],#noteAdd,#pixRef,#mclose,#refBtn,#setBtn,#dApply,#loginBtn,#saveSet,#logoutBtn');
+  if (!el || !el.closest('.mar-app')) return;
+  if (el.dataset.copy) { e.stopPropagation(); return copy(el.dataset.copy); }
+  if (el.dataset.page) { ST.page = el.dataset.page; LS.set('page', ST.page); return render(); }
+  if (el.dataset.preset) { ST.preset = el.dataset.preset; LS.set('preset', ST.preset); return render(); }
+  if (el.dataset.sort) { const k = el.dataset.sort, so = ST.sort.creative || { k: 'score', d: -1 }; ST.sort.creative = { k, d: so.k === k ? -so.d : -1 }; return render(); }
+  if (el.dataset.concept) return showConcept(el.dataset.concept);
+  if (el.dataset.camp !== undefined && el.dataset.go) {
+    const go = el.dataset.go; if (go === 'diag') { ST.diagCamp = el.dataset.camp; if (ST.preset === 'life' || ST.preset === 'today') ST.preset = '7d'; }
+    ST.page = go; LS.set('page', go); window.scrollTo(0, 0); return render();
+  }
+  if (el.dataset.del !== undefined) { const n = LS.get('notes', []); n.splice(+el.dataset.del, 1); LS.set('notes', n); return render(); }
+  switch (el.id) {
+    case 'noteAdd': { const v = $('noteInp').value.trim(); if (!v) return; const n = LS.get('notes', []);
+      n.unshift({ t: v, d: false, at: new Intl.DateTimeFormat('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date()) }); LS.set('notes', n); return render(); }
+    case 'pixRef': $('view').innerHTML = '<div class="loading"><span class="spin"></span> Memuat pixel…</div>'; try { $('view').innerHTML = await pagePixel(true); } catch (err) { toast(err.message); } return;
+    case 'mclose': return closeModal();
+    case 'refBtn': return loadMain(true);
+    case 'setBtn': return openSettings();
+    case 'dApply': { const s = $('dSince').value, u = $('dUntil').value; if (!s || !u || s > u) return toast('Rentang tanggal tidak valid');
+      ST.preset = 'custom'; ST.since = s; ST.until = u > todayJkt() ? todayJkt() : u; if (!PERIOD_PAGES[ST.page]) { ST.page = 'cpa'; } return render(); }
+    case 'loginBtn': return doLogin();
+    case 'saveSet': return saveSettings();
+    case 'logoutBtn': closeModal(); return logout();
+  }
+});
+document.addEventListener('change', e => {
+  const t = e.target; if (!t.closest('.mar-app')) return;
+  if (t.id === 'accSel') { ST.acc = +t.value; LS.set('acc', ST.acc); ST.diagCamp = ''; return render(); }
+  if (t.id === 'diagSel') { ST.diagCamp = t.value; return render(); }
+  if (t.id === 'inact') { ST.showInactive = t.checked; return render(); }
+  if (t.dataset && t.dataset.note !== undefined) { const n = LS.get('notes', []); n[+t.dataset.note].d = t.checked; LS.set('notes', n); return render(); }
+  const map = { cfCtr: ['minCtr', +t.value || 0], cfP: ['minPurch', +t.value || 0], cfCheap: ['cheap', t.checked], cfRoas: ['roasOk', t.checked], cfScored: ['scored', t.checked] };
+  if (map[t.id]) { ST.cf[map[t.id][0]] = map[t.id][1]; LS.set('cf', ST.cf); return render(); }
+});
+document.addEventListener('input', e => {
+  if (e.target.id === 'cfQ') { clearTimeout(window._qh); const v = e.target.value; window._qh = setTimeout(() => { ST.cf.q = v; LS.set('cf', ST.cf); render().then(() => { const q = $('cfQ'); if (q) { q.focus(); q.setSelectionRange(v.length, v.length); } }); }, 250); }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+  if (e.key === 'Enter' && (e.target.id === 'pwInp' || e.target.id === 'apiInp')) doLogin();
+  if (e.key === 'Enter' && e.target.id === 'noteInp') $('noteAdd').click();
+});
+$('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+
+function openModal(html) { $('mbody').innerHTML = html; $('modal').hidden = false; }
+function closeModal() { $('modal').hidden = true; }
+
+/* ---------- settings ---------- */
+function openSettings() {
+  const ds = ST.main;
+  openModal(`<h2>Pengaturan</h2><div class="muted small" style="margin:4px 0 14px">Tersimpan di browser ini.</div>
+  <div class="set-grid login" style="margin:0;padding:0;border:0;max-width:none">
+    <div><label>BEP ROAS</label><input class="inp" id="sBep" type="number" step="0.1" value="${S.bep}"></div>
+    <div><label>Target ROAS</label><input class="inp" id="sTarget" type="number" step="0.1" value="${S.target}"></div>
+    <div><label>Umur minimal sebelum evaluasi (hari)</label><input class="inp" id="sAge" type="number" value="${S.minAge}"></div>
+    <div><label>Cost per contact maksimal (Rp)</label><input class="inp" id="sCpc" type="number" value="${S.maxCpc}"></div>
+    ${ds ? ds.accounts.map((a, i) => `<div><label>CPA maks ${esc(a.label)} (kosong = otomatis ${rp(maxCpaAuto(i))})</label><input class="inp" data-mc="${esc(a.label)}" type="number" value="${S.maxCpa[a.label] || ''}"></div>`).join('') : ''}
+    <div style="grid-column:1/-1"><label>URL Web App</label><input class="inp" id="sApi" value="${esc(API)}"></div>
+    <div style="grid-column:1/-1"><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="sAuto" ${S.auto ? 'checked' : ''}> Refresh otomatis setiap 10 menit</label></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:16px"><button class="btn pri" id="saveSet">Simpan</button><button class="btn" id="logoutBtn" style="margin-left:auto">Keluar</button></div>`);
+}
+function maxCpaAuto(i) { const save = S.maxCpa; S.maxCpa = {}; const v = maxCpa(i, ST.main); S.maxCpa = save; return v; }
+function saveSettings() {
+  S.bep = +$('sBep').value || DEF.bep; S.target = +$('sTarget').value || DEF.target; S.minAge = +$('sAge').value || DEF.minAge;
+  S.maxCpc = +$('sCpc').value || DEF.maxCpc; S.auto = $('sAuto').checked;
+  S.maxCpa = {}; document.querySelectorAll('.mar-app [data-mc]').forEach(i => { if (+i.value) S.maxCpa[i.dataset.mc] = +i.value; });
+  LS.set('settings', S);
+  const na = $('sApi').value.trim(); if (na && na !== API) { API = na; LS.set('api', API); closeModal(); return logout(); }
+  closeModal(); toast('Pengaturan disimpan'); render();
+}
+
+/* ---------- auth ---------- */
+async function doLogin() {
+  const pw = $('pwInp').value, ai = $('apiInp').value.trim();
+  if (ai) API = ai;
+  $('loginErr').textContent = '';
+  if (!API) { $('loginErr').textContent = 'Isi URL Web App dulu'; return; }
+  $('loginBtn').disabled = true; $('loginBtn').textContent = 'Memeriksa…';
+  try { SESSION = null; const r = await api('login', { password: pw }); SESSION = r.session; LS.set('session', SESSION); LS.set('api', API); start(); }
+  catch (e) { $('loginErr').textContent = e.message; }
+  $('loginBtn').disabled = false; $('loginBtn').textContent = 'Masuk';
+}
+function logout() { SESSION = null; LS.del('session'); ST.main = null; $('shell').hidden = true; $('login').hidden = false; $('apiInp').value = API || ''; $('apiWrap').hidden = !!CONFIG.API_URL; }
+function start() { $('login').hidden = true; $('shell').hidden = false; loadMain(false); }
+
+setInterval(() => { if (S.auto && SESSION && ST.main && !document.hidden && !ST.busy) loadMain(false); }, 10 * 60 * 1000);
+setInterval(updLabel, 60 * 1000);
+if (SESSION && API) start(); else logout();
+</script>
+</body>
+</html>
