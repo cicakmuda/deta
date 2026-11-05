@@ -294,6 +294,8 @@
 .mar-app .mbox{background:var(--card);border-radius:16px;max-width:980px;width:100%;position:relative}
 .mar-app .mbox.pad{padding:22px}
 .mar-app .mbox.wide{max-width:1080px}
+.mar-app .mbox.dec{max-width:600px;padding:22px}
+.mar-app .mbox.dec .card{border:0;padding:0}
 .mar-app .mclose{position:absolute;right:12px;top:10px;border:0;background:none;font-size:22px;color:var(--ink3);z-index:2}
 .mar-app .set-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}
 .mar-app .set-grid label{display:block;font-size:12px;color:var(--ink2);margin:12px 0 4px;font-weight:500}
@@ -1170,7 +1172,8 @@ async function pageDecide() {
   all.sort((a, b) => (Brain.CLASS_ORDER[a.res.cls] - Brain.CLASS_ORDER[b.res.cls]) || (Brain.SEV_ORDER[a.res.sev] - Brain.SEV_ORDER[b.res.sev]) || (b.res.m.s7 - a.res.m.s7));
   const sum = Brain.summary(all.map(r => r.res)), cls = ST.decCls || 'all';
   const rows = cls === 'all' ? all : all.filter(r => r.res.cls === cls);
-  const sel = rows.find(r => r.e.id === ST.decSel) || rows[0]; ST.decSel = sel ? sel.e.id : null;
+  const sel = rows.find(r => r.e.id === ST.decSel) || null;
+  ST._decRows = rows; ST._decLv = lv;
   const LV = [['campaign', 'Campaign'], ['adset', 'Ad set'], ['ad', 'Iklan']];
   let html = head('Decision Board', `Otak: skill Meta Performance · 3/7/14 hari penuh s/d kemarin (${fd(y)}) · cutoff ${xx(S.cutoff)} · minimum ${xx(S.minRoas)} · target ${xx(S.target)}`,
     `<div class="seg" role="group" aria-label="Level">${LV.map(l => `<button type="button" class="${lv === l[0] ? 'on' : ''}" data-declevel="${l[0]}">${l[1]}</button>`).join('')}</div>${accSeg()}`);
@@ -1179,7 +1182,7 @@ async function pageDecide() {
   const tabs = [['all', 'Semua', '#15171C', all.length, all.reduce((s, r) => s + r.res.m.s7, 0)]].concat(['Loser', 'Watchlist', 'Winner', 'Tunggu'].concat(ST.showInactive ? ['Nonaktif'] : []).map(k => [k, k, { Loser: '#C0352F', Watchlist: '#C98A1B', Winner: '#17804A', Tunggu: '#2F54EB', Nonaktif: '#9AA1AD' }[k], (sum[k] || {}).n || 0, (sum[k] || {}).spend || 0]));
   html += `<div class="ctabs" role="tablist" aria-label="Filter kelas">${tabs.map(tb => `<button type="button" role="tab" aria-selected="${cls === tb[0]}" class="ctab ${cls === tb[0] ? 'on' : ''}" data-dcls="${tb[0]}"><span class="t"><i style="background:${tb[2]}"></i>${tb[1]}<b>${tb[3]}</b></span><span class="s">spend 7D ${rp(tb[4])}</span></button>`).join('')}</div>`;
   const lvName = LV.find(l => l[0] === lv)[1];
-  html += `<div class="row"><section class="grow" style="display:flex;flex-direction:column;gap:8px">
+  html += `<section style="display:flex;flex-direction:column;gap:8px">
     <div class="tw"><table style="min-width:640px"><thead><tr><th>${lvName}</th><th>ROAS 3D · 7D · 14D</th><th class="num">Spend 7D</th><th class="num">CPA 7D</th><th>Kelas &amp; aksi</th></tr></thead><tbody>
     ${rows.map(r => { const m = r.res.m, mc = maxCpa(r.e.a, ds);
       const meta = [r.age != null ? r.age + ' hari' : null, r.budget ? rp(r.budget) + '/hari' : (lv === 'campaign' ? 'budget di ad set' : null), r.res.tracking ? '⚠ tracking' : null, lv !== 'campaign' && r.e.sub ? shortCamp(r.e.sub, 34) : null].filter(Boolean).join(' · ');
@@ -1191,7 +1194,7 @@ async function pageDecide() {
     <label class="small muted" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="inact" ${ST.showInactive ? 'checked' : ''}> tampilkan yang tidak aktif</label>
     <div class="small muted">Aturan: Winner = ROAS 3D &amp; 7D ≥ minimum &amp; stabil (scale kalau ≥ target, maks 20–30% tiap 3–4 hari) · Loser = ROAS 3D &amp; 7D &lt; cutoff, atau spend ≥ 1,5× CPA maks tanpa purchase · sinyal penurunan vs 14 hari sebelumnya: ROAS −20%, CPA +30%, CTR −20%, frequency ≥ 3,5 · dashboard tidak mengubah apa pun di akun.</div>
   </section>
-  <aside class="side-col" style="display:flex;flex-direction:column;gap:12px">${sel ? detailPanel(sel, lv) : '<div class="card empty">Pilih baris untuk melihat detail</div>'}${notesCard()}</aside></div>`;
+  ${notesCard()}`;
   return html;
 }
 function detailPanel(r, lv) {
@@ -1201,11 +1204,13 @@ function detailPanel(r, lv) {
   const sv = sevLabel(r.res), lvTxt = { campaign: 'campaign', adset: 'ad set', ad: 'iklan' }[lv];
   const sigCls = s => s.k === 'freq' ? 'c-y' : 'c-r';
   const noteTxt = `${r.res.action}: ${String(r.e.n).replace(/\s*-\s*\d{4}$/, '')} (${ds.accounts[r.e.a].label})`;
+  const list = ST._decRows || [], idx = list.findIndex(x => x.e.id === r.e.id);
   return `<div class="card dp">
-    <div style="display:flex;justify-content:space-between;gap:8px"><div><div class="small muted">${esc(ds.accounts[r.e.a].label)} · ${lvTxt}${r.age != null ? ' · ' + r.age + ' hari' : ''}</div><h2 style="font-size:17px;font-weight:700;margin-top:2px">${shortCamp(r.e.n)}</h2>${lv !== 'campaign' && r.e.sub ? `<div class="sub2">${shortCamp(r.e.sub)}</div>` : ''}</div></div>
+    <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div style="min-width:0"><div class="small muted">${esc(ds.accounts[r.e.a].label)} · ${lvTxt}${r.age != null ? ' · ' + r.age + ' hari' : ''}</div><h2 style="font-size:18px;font-weight:700;margin-top:2px">${shortCamp(r.e.n)}</h2>${lv !== 'campaign' && r.e.sub ? `<div class="sub2">${shortCamp(r.e.sub)}</div>` : ''}</div>
+      <div class="pv-nav"><button type="button" class="ib" data-decnav="-1" aria-label="Sebelumnya" ${idx <= 0 ? 'disabled' : ''}>‹</button><span class="small muted" style="min-width:52px;text-align:center">${idx + 1} dari ${list.length}</span><button type="button" class="ib" data-decnav="1" aria-label="Berikutnya" ${idx < 0 || idx >= list.length - 1 ? 'disabled' : ''}>›</button><button type="button" class="ib x" data-close="1" aria-label="Tutup" style="margin-left:4px">×</button></div></div>
     <div class="dp-act ${k}"><span class="k">${r.res.cls.toUpperCase()}${sv ? ' · ' + sv.toUpperCase() : ''}</span><span class="a">${esc(r.res.action)}</span><span class="small">${esc(r.res.reasons[0] || '')}</span></div>
     <div class="tiles">${[['ROAS 3D', m.r3, m.s3], ['ROAS 7D', m.r7, m.s7], ['ROAS 14D', m.r14, 1]].map(x => `<div class="tile"><div class="l">${x[0]}</div><div class="v" style="color:${!x[2] || !fin(x[1]) ? 'var(--ink3)' : x[1] >= S.minRoas ? 'var(--g)' : x[1] >= S.cutoff ? 'var(--y)' : 'var(--r)'}">${x[2] ? xx(x[1]) : '–'}</div></div>`).join('')}</div>
-    <div><div class="fl">ROAS harian, 14 hari</div>${chartBox({ labels: days, series: [{ name: 'ROAS', c: '#2F54EB', v: vals }], fmt: xx, xfmt: l => fd(l), refs: [[S.minRoas, 'Min', '#17804A'], [S.cutoff, 'Cutoff', '#C0352F']], w: 300, h: 150, title: 'ROAS harian' })}</div>
+    <div><div class="fl">ROAS harian, 14 hari</div>${chartBox({ labels: days, series: [{ name: 'ROAS', c: '#2F54EB', v: vals }], fmt: xx, xfmt: l => fd(l), refs: S.minRoas === S.cutoff ? [[S.minRoas, 'Min/Cutoff', '#C0352F']] : [[S.minRoas, 'Min', '#17804A'], [S.cutoff, 'Cutoff', '#C0352F']], w: 480, h: 170, title: 'ROAS harian' })}</div>
     ${r.res.signals.length ? `<div><div class="fl">Sinyal penurunan</div><div style="display:flex;flex-wrap:wrap;gap:6px">${r.res.signals.map(s => `<span class="chip ${sigCls(s)}" title="${esc(s.d)}">${esc(s.t)}</span>`).join('')}</div></div>` : ''}
     ${r.res.reasons.length > 1 ? `<ul class="reasons">${r.res.reasons.slice(1).map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
     ${r.res.tracking ? `<div class="callout r" style="padding:8px 10px">⚠ Tracking bermasalah: ${esc(r.res.tracking)} — angka ROAS bisa tidak akurat.</div>` : ''}
@@ -1564,7 +1569,7 @@ function setSidebar(c) {
 /* =====================================================================
    EVENTS
    ===================================================================== */
-const SEL = '[data-page],[data-acc],[data-camp],[data-concept],[data-copy],[data-sort],[data-del],[data-declevel],[data-dcls],[data-sel],[data-addnote],[data-tmode],[data-tdays],[data-tgran],[data-tmetric],[data-tm1],[data-trm],[data-ent],[data-cmp],[data-cview],[data-pace],[data-pix],[data-atab],[data-pvnav],[data-pvad],[data-pfmt],[data-close],#noteAdd,#audRef,#mclose,#refBtn,#setBtn,#dApply,#trApply,#loginBtn,#saveSet,#logoutBtn,#sbToggle';
+const SEL = '[data-decnav],[data-page],[data-acc],[data-camp],[data-concept],[data-copy],[data-sort],[data-del],[data-declevel],[data-dcls],[data-sel],[data-addnote],[data-tmode],[data-tdays],[data-tgran],[data-tmetric],[data-tm1],[data-trm],[data-ent],[data-cmp],[data-cview],[data-pace],[data-pix],[data-atab],[data-pvnav],[data-pvad],[data-pfmt],[data-close],#noteAdd,#audRef,#mclose,#refBtn,#setBtn,#dApply,#trApply,#loginBtn,#saveSet,#logoutBtn,#sbToggle';
 document.addEventListener('click', async e => {
   const el = e.target.closest(SEL);
   if (!el || !el.closest('.mar-app')) return;
@@ -1581,12 +1586,14 @@ document.addEventListener('click', async e => {
   if (D.cmp) { closeModal(); const others = (ST._crList || []).filter(k => k !== D.cmp).slice(0, 2); Object.assign(ST.tr, { level: 'concept', mode: 'multi', ids: [D.cmp].concat(others) }); LS.set('tr', ST.tr); ST.page = 'trend'; LS.set('page', 'trend'); loadingView(); window.scrollTo(0, 0); return render(); }
   if (D.ent) { closeModal(); Object.assign(ST.tr, { level: D.entlevel, mode: 'single', ids: [D.ent] }); ST.trQ = ''; LS.set('tr', ST.tr); ST.page = 'trend'; LS.set('page', 'trend'); loadingView(); window.scrollTo(0, 0); return render(); }
   if (D.camp !== undefined && D.go) {
+    closeModal();
     const go = D.go; if (go === 'diag') { ST.diagCamp = D.camp; if (ST.preset === 'life' || ST.preset === 'today') ST.preset = '7d'; }
     ST.page = go; LS.set('page', go); loadingView(); window.scrollTo(0, 0); return render();
   }
-  if (D.sel) { ST.decSel = D.sel; return render(); }
+  if (D.sel) { ST.decSel = D.sel; return openDecision(D.sel); }
+  if (D.decnav) { const l = ST._decRows || [], i = l.findIndex(x => x.e.id === ST.decSel) + (+D.decnav); if (l[i]) openDecision(l[i].e.id); return; }
   if (D.dcls) { ST.decCls = D.dcls; ST.decSel = null; return render(); }
-  if (D.addnote) { addNote(D.addnote); toast('Ditambahkan ke "menunggu persetujuan"'); return render(); }
+  if (D.addnote) { addNote(D.addnote); toast('Ditambahkan ke "menunggu persetujuan"'); const keep = ST.decSel; await render(); if (keep && ST.page === 'decide') openDecision(keep); return; }
   if (D.sort) { const k = D.sort, so = ST.sort.creative || { k: 'score', d: -1 }; ST.sort.creative = { k, d: so.k === k ? -so.d : -1 }; return render(); }
   if (D.del !== undefined) { const n = LS.get('notes', []); n.splice(+D.del, 1); LS.set('notes', n); return render(); }
   if (D.declevel) { ST.decLevel = D.declevel; LS.set('decLevel', ST.decLevel); ST.decSel = null; return render(); }
@@ -1649,14 +1656,21 @@ document.addEventListener('input', e => {
 document.addEventListener('keydown', e => {
   const typing = /INPUT|SELECT|TEXTAREA/.test((e.target.tagName || ''));
   if (e.key === 'Escape') closeModal();
+  if (!$('modal').hidden && ST.decOpen && !typing && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { const l = ST._decRows || [], i = l.findIndex(x => x.e.id === ST.decSel) + (e.key === 'ArrowRight' ? 1 : -1); if (l[i]) openDecision(l[i].e.id); }
   if (!$('modal').hidden && ST.pv && !typing && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { const l = ST._crList || [], i = l.indexOf(ST.pv.key) + (e.key === 'ArrowRight' ? 1 : -1); if (l[i]) openPreview(l[i]); }
   if (e.key === 'Enter' && (e.target.id === 'pwInp' || e.target.id === 'apiInp')) doLogin();
   if (e.key === 'Enter' && e.target.id === 'noteInp') $('noteAdd').click();
 });
 $('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
 
-function openModal(html, cls) { $('mboxEl').className = 'mbox ' + (cls || 'pad'); $('mclose').hidden = cls === 'wide'; $('mbody').innerHTML = html; $('modal').hidden = false; }
-function closeModal() { if ($('modal').hidden) return; $('modal').hidden = true; $('mbody').innerHTML = ''; ST.pv = null; }
+function openModal(html, cls) { ST.decOpen = false; $('mboxEl').className = 'mbox ' + (cls || 'pad'); $('mclose').hidden = cls === 'wide' || cls === 'dec'; $('mbody').innerHTML = html; $('modal').hidden = false; }
+function closeModal() { if ($('modal').hidden) return; $('modal').hidden = true; $('mbody').innerHTML = ''; ST.pv = null; ST.decOpen = false; }
+function openDecision(id) {
+  const r = (ST._decRows || []).find(x => x.e.id === id); if (!r) return;
+  ST.decSel = id; CH = {};
+  openModal(detailPanel(r, ST._decLv), 'dec'); ST.decOpen = true; bindCharts();
+  document.querySelectorAll('.mar-app #view tbody tr[data-sel]').forEach(tr => tr.classList.toggle('sel', tr.dataset.sel === id));
+}
 
 
 /* ---------- settings ---------- */
