@@ -1426,13 +1426,13 @@ function pageCreative() {
         <span class="cbody"><b title="${esc(g.name)}">${esc(g.name)}</b><span>${accChip(ds, g.a).replace('class="tag"', 'class="tag" style="margin-right:4px"')}ROAS ${xx(g.d.roas)} · CPA ${rp(g.d.cpa)}</span><span>Spend ${rp(g.d.spend)} · ${g.ads.length} iklan</span></span></button>`; }).join('') || '<div class="card empty" style="grid-column:1/-1">Tidak ada konten yang cocok dengan filter</div>'}</section>`;
   } else {
     const cols = [['name', 'Konsep', 0], ['score', 'Skor', 1], ['spend', 'Spend', 1], ['ctr', 'Link CTR', 1], ['ctrAll', 'CTR (all)', 1], ['hook', 'Hook', 1], ['hold', 'Hold', 1], ['r50', 'Retensi 50%', 1], ['cLpv', 'Biaya/LPV', 1], ['purch', 'Purchase', 1], ['roas', 'ROAS', 1], ['cpa', 'CPA', 1]];
-    html += `<div class="tw"><table style="min-width:1100px"><thead><tr>${cols.map(c => `<th class="${c[2] ? 'num' : ''}" data-sort="${c[0]}">${c[1]}${so.k === c[0] ? (so.d < 0 ? ' ↓' : ' ↑') : ''}</th>`).join('')}<th>Aktif di</th></tr></thead><tbody>
+    html += `<div class="tw"><table style="min-width:1100px"><thead><tr>${cols.map(c => `<th class="${c[2] ? 'num' : ''}" data-sort="${c[0]}">${c[1]}${so.k === c[0] ? (so.d < 0 ? ' ↓' : ' ↑') : ''}</th>`).join('')}<th>Status</th></tr></thead><tbody>
     ${rows.slice(0, 400).map(g => { const d = g.d, m = med[g.a];
       return `<tr class="click" data-concept="${esc(g.key)}"><td class="nm" title="${esc(g.name)}">${accChip(ds, g.a)}${esc(g.name)} <span class="small muted">${g.ads.length > 1 ? '×' + g.ads.length : ''}</span></td>
       <td class="num">${g.score != null ? `<span class="chip ${LABCLS[g.label]}">${g.label} ${g.score}</span>` : '<span class="chip c-n">–</span>'}</td>
       <td class="num">${rp(d.spend)}</td><td class="num">${pc(d.ctr)}</td><td class="num">${pc(d.ctrAll)}</td><td class="num">${pc(d.hook, 1)}</td><td class="num">${pc(d.hold, 1)}</td><td class="num">${pc(d.r50, 0)}</td>
       <td class="num"><span class="chip ${!d.lpv ? 'c-n' : m && d.cLpv <= m ? 'c-g' : 'c-n'}">${rp(d.cLpv)}</span></td><td class="num">${nf(d.purch)}</td><td class="num">${roasChip(d.roas, d.spend)}</td><td class="num">${rp(d.cpa)}</td>
-      <td class="small">${g.camps.length ? g.camps.map(c => '<span class="tag">' + shortCamp((ds.campaigns[c] || {}).n || c, 28) + '</span>').join('') : '<span class="muted">–</span>'}</td></tr>`; }).join('') || '<tr><td colspan="13" class="empty">Tidak ada konten yang cocok dengan filter</td></tr>'}
+      <td style="white-space:nowrap">${g.active.length ? `<span class="chip c-g">Aktif</span>${g.active.length > 1 ? ` <span class="small muted">${g.active.length} iklan</span>` : ''}` : '<span class="chip c-n">Nonaktif</span>'}</td></tr>`; }).join('') || '<tr><td colspan="13" class="empty">Tidak ada konten yang cocok dengan filter</td></tr>'}
     </tbody></table></div>`;
   }
   html += `<div class="small muted">Skor = 30% hook + 20% hold + 15% retensi + 35% ROAS (persentil per akun; minimal 2 purchase atau Rp3jt spend) · Hook = tonton 25% ÷ impresi · Hold = ThruPlay ÷ impresi · Link CTR hanya klik ke website.</div>`;
