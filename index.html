@@ -123,7 +123,43 @@
 .mar-app .set-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}
 .mar-app .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:8px;font-size:13px;z-index:60}
 
+/* seg, trend, audit */
+.mar-app .seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
+.mar-app .seg button{border:0;background:none;padding:6px 11px;font-size:12px;font-weight:500;color:var(--ink2);border-right:1px solid var(--line)}
+.mar-app .seg button:last-child{border-right:0}
+.mar-app .seg button.on{background:var(--ink);color:#fff}
+.mar-app .mchips{display:flex;flex-wrap:wrap;gap:5px;flex:1}
+.mar-app .mchip{padding:4px 9px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:12px}
+.mar-app .mchip.on{background:var(--acc-soft);border-color:var(--acc);color:var(--acc);font-weight:600}
+.mar-app .trctl{display:flex;flex-direction:column;gap:12px}
+.mar-app .trrow{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.mar-app .trrow>.lbl{font-size:12px;color:var(--ink2);min-width:58px}
+.mar-app .picker{display:grid;gap:8px}
+.mar-app .chosen{display:flex;flex-wrap:wrap;gap:6px}
+.mar-app .cchip{display:inline-flex;align-items:center;gap:6px;padding:4px 6px 4px 10px;border-radius:999px;background:var(--n-soft);font-size:12px;max-width:340px}
+.mar-app .cchip i,.mar-app .dotc{display:inline-block;width:9px;height:9px;border-radius:50%;flex:0 0 9px;margin-right:6px}
+.mar-app .cchip i{margin-right:0}
+.mar-app .cchip button{border:0;background:none;color:var(--ink3);font-size:15px;line-height:1;padding:0 4px}
+.mar-app .plist{max-height:210px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.mar-app .pi{display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid var(--line);font-size:13px;cursor:pointer}
+.mar-app .pi:last-child{border-bottom:0}
+.mar-app .pi .nm{flex:1;max-width:none}
+.mar-app .chart{position:relative;margin-top:4px}
+.mar-app .chart .tip{position:absolute;top:6px;background:#16181d;color:#fff;font-size:12px;line-height:1.5;padding:8px 10px;border-radius:8px;pointer-events:none;z-index:5;max-width:300px}
+.mar-app .chart .tip i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.mar-app .legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--ink2);margin:4px 0 2px}
+.mar-app .legend i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.mar-app .h2h{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mar-app .checks{margin:10px 0}
+.mar-app .chk{display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.mar-app .chk:last-child{border-bottom:0}
+.mar-app .ico{flex:0 0 18px;width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;margin-top:1px}
+.mar-app .ico.ok{background:var(--g)} .mar-app .ico.warn{background:var(--y)} .mar-app .ico.bad{background:var(--r)} .mar-app .ico.info{background:#9aa1ad}
+.mar-app details summary{cursor:pointer;color:var(--acc)}
+.mar-app a{color:var(--acc)}
+
 @media (max-width:760px){
+  .mar-app .h2h{grid-template-columns:1fr}
   .mar-app .top{position:static}
   .mar-app .bar{padding:10px 16px}
   .mar-app .tabs{padding:0 16px}
@@ -175,6 +211,7 @@
   <div class="toast" id="toast" hidden></div>
 </div>
 
+<script src="brain.js"></script>
 <script>
 /* =====================================================================
    KONFIGURASI — isi URL Web App Apps Script di sini (boleh juga lewat
@@ -188,15 +225,20 @@ const LS = {
   set(k, v) { try { localStorage.setItem('mad_' + k, JSON.stringify(v)); } catch (e) {} },
   del(k) { try { localStorage.removeItem('mad_' + k); } catch (e) {} }
 };
-const DEF = { bep: 2, target: 2.5, minAge: 7, maxCpc: 250000, maxCpa: {}, auto: true };
+const DEF = { cutoff: 1.1, minRoas: 2, target: 2.5, minAge: 7, maxCpc: 250000, maxCpa: {}, auto: true };
 let S = Object.assign({}, DEF, LS.get('settings', {}));
+if (S.bep && !LS.get('settings', {}).minRoas) S.minRoas = S.bep; delete S.bep;
+function applyBrain() { Brain.setConfig({ cutoff: S.cutoff, minRoas: S.minRoas, target: S.target, minAge: S.minAge }); }
+applyBrain();
 let API = LS.get('api', '') || CONFIG.API_URL;
 let SESSION = LS.get('session', null);
 
 /* ---------- state ---------- */
 const ST = { main: null, ds: null, life: null, hourly: {}, reach: {}, pixels: null,
   acc: LS.get('acc', -1), preset: LS.get('preset', '7d'), since: null, until: null,
-  page: LS.get('page', 'today'), diagCamp: '', showInactive: false,
+  page: ({ pixel: 'audit' })[LS.get('page', 'today')] || LS.get('page', 'today'), diagCamp: '', showInactive: false,
+  audit: null, acts: null, reach7: null, rs: {}, decLevel: LS.get('decLevel', 'campaign'), trQ: '',
+  tr: Object.assign({ level: 'campaign', mode: 'multi', ids: [], metrics: ['roas', 'cpa', 'ctr', 'cpm'], metric: 'roas', smooth: 3, gran: 'day', days: 30 }, LS.get('tr', {})),
   cf: LS.get('cf', { minCtr: 0, cheap: false, minPurch: 0, roasOk: false, scored: false, q: '' }),
   sort: {}, busy: false };
 const M = { spend: 0, impr: 1, reach: 2, clicks: 3, link: 4, lpv: 5, atc: 6, ic: 7, purch: 8, val: 9, contact: 10, plays: 11, p25: 12, p50: 13, p75: 14, p100: 15, thru: 16 };
@@ -221,7 +263,7 @@ function addD(s, n) { const p = s.split('-').map(Number); return new Date(Date.U
 function diffD(a, b) { return Math.round((Date.parse(b + 'T12:00:00Z') - Date.parse(a + 'T12:00:00Z')) / 864e5); }
 const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 function fd(s) { if (!s || s === 'lifetime') return 'Lifetime'; const p = s.split('-'); return +p[2] + ' ' + BULAN[+p[1] - 1]; }
-function roasCls(r) { return !fin(r) ? 'c-n' : r >= S.target ? 'c-g' : r >= S.bep ? 'c-y' : 'c-r'; }
+function roasCls(r) { return !fin(r) ? 'c-n' : r >= S.minRoas ? 'c-g' : r >= S.cutoff ? 'c-y' : 'c-r'; }
 function roasChip(r, spend) { if (!spend) return '<span class="chip c-n">–</span>'; return `<span class="chip ${roasCls(r)}">${xx(r)}</span>`; }
 function delta(cur, prev, higherBetter = true) {
   if (!fin(cur) || !fin(prev) || prev === 0) return '<span class="flat">–</span>';
@@ -251,6 +293,8 @@ function prep(ds) {
   ds.adsByCamp = {};
   ds.ads.forEach((a, i) => { (ds.adsByCamp[a.c] = ds.adsByCamp[a.c] || []).push(i); });
   ds.campIds = Object.keys(ds.campaigns);
+  ds._adById = {}; ds._concept = {};
+  ds.ads.forEach(a => { ds._adById[a.id] = a; const k = a.a + '|' + conceptKey(a.n); if (ds._concept[k] == null) ds._concept[k] = String(a.n || '').replace(/\s*[–—-]\s*Copy.*$/i, '').replace(/^\s*\d{1,2}\s?[A-Za-z]{3}\s?\d{2,4}\s+/, '').trim() || a.n; });
   return ds;
 }
 function idxRange(ds, since, until) {
@@ -322,7 +366,7 @@ function maxCpa(accIdx, ds) {
   const a = ds.accounts[accIdx]; const set = a && S.maxCpa[a.label];
   if (set) return +set;
   const t = todayJkt(), v = der(tot(ds, addD(t, -30), addD(t, -1), null, accIdx));
-  return fin(v.aov) ? v.aov / S.bep : 650000;   // default: CPA titik impas = AOV ÷ BEP ROAS
+  return fin(v.aov) ? v.aov / S.minRoas : 650000;   // default: CPA maks = AOV ÷ ROAS minimum
 }
 function accChip(ds, i) { const a = ds.accounts[i]; return a ? `<span class="tag">${esc(a.label)}</span>` : ''; }
 function shortCamp(n, max) { let t = String(n || '').replace(/\s*-\s*\d{4}$/, ''); if (max && t.length > max) t = t.slice(0, max - 1) + '…'; return esc(t); }
@@ -330,12 +374,12 @@ function shortCamp(n, max) { let t = String(n || '').replace(/\s*-\s*\d{4}$/, ''
 /* =====================================================================
    PAGES
    ===================================================================== */
-const PAGES = [['today', 'Hari Ini'], ['decide', 'Papan Keputusan'], ['diag', 'Diagnosis'], ['creative', 'Creative Lab'], ['cpa', 'CPA & Profit'], ['pixel', 'Pixel'], ['new', 'Campaign Baru']];
+const PAGES = [['today', 'Hari Ini'], ['decide', 'Papan Keputusan'], ['trend', 'Trend'], ['diag', 'Diagnosis'], ['creative', 'Creative Lab'], ['cpa', 'CPA & Profit'], ['audit', 'Audit Pixel'], ['new', 'Campaign Baru']];
 
 /* ---------- 1. HARI INI ---------- */
 async function pageToday() {
   const ds = ST.main, t = todayJkt(), y = addD(t, -1);
-  await Promise.all([t, y].map(async d => { if (!ST.hourly[d]) ST.hourly[d] = await api('hourly', { date: d }); }));
+  await Promise.all([t, y].map(async d => { if (!ST.hourly[d]) ST.hourly[d] = await api('hourly', { date: d }); }).concat([ensureSide(true)]));
   const H = d => { const out = Array.from({ length: 24 }, () => [0, 0, 0, 0, 0]);
     (ST.hourly[d].acc || []).forEach((rows, ai) => { if (ST.acc >= 0 && ai !== ST.acc) return; rows.forEach(r => { for (let k = 0; k < 5; k++) out[r[0]][k] += r[k + 1]; }); });
     return out; };
@@ -377,32 +421,21 @@ async function pageToday() {
 
 function alerts() {
   const ds = ST.main, t = todayJkt(), y = addD(t, -1), out = [];
-  const w3 = agg(ds, addD(t, -3), y, ad => ad.c), w7 = agg(ds, addD(t, -7), y, ad => ad.c);
-  ds.campIds.forEach(id => {
-    const c = ds.campaigns[id]; if (!campActive(c) || (ST.acc >= 0 && c.a !== ST.acc)) return;
-    const v3 = der(w3.get(id) || Z()), v7 = der(w7.get(id) || Z()), age = campAge(c), mc = maxCpa(c.a, ds);
-    if (age != null && age < S.minAge) {
-      if (age === S.minAge - 1) out.push({ lv: 'b', cid: id, go: 'new', title: shortCamp(c.n) + ' — besok sudah bisa dievaluasi', why: `Umur ${age} hari · ROAS sejauh ini ${xx(v7.roas)}` });
-      return;
-    }
-    if (v3.spend > mc * 0.5 && v3.purch === 0) {
-      const p = noise(ds, id);
-      out.push({ lv: p.p > 0.1 ? 'y' : 'r', cid: id, title: shortCamp(c.n) + ' — 0 purchase 3 hari', why: `Spend 3D ${rp(v3.spend)} · ${p.text}` });
-    } else if (v3.spend > mc && v3.roas < S.bep) {
-      out.push({ lv: v7.roas < S.bep ? 'r' : 'y', cid: id, title: shortCamp(c.n) + ' — ROAS 3D di bawah BEP', why: `ROAS 3D ${xx(v3.roas)} · 7D ${xx(v7.roas)} · BEP ${xx(S.bep)}` });
-    }
+  brainRows('campaign').forEach(r => {
+    const c = ds.campaigns[r.e.id]; if (!r.e.active) return;
+    const res = r.res, name = shortCamp(c.n), why = esc(res.reasons[0] || '');
+    if (res.cls === 'Loser') out.push({ lv: res.sev === 'severe' ? 'r' : 'y', cid: r.e.id, title: name + ' — ' + res.action, why });
+    else if (res.sev === 'confirmed' || /Kembalikan/.test(res.action)) out.push({ lv: 'y', cid: r.e.id, title: name + ' — ' + res.action, why });
+    else if (res.sev === 'early') out.push({ lv: 'b', cid: r.e.id, title: name + ' — early warning', why: esc(res.signals.map(s => s.d).join(' · ')) });
+    else if (res.cls === 'Tunggu' && r.age === S.minAge - 1) out.push({ lv: 'b', cid: r.e.id, go: 'new', title: name + ' — besok sudah bisa dievaluasi', why });
   });
-  // CPM akun hari ini vs rata-rata 7 hari
   ds.accounts.forEach((a, i) => {
     if (ST.acc >= 0 && i !== ST.acc) return;
     const td = der(tot(ds, t, t, null, i)), wk = der(tot(ds, addD(t, -7), y, null, i));
     if (td.impr > 3000 && wk.cpm && td.cpm > wk.cpm * 1.4) out.push({ lv: 'y', go: 'cpa', title: a.label + ' — CPM hari ini melonjak', why: `CPM ${rp(td.cpm)} vs rata-rata 7D ${rp(wk.cpm)} (+${Math.round((td.cpm / wk.cpm - 1) * 100)}%)` });
   });
-  if (ST.pixels) ST.pixels.pixels.forEach(p => {
-    if (ST.acc >= 0 && p.a !== ST.acc) return;
-    const e = p.events || {}; if (!Object.keys(e).length) return;
-    if (!e.AddToCart) out.push({ lv: 'y', go: 'pixel', title: 'Pixel ' + p.name + ' — AddToCart = 0 (7 hari)', why: 'Optimasi & retargeting kehilangan sinyal tengah funnel' });
-  });
+  const au = auditResult();
+  if (au) au.acc.forEach((x, i) => { if ((ST.acc < 0 || i === ST.acc) && x.bad.length) out.push({ lv: 'r', go: 'audit', title: ds.accounts[i].label + ' — tracking bermasalah', why: esc(x.bad.slice(0, 2).join(' · ')) + (x.bad.length > 2 ? ` (+${x.bad.length - 2} lagi)` : '') }); });
   const rank = { r: 0, y: 1, b: 2 };
   return out.sort((p, q) => rank[p.lv] - rank[q.lv]);
 }
@@ -420,45 +453,84 @@ function noise(ds, cid) {
   return { n, p, lam, text };
 }
 
-/* ---------- 2. PAPAN KEPUTUSAN ---------- */
-function decide(ds, id, W) {
-  const c = ds.campaigns[id], age = campAge(c), mc = maxCpa(c.a, ds);
-  const v = n => der(W[n].get(id) || Z());
-  const r3 = v(3).roas, r7 = v(7).roas, r14 = v(14).roas, p7 = v(7).purch, s7 = v(7).spend;
-  if (!campActive(c)) return { k: 'c-n', t: 'Tidak aktif', why: 'Status ' + (c.st || '-') };
-  if (age != null && age < S.minAge) return { k: 'c-b', t: 'Tunggu', why: `Umur ${age} hari — evaluasi ${fd(addD(campStart(c), S.minAge))}` };
-  if (s7 < mc) return { k: 'c-n', t: 'Data kurang', why: `Spend 7D ${rp(s7)} < 1× CPA maks (${rp(mc)})` };
-  const R = x => fin(x) ? x : 0, a3 = R(r3), a7 = R(r7), a14 = R(r14);
-  if (p7 >= 3 && a7 >= S.target && a3 >= S.target) return { k: 'c-g', t: 'Scale +20%', why: `ROAS 3D ${xx(a3)} & 7D ${xx(a7)} ≥ target ${xx(S.target)}, ${p7} purchase/7D` };
-  if (a7 < S.bep && a14 < S.bep) {
-    if (a7 < S.bep * 0.5 && a14 < S.bep * 0.6) return { k: 'c-r', t: 'Matikan', why: `ROAS 7D ${xx(a7)} & 14D ${xx(a14)} jauh di bawah BEP ${xx(S.bep)}` };
-    return { k: 'c-r', t: 'Turunkan 20–30%', why: `ROAS 7D ${xx(a7)} & 14D ${xx(a14)} di bawah BEP ${xx(S.bep)}` };
+/* ---------- 2. PAPAN KEPUTUSAN (otak: brain.js) ---------- */
+function dateJkt(iso) { try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(iso)); } catch (e) { return String(iso).slice(0, 10); } }
+/** data harian per entitas: { key: { 'YYYY-MM-DD': vektor } } — satu kali lewat baris data */
+function dailyMaps(ds, keyFn, since, until, acc = ST.acc) {
+  const out = {}, [lo, hi] = idxRange(ds, since, until); if (hi < 0) return out;
+  for (const r of ds.rows) {
+    if (r[0] < lo || r[0] > hi) continue;
+    const ad = ds.ads[r[1]]; if (acc >= 0 && ad.a !== acc) continue;
+    const k = keyFn(ad); if (k == null) continue;
+    const d = ds.dates[r[0]], e = out[k] || (out[k] = {});
+    let v = e[d]; if (!v) v = e[d] = new Array(NM).fill(0);
+    for (let i = 0; i < NM; i++) v[i] += r[i + 2];
   }
-  if (a3 < S.bep && a7 >= S.bep) { const n = noise(ds, id); return { k: 'c-y', t: 'Pantau', why: `ROAS 3D turun ke ${xx(a3)}, 7D masih ${xx(a7)}.${n.n ? ' ' + n.text : ''}` }; }
-  if (a7 >= S.bep) return { k: 'c-g', t: 'Hold', why: `ROAS 7D ${xx(a7)} di atas BEP${a3 > a7 * 1.1 ? ', tren 3D naik' : a3 < a7 * 0.9 ? ', 3D melemah' : ''}` };
-  return { k: 'c-y', t: 'Pantau', why: `ROAS 7D ${xx(a7)} di bawah BEP tapi 14D ${xx(a14)} masih di atas` };
+  return out;
 }
-function pageDecide() {
-  const ds = ST.main, t = todayJkt(), y = addD(t, -1);
-  const W = {}; [3, 7, 14, 30].forEach(n => W[n] = agg(ds, addD(t, -n), y, ad => ad.c));
-  const ids = ds.campIds.filter(id => { const c = ds.campaigns[id]; if (ST.acc >= 0 && c.a !== ST.acc) return false;
-    return ST.showInactive ? (W[30].get(id) || Z())[0] > 0 || campActive(c) : campActive(c); });
-  const rows = ids.map(id => ({ id, c: ds.campaigns[id], d: decide(ds, id, W), v: n => der(W[n].get(id) || Z()) }));
-  const order = { 'Matikan': 0, 'Turunkan 20–30%': 1, 'Pantau': 2, 'Scale +20%': 3, 'Hold': 4, 'Tunggu': 5, 'Data kurang': 6, 'Tidak aktif': 7 };
-  rows.sort((a, b) => (order[a.d.t] - order[b.d.t]) || (b.v(7).spend - a.v(7).spend));
-  const cnt = {}; rows.forEach(r => cnt[r.d.t] = (cnt[r.d.t] || 0) + 1);
-  let html = `<div class="sec-h"><h2>Papan Keputusan</h2><span class="muted small">Periode tetap: 3/7/14/30 hari penuh s/d kemarin (${fd(y)}) · BEP ${xx(S.bep)} · target ${xx(S.target)} · campaign &lt; ${S.minAge} hari = Tunggu</span>
-    <label class="small" style="margin-left:auto"><input type="checkbox" id="inact" ${ST.showInactive ? 'checked' : ''}> tampilkan yang tidak aktif</label></div>
-    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">${Object.keys(order).filter(k => cnt[k]).map(k => { const r = rows.find(x => x.d.t === k); return `<span class="chip ${r.d.k}">${k}: ${cnt[k]}</span>`; }).join('')}</div>
-    <div class="tw"><table><thead><tr><th>Campaign</th><th class="num">Umur</th><th class="num">Budget/hari</th><th class="num">Spend 7D</th><th class="num">ROAS 3D</th><th class="num">7D</th><th class="num">14D</th><th class="num">30D</th><th class="num">CPA 7D</th><th class="num">Purch 7D</th><th>Rekomendasi</th><th>Alasan</th></tr></thead><tbody>
-    ${rows.map(r => { const v7 = r.v(7), mc = maxCpa(r.c.a, ds), age = campAge(r.c);
-      return `<tr class="click" data-camp="${r.id}" data-go="diag"><td class="nm" title="${esc(r.c.n)}">${accChip(ds, r.c.a)}${shortCamp(r.c.n)}</td>
-      <td class="num">${age != null ? age + ' hr' : '–'}</td><td class="num">${rp(campBudget(ds, r.id)) }</td><td class="num">${rp(v7.spend)}</td>
-      ${[3, 7, 14, 30].map(n => { const v = r.v(n); return `<td class="num">${roasChip(v.roas, v.spend)}</td>`; }).join('')}
-      <td class="num"><span class="chip ${!v7.purch ? 'c-n' : v7.cpa <= mc ? 'c-g' : 'c-r'}">${rp(v7.cpa)}</span></td><td class="num">${nf(v7.purch)}</td>
-      <td><span class="chip ${r.d.k}">${r.d.t}</span></td><td class="why">${r.d.why}</td></tr>`; }).join('') || '<tr><td colspan="12" class="empty">Tidak ada campaign aktif</td></tr>'}
-    </tbody></table></div>`;
-  // catatan keputusan
+function adsetBudget(ds, sid) { const s = ds.adsets[sid]; return s && s.db ? budgetOf(s.db, s.a, ds) : null; }
+function budgetEvents(level, id, ds) {
+  if (!ST.acts || !ST.acts.list) return [];
+  const ids = new Set([id]);
+  if (level === 'campaign') Object.values(ds.adsets).forEach(s => { if (s.c === id) ids.add(s.id); });
+  return ST.acts.list.filter(e => /budget/.test(e.type) && ids.has(e.oid) && typeof e.old === 'number' && typeof e.nw === 'number')
+    .map(e => ({ date: dateJkt(e.t), old: budgetOf(e.old, e.a, ds), nw: budgetOf(e.nw, e.a, ds) }));
+}
+function trackingOf(accIdx) { const au = auditResult(); if (!au) return null; const r = au.acc[accIdx]; return r && r.bad.length ? { level: 'bad', note: r.bad[0] } : null; }
+async function ensureSide(withReach) {
+  const t = todayJkt(), jobs = [];
+  if (!ST.audit) jobs.push(api('audit').then(r => ST.audit = r).catch(() => ST.audit = { pixels: [], adsets: [], dests: [], errors: ['gagal dimuat'], failed: 1 }));
+  if (!ST.acts) jobs.push(api('activities').then(r => ST.acts = r).catch(() => ST.acts = { list: [] }));
+  if (withReach && !ST.reach7) jobs.push(api('reach', { since: addD(t, -7), until: addD(t, -1) }).then(r => ST.reach7 = r).catch(() => ST.reach7 = { acc: [], camp: {}, adset: {}, ad: {} }));
+  if (jobs.length) await Promise.all(jobs);
+}
+function entitiesOf(level, ds) {
+  if (level === 'campaign') return ds.campIds.map(id => { const c = ds.campaigns[id]; return { id, n: c.n, a: c.a, active: campActive(c), start: campStart(c), camp: id, st: c.st }; });
+  if (level === 'adset') return Object.values(ds.adsets).map(s => { const c = ds.campaigns[s.c] || {}; return { id: s.id, n: s.n, a: s.a, active: s.st === 'ACTIVE' && campActive(c), start: ((s.ct || '') + '').slice(0, 10) || campStart(c), camp: s.c, st: s.st, sub: c.n }; });
+  return ds.ads.map(a => { const c = ds.campaigns[a.c] || {}, s = ds.adsets[a.as] || {}; return { id: a.id, n: a.n, a: a.a, active: a.st === 'ACTIVE' && (!s.st || s.st === 'ACTIVE') && campActive(c), start: ((a.ct || '') + '').slice(0, 10) || null, camp: a.c, st: a.st, sub: c.n }; });
+}
+/** jalankan brain untuk semua entitas di satu level */
+function brainRows(level, onlyId) {
+  const ds = ST.main, t = todayJkt();
+  const keyFn = level === 'campaign' ? ad => ad.c : level === 'adset' ? ad => ad.as : ad => ad.id;
+  const maps = dailyMaps(ds, keyFn, addD(t, -21), t, -1);
+  const R7 = ST.reach7 ? (level === 'campaign' ? ST.reach7.camp : level === 'adset' ? ST.reach7.adset : ST.reach7.ad) || {} : {};
+  return entitiesOf(level, ds).filter(e => (onlyId ? e.id === onlyId : (ST.acc < 0 || e.a === ST.acc))).map(e => {
+    const map = maps[e.id] || {}, age = e.start ? diffD(e.start, t) : null;
+    const budget = level === 'campaign' ? campBudget(ds, e.id) : level === 'adset' ? adsetBudget(ds, e.id) : null;
+    const freq = (R7[e.id] || [])[1];
+    const res = Brain.evaluate(map, { today: t, active: e.active, age, start: e.start, maxCpa: maxCpa(e.a, ds), budget, freq7: freq,
+      budgetEvents: level === 'ad' ? [] : budgetEvents(level, e.id, ds), tracking: trackingOf(e.a) });
+    return { e, res, map, age, budget, freq, spend14: Object.values(map).reduce((s, v) => s + v[0], 0) };
+  });
+}
+const CLS = { Winner: 'c-g', Watchlist: 'c-y', Loser: 'c-r', Tunggu: 'c-b', Nonaktif: 'c-n' };
+const SEVTXT = { severe: ['c-r', 'parah'], confirmed: ['c-r', 'terkonfirmasi'], early: ['c-y', 'early warning'] };
+async function pageDecide() {
+  await ensureSide(true);
+  const ds = ST.main, y = addD(todayJkt(), -1), lv = ST.decLevel;
+  let rows = brainRows(lv).filter(r => r.e.active || (ST.showInactive && r.spend14 > 0));
+  rows.sort((a, b) => (Brain.CLASS_ORDER[a.res.cls] - Brain.CLASS_ORDER[b.res.cls]) || (Brain.SEV_ORDER[a.res.sev] - Brain.SEV_ORDER[b.res.sev]) || (b.res.m.s7 - a.res.m.s7));
+  const sum = Brain.summary(rows.map(r => r.res));
+  const LV = [['campaign', 'Campaign'], ['adset', 'Ad set'], ['ad', 'Iklan']];
+  let html = `<div class="sec-h"><h2>Papan Keputusan</h2><span class="muted small">Otak: skill Meta Performance · 3/7/14 hari penuh s/d kemarin (${fd(y)}) · cutoff ${xx(S.cutoff)} · minimum ${xx(S.minRoas)} · target scale ${xx(S.target)} · &lt; ${S.minAge} hari = Tunggu</span></div>
+    <div class="filters"><div class="seg">${LV.map(l => `<button class="${lv === l[0] ? 'on' : ''}" data-declevel="${l[0]}">${l[1]}</button>`).join('')}</div>
+    <label class="small"><input type="checkbox" id="inact" ${ST.showInactive ? 'checked' : ''}> tampilkan yang tidak aktif</label></div>
+    <div class="grid kpis" style="margin-bottom:12px">${['Loser', 'Watchlist', 'Winner', 'Tunggu'].map(k => `<div class="card kpi"><div class="lab"><span class="chip ${CLS[k]}">${k}</span></div><div class="val">${(sum[k] || {}).n || 0}</div><div class="sub">spend 7D ${rp((sum[k] || {}).spend || 0)}</div></div>`).join('')}</div>`;
+  const au = auditResult(); const badAcc = au ? au.acc.map((x, i) => x.bad.length ? ds.accounts[i].label : null).filter(Boolean) : [];
+  if (badAcc.length) html += `<div class="callout r" style="margin-bottom:10px">⚠ Tracking bermasalah di <b>${badAcc.map(esc).join(', ')}</b> — rekomendasi ROAS di akun ini bisa tidak akurat. <a href="#" data-page="audit">Lihat Audit Pixel</a></div>`;
+  html += `<div class="tw"><table><thead><tr><th>${LV.find(l => l[0] === lv)[1]}</th><th class="num">Umur</th><th class="num">Budget/hari</th><th class="num">Spend 7D</th><th class="num">ROAS 3D</th><th class="num">7D</th><th class="num">14D</th><th class="num">CPA 7D</th><th class="num">Freq 7D</th><th>Kelas</th><th>Aksi</th><th>Alasan & sinyal</th></tr></thead><tbody>
+    ${rows.map(r => { const m = r.res.m, mc = maxCpa(r.e.a, ds), sv = SEVTXT[r.res.sev];
+      const go = lv === 'campaign' ? `data-camp="${r.e.id}" data-go="diag"` : `data-ent="${r.e.id}" data-entlevel="${lv}"`;
+      return `<tr class="click" ${go}><td class="nm" title="${esc(r.e.n)}">${accChip(ds, r.e.a)}${shortCamp(r.e.n)}${r.e.sub ? `<div class="small muted nm">${shortCamp(r.e.sub)}</div>` : ''}</td>
+      <td class="num">${r.age != null ? r.age + ' hr' : '–'}</td><td class="num">${r.budget ? rp(r.budget) : '<span class="muted">' + (lv === 'ad' ? '–' : 'CBO') + '</span>'}</td><td class="num">${rp(m.s7)}</td>
+      <td class="num">${roasChip(m.r3, m.s3)}</td><td class="num">${roasChip(m.r7, m.s7)}</td><td class="num">${roasChip(m.r14, 1)}</td>
+      <td class="num"><span class="chip ${!m.p7 ? 'c-n' : m.cpa7 <= mc ? 'c-g' : 'c-r'}">${rp(m.cpa7)}</span></td><td class="num">${fin(r.freq) ? r.freq.toFixed(2).replace('.', ',') : '–'}</td>
+      <td><span class="chip ${CLS[r.res.cls]}">${r.res.cls}</span>${sv ? `<div><span class="chip ${sv[0]}" style="margin-top:3px;font-weight:500">${sv[1]}</span></div>` : ''}${r.res.tracking ? `<div><span class="chip c-r" style="margin-top:3px;font-weight:500" title="${esc(r.res.tracking)}">⚠ tracking</span></div>` : ''}</td>
+      <td><b class="small">${esc(r.res.action)}</b></td>
+      <td class="why">${r.res.reasons.map(esc).join('<br>')}${r.res.signals.length ? `<div style="margin-top:4px">${r.res.signals.map(s => `<span class="tag" title="${esc(s.d)}">${esc(s.t)}</span>`).join('')}</div>` : ''}</td></tr>`; }).join('') || '<tr><td colspan="12" class="empty">Tidak ada yang aktif di level ini</td></tr>'}
+    </tbody></table></div>
+    <div class="small muted" style="margin-top:8px">Aturan: Winner = ROAS 3D & 7D ≥ minimum & stabil (scale kalau ≥ target, maks 20–30% tiap ${Brain.cfg.scaleEvery}–4 hari) · Loser = ROAS 3D & 7D &lt; cutoff, atau spend ≥ 1,5× CPA maks tanpa purchase · sinyal penurunan dibanding 14 hari sebelumnya: ROAS −20%, CPA +30%, CTR −20%, frequency ≥ 3,5 · 1 sinyal = early warning, 2+ atau &gt; 3 hari = terkonfirmasi. Dashboard tidak mengubah apa pun di akun.</div>`;
   const notes = LS.get('notes', []);
   html += `<div class="sec-h"><h2>Catatan & menunggu persetujuan</h2><span class="muted small">tersimpan di browser ini</span></div>
     <div class="card notes"><div style="display:flex;gap:8px"><input class="inp" id="noteInp" placeholder="mis. Matikan Harbolnas NOVIA — tunggu OK"><button class="btn pri" id="noteAdd">Tambah</button></div>
@@ -478,6 +550,8 @@ async function pageDiag() {
     <div class="filters"><select class="inp" id="diagSel" style="max-width:100%"><option value="">Semua campaign${ST.acc >= 0 ? ' (' + esc(ds.accounts[ST.acc].label) + ')' : ''}</option>
     ${ids.map(id => `<option value="${id}" ${id === cid ? 'selected' : ''}>${esc(ds.accounts[ds.campaigns[id].a].label)} · ${shortCamp(ds.campaigns[id].n)}</option>`).join('')}</select></div>`;
   const kk = (l, a, b, f, hb = true) => `<div class="card kpi"><div class="lab">${l}</div><div class="val">${f(a)}</div><div class="sub">${delta(a, b, hb)} · sebelumnya ${f(b)}</div></div>`;
+  if (cid && ds.campaigns[cid]) { await ensureSide(true); const br = brainRows('campaign', cid)[0];
+    if (br) html += `<div class="callout ${br.res.cls === 'Loser' ? 'r' : br.res.cls === 'Winner' ? 'g' : ''}" style="margin-bottom:10px"><b>Otak: ${br.res.cls} — ${esc(br.res.action)}.</b> ${br.res.reasons.map(esc).join(' ')}${br.res.tracking ? ' <b>⚠ Tracking bermasalah: ' + esc(br.res.tracking) + ' — angka ROAS bisa tidak akurat.</b>' : ''} <a href="#" data-ent="${cid}" data-entlevel="campaign">Lihat trend →</a></div>`; }
   html += `<div class="grid kpis">${kk('Spend', A.spend, B.spend, rp)}${kk('Purchase', A.purch, B.purch, nf)}${kk('ROAS', A.roas, B.roas, xx)}${kk('CPA', A.cpa, B.cpa, rp, false)}${kk('CPM', A.cpm, B.cpm, rp, false)}${kk('Link CTR', A.ctr, B.ctr, v => pc(v))}</div>`;
   if (pr) {
     const useIc = A.ic > 0 && B.ic > 0;
@@ -575,7 +649,7 @@ function pageCreative() {
   const ds = ST.ds, [s, u] = curRange(), { list, med } = buildConcepts(ds, s, u), f = ST.cf;
   let rows = list.filter(g => (ST.acc < 0 || g.a === ST.acc) && g.d.spend > 0);
   rows = rows.filter(g => (!f.minCtr || g.d.ctr * 100 >= f.minCtr) && (!f.cheap || (med[g.a] && g.d.cLpv <= med[g.a]))
-    && (!f.minPurch || g.d.purch >= f.minPurch) && (!f.roasOk || g.d.roas >= S.bep) && (!f.scored || g.score != null)
+    && (!f.minPurch || g.d.purch >= f.minPurch) && (!f.roasOk || g.d.roas >= S.minRoas) && (!f.scored || g.score != null)
     && (!f.q || g.name.toLowerCase().includes(f.q.toLowerCase())));
   const cols = [['name', 'Konsep', 0], ['score', 'Skor', 1], ['spend', 'Spend', 1], ['ctr', 'Link CTR', 1], ['ctrAll', 'CTR (all)', 1], ['hook', 'Hook', 1], ['hold', 'Hold', 1], ['r50', 'Retensi 50%', 1], ['cLpv', 'Biaya/LPV', 1], ['purch', 'Purchase', 1], ['roas', 'ROAS', 1], ['cpa', 'CPA', 1]];
   const so = ST.sort.creative || { k: 'score', d: -1 };
@@ -587,7 +661,7 @@ function pageCreative() {
     <label>Link CTR ≥ <input type="number" step="0.1" min="0" id="cfCtr" value="${f.minCtr || ''}">%</label>
     <label>Purchase ≥ <input type="number" min="0" id="cfP" value="${f.minPurch || ''}"></label>
     <label><input type="checkbox" id="cfCheap" ${f.cheap ? 'checked' : ''}> Biaya/LPV ≤ median akun</label>
-    <label><input type="checkbox" id="cfRoas" ${f.roasOk ? 'checked' : ''}> ROAS ≥ BEP</label>
+    <label><input type="checkbox" id="cfRoas" ${f.roasOk ? 'checked' : ''}> ROAS ≥ minimum</label>
     <label><input type="checkbox" id="cfScored" ${f.scored ? 'checked' : ''}> Hanya yang punya skor</label>
     <span class="muted small">${rows.length} konsep</span>
   </div>
@@ -621,7 +695,7 @@ function showConcept(key) {
 /* ---------- 5. CPA & PROFIT ---------- */
 function pageCpa() {
   const ds = ST.ds, [s, u] = curRange(), pr = prevRange();
-  let html = `<div class="sec-h"><h2>CPA & Profit</h2><span class="muted small">${rangeLabel()} · CPA maks = AOV 30D ÷ BEP (bisa diubah di ⚙) · cost per contact maks ${rp(S.maxCpc)}</span></div><div class="grid kpis">`;
+  let html = `<div class="sec-h"><h2>CPA & Profit</h2><span class="muted small">${rangeLabel()} · CPA maks = AOV 30D ÷ ROAS minimum (bisa diubah di ⚙) · cost per contact maks ${rp(S.maxCpc)}</span></div><div class="grid kpis">`;
   ds.accounts.forEach((a, i) => {
     const A = der(tot(ds, s, u, null, i)), B = der(pr ? tot(ds, pr[0], pr[1], null, i) : Z()), mc = maxCpa(i, ST.main || ds);
     if (!A.spend && !B.spend) return;
@@ -651,30 +725,371 @@ function pageCpa() {
   return html;
 }
 
-/* ---------- 6. PIXEL ---------- */
-async function pagePixel(force) {
-  if (!ST.pixels || force) ST.pixels = await api('pixels', { force: !!force });
-  const P = ST.pixels.pixels.filter(p => ST.acc < 0 || p.a === ST.acc);
-  const KEY = ['PageView', 'ViewContent', 'AddToCart', 'InitiateCheckout', 'AddPaymentInfo', 'Purchase', 'Contact', 'Lead'];
-  const MUST = { AddToCart: 'Retargeting & optimasi mid-funnel kehilangan sinyal', InitiateCheckout: 'Tidak bisa ukur drop-off checkout', Purchase: 'Optimasi purchase tidak punya data' };
-  let html = `<div class="sec-h"><h2>Kesehatan Pixel</h2><span class="muted small">7 hari terakhir · data pixel diperbarui maksimal tiap 30 menit</span><button class="btn sm" id="pixRef" style="margin-left:auto">Muat ulang pixel</button></div><div class="pix">`;
-  P.forEach(p => {
-    const e = p.events || {}, src = p.sources || {}, hrs = p.last ? Math.round((Date.now() - Date.parse(p.last)) / 36e5) : null;
-    const issues = [];
-    if (hrs == null || hrs > 24) issues.push(['r', 'Pixel tidak menyala ' + (hrs == null ? '(belum pernah)' : hrs + ' jam')]);
-    Object.keys(MUST).forEach(k => { if (Object.keys(e).length && !e[k]) issues.push([k === 'Purchase' ? 'r' : 'y', k + ' = 0 — ' + MUST[k]]); });
-    const sk = Object.keys(src); const stot = sk.reduce((a, k) => a + src[k], 0);
-    if (stot && sk.length === 1) issues.push(['y', 'Semua event hanya dari ' + sk[0] + ' — cek pemasangan ' + (sk[0].toLowerCase().indexOf('server') >= 0 ? 'browser pixel' : 'Conversions API')]);
-    html += `<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><div><h3>${esc(p.name)}</h3><div class="small muted"><span class="idc" data-copy="${p.id}">${p.id}</span> · ${esc((ST.main.accounts[p.a] || {}).label || '')}</div></div>
-      <span class="chip ${hrs != null && hrs <= 24 ? 'c-g' : 'c-r'}">${hrs == null ? 'mati' : hrs <= 1 ? 'aktif' : hrs + ' jam lalu'}</span></div>
-      <div style="margin:10px 0">${KEY.filter(k => k in e || MUST[k]).map(k => `<div class="ev"><span>${k}</span><b class="${!e[k] && MUST[k] ? 'dn' : ''}">${nf(e[k] || 0)}</b></div>`).join('')}
-      ${Object.keys(e).filter(k => KEY.indexOf(k) < 0).map(k => `<div class="ev"><span class="muted">${esc(k)}</span><span>${nf(e[k])}</span></div>`).join('')}</div>
-      ${stot ? `<div class="small muted">Sumber: ${sk.map(k => esc(k) + ' ' + Math.round(src[k] / stot * 100) + '%').join(' · ')}</div>` : ''}
-      ${issues.length ? `<div style="margin-top:10px">${issues.map(x => `<div class="callout ${x[0] === 'r' ? 'r' : ''}" style="margin-top:6px;padding:8px 10px">${esc(x[1])}</div>`).join('')}</div>` : '<div class="callout g" style="margin-top:10px;padding:8px 10px">Tidak ada masalah terdeteksi</div>'}
-    </div>`;
+/* ---------- 6. AUDIT PIXEL ---------- */
+const EVMAP = { PURCHASE: 'Purchase', ADD_TO_CART: 'AddToCart', INITIATED_CHECKOUT: 'InitiateCheckout', CONTENT_VIEW: 'ViewContent', LEAD: 'Lead', CONTACT: 'Contact',
+  COMPLETE_REGISTRATION: 'CompleteRegistration', ADD_PAYMENT_INFO: 'AddPaymentInfo', SEARCH: 'Search', SUBSCRIBE: 'Subscribe', START_TRIAL: 'StartTrial', ADD_TO_WISHLIST: 'AddToWishlist', SCHEDULE: 'Schedule', SUBMIT_APPLICATION: 'SubmitApplication' };
+const normUrl = u => String(u || '').replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/[?#].*$/, '').replace(/\/+$/, '').toLowerCase();
+function agoTxt(h) { return h < 1 ? 'kurang dari 1 jam lalu' : h < 48 ? Math.round(h) + ' jam lalu' : Math.round(h / 24) + ' hari lalu'; }
+/** semua cek audit → { pixels:[{p, checks}], acc:[{bad,warn}], opt:[...], pages:[...] } */
+function auditResult() {
+  const au = ST.audit, ds = ST.main; if (!au || !ds || au.failed) return null;
+  if (au._res && au._res.gen === ds.gen) return au._res;
+  const t = todayJkt(), acc = ds.accounts.map(() => ({ bad: [], warn: [] }));
+  const usedBy = {}; au.adsets.forEach(s => { if (s.px) (usedBy[s.px] = usedBy[s.px] || []).push(s); });
+  const pixels = au.pixels.map(p => {
+    const e = p.events || {}, hasE = !!p.events && Object.keys(e).length > 0, checks = [];
+    const add = (lv, title, detail) => checks.push({ lv, title, detail: detail || '' });
+    const hrs = p.last ? (Date.now() - Date.parse(p.last)) / 36e5 : null;
+    if (hrs == null) add('bad', 'Pixel belum pernah menerima event', 'Kode pixel / Conversions API belum terpasang');
+    else if (hrs > 24) add('bad', `Pixel tidak menyala ${agoTxt(hrs)}`, 'Event terakhir: ' + fd(dateJkt(p.last)));
+    else add('ok', 'Pixel aktif', 'Event terakhir ' + agoTxt(hrs));
+    const F = [['PageView', 'bad', 'Dasar semua pengukuran & audiens website'], ['ViewContent', 'warn', 'Sinyal minat produk untuk optimasi & retargeting'],
+      ['AddToCart', 'warn', 'Sinyal tengah funnel — retargeting & optimasi kehilangan data'], ['InitiateCheckout', 'warn', 'Tidak bisa mengukur drop-off di checkout'], ['Purchase', 'bad', 'Wajib untuk optimasi purchase & ROAS']];
+    if (hasE) F.forEach(([ev, lv, why]) => { if (e[ev]) add('ok', ev + ' terkirim', nf(e[ev]) + ' event / 7 hari'); else add(lv, ev + ' tidak terkirim (7 hari)', why); });
+    else if (!p.events) add('warn', 'Jumlah event tidak bisa dibaca', 'Token belum punya akses ke statistik pixel ini — beri akses pixel ke System User');
+    if (hasE && (e.Contact || e.Lead)) add('ok', 'Contact/Lead terkirim', nf((e.Contact || 0) + (e.Lead || 0)) + ' event / 7 hari');
+    const src = p.sources || {}, sk = Object.keys(src), stot = sk.reduce((a, k) => a + src[k], 0);
+    if (stot) {
+      const part = re => sk.filter(k => re.test(k)).reduce((a, k) => a + src[k], 0) / stot;
+      const srv = part(/server|capi|api/i), brw = part(/browser|web|pixel/i), det = sk.map(k => `${k} ${Math.round(src[k] / stot * 100)}%`).join(' · ');
+      if (srv > 0.95) add('warn', 'Hampir semua event dari server', 'Browser pixel tidak menyala di halaman → fbp/fbc rendah, match quality turun. ' + det);
+      else if (brw > 0.95) add('warn', 'Belum memakai Conversions API', 'Semua event dari browser — rentan hilang karena ad-blocker/iOS. ' + det);
+      else add('ok', 'Browser + server aktif', det);
+    }
+    const keys = p.keys, totEv = Object.values(e).reduce((a, b) => a + b, 0);
+    if (keys && Object.keys(keys).length && totEv) {
+      const cov = k => Object.keys(keys).filter(x => x.split(/[,\s|]+/).includes(k)).reduce((a, x) => a + keys[x], 0) / totEv;
+      const L = ['em', 'ph', 'external_id', 'fbp', 'fbc', 'fn', 'ln'].map(k => [k, cov(k)]);
+      const det = L.filter(x => x[1] > 0).map(x => `${x[0]} ${Math.min(100, Math.round(x[1] * 100))}%`).join(' · ') || 'tidak ada';
+      if (cov('em') < 0.2 && cov('ph') < 0.2) add('warn', 'Email & no. HP jarang dikirim', 'Aktifkan advanced matching / kirim em & ph lewat CAPI. Cakupan: ' + det);
+      else add('ok', 'Match keys cukup', det);
+    }
+    if (p.params && Object.keys(p.params).length) {
+      const pk = Object.keys(p.params).map(k => k.toLowerCase());
+      if (!pk.some(k => k === 'value' || k.endsWith('.value'))) add('bad', 'Parameter value tidak ditemukan', 'Purchase tanpa value → ROAS tidak terhitung. Ada: ' + Object.keys(p.params).slice(0, 8).join(', '));
+      else if (!pk.some(k => k === 'currency' || k.endsWith('.currency'))) add('warn', 'Parameter currency tidak ditemukan', 'Kirim currency: "IDR" bersama value');
+      else add('ok', 'Parameter value & currency ada', Object.keys(p.params).slice(0, 8).join(', '));
+    }
+    const sets = usedBy[p.id] || [], evs = {};
+    sets.forEach(s => { const k = s.ev || '(tanpa event)'; (evs[k] = evs[k] || []).push(s); });
+    Object.entries(evs).forEach(([ev, list]) => {
+      const name = EVMAP[ev] || ev, n = e[name] || 0;
+      if (!hasE) return;
+      if (!n) add('bad', `${list.length} ad set dioptimasi ke ${name}, tapi event 0`, 'Ad set: ' + list.slice(0, 3).map(s => s.n).join(', '));
+      else if (n < 50) add('warn', `Optimasi ${name}: ${n} event / 7 hari`, `${list.length} ad set — di bawah ±50/minggu, learning sulit selesai`);
+      else add('ok', `Optimasi ${name}: ${nf(n)} event / 7 hari`, `${list.length} ad set aktif`);
+    });
+    if (!sets.length) add('info', 'Tidak dipakai ad set aktif mana pun', 'Aman diabaikan kalau memang pixel cadangan');
+    if (hasE && p.accs) {
+      const adsP = p.accs.reduce((s, ai) => s + tot(ds, addD(t, -7), addD(t, -1), null, ai)[M.purch], 0), pxP = e.Purchase || 0;
+      if (pxP && adsP > pxP * 1.15) add('warn', 'Purchase di Ads Manager > purchase di pixel', `Ads ${nf(adsP)} vs pixel ${nf(pxP)} (7 hari) — cek event dobel atau purchase dari sumber lain`);
+      else if (pxP && adsP) add('ok', 'Angka purchase konsisten', `Ads ${nf(adsP)} vs pixel ${nf(pxP)} (7 hari) — pixel mencatat semua pembeli, termasuk non-iklan`);
+    }
+    return { p, checks };
   });
-  html += P.length ? '</div>' : '</div><div class="card empty">Tidak ada pixel di akun ini</div>';
-  html += `<div class="small muted" style="margin-top:10px">Event Match Quality hanya bisa dilihat di Events Manager.</div>`;
+  // nilai tracking per akun = pixel yang dipakai ad set aktif akun itu (atau semua pixel akun kalau belum ada)
+  ds.accounts.forEach((a, ai) => {
+    const used = new Set(au.adsets.filter(s => s.a === ai && s.px).map(s => s.px));
+    const mine = pixels.filter(x => (x.p.accs || [x.p.a]).includes(ai) && (!used.size || used.has(x.p.id)));
+    if (!pixels.some(x => (x.p.accs || [x.p.a]).includes(ai))) { if (tot(ds, addD(t, -7), addD(t, -1), null, ai)[M.spend] > 0) acc[ai].bad.push('Akun tidak punya pixel'); return; }
+    mine.forEach(x => x.checks.forEach(c => { if (c.lv === 'bad') acc[ai].bad.push(x.p.name + ': ' + c.title); else if (c.lv === 'warn') acc[ai].warn.push(x.p.name + ': ' + c.title); }));
+  });
+  // halaman tujuan iklan vs URL yang mengirim event
+  const pages = {};
+  au.dests.forEach(d => d.urls.forEach(u => { const k = normUrl(u); if (!k) return; const g = pages[k] || (pages[k] = { url: k, a: d.a, ads: 0, raw: u }); g.ads++; }));
+  const pageList = Object.values(pages).map(g => {
+    if (/^(wa\.me|api\.whatsapp|whatsapp|m\.me|instagram\.com|ig\.me|t\.me|line\.me)/.test(g.url)) return Object.assign(g, { lv: 'info', st: 'Bukan website (chat) — tidak perlu pixel' });
+    const fired = []; pixels.forEach(x => { if ((x.p.accs || [x.p.a]).includes(g.a) && x.p.urls) x.p.urls.forEach(u => fired.push(u[0])); });
+    if (!fired.length) return Object.assign(g, { lv: 'info', st: 'Data URL pixel tidak tersedia' });
+    const host = g.url.split('/')[0];
+    if (fired.some(f => f === g.url || f.startsWith(g.url + '/'))) return Object.assign(g, { lv: 'ok', st: 'Mengirim event' });
+    if (fired.some(f => f.split('/')[0] === host)) return Object.assign(g, { lv: 'warn', st: 'Domain terdeteksi, tapi halaman ini tidak terlihat mengirim event 7 hari' });
+    return Object.assign(g, { lv: 'bad', st: 'Domain ini tidak mengirim event sama sekali — pixel belum terpasang?' });
+  }).sort((a, b) => ({ bad: 0, warn: 1, info: 2, ok: 3 }[a.lv] - { bad: 0, warn: 1, info: 2, ok: 3 }[b.lv]) || b.ads - a.ads);
+  pageList.forEach(g => { if (g.lv === 'warn') acc[g.a].warn.push('Halaman ' + g.url + ' tidak terlihat mengirim event'); if (g.lv === 'bad') acc[g.a].warn.push('Domain ' + g.url.split('/')[0] + ' tidak mengirim event'); });
+  const opt = au.adsets.map(s => { const px = au.pixels.find(p => p.id === s.px), name = EVMAP[s.ev] || s.ev, n = px && px.events ? (px.events[name] || 0) : null;
+    return Object.assign({}, s, { evName: name, pxName: px ? px.name : (s.px || '–'), cnt: n }); });
+  au._res = { gen: ds.gen, pixels, acc, pages: pageList, opt };
+  return au._res;
+}
+const ICON = { ok: '<span class="ico ok">✓</span>', warn: '<span class="ico warn">!</span>', bad: '<span class="ico bad">✕</span>', info: '<span class="ico info">i</span>' };
+async function pageAudit(force) {
+  if (!ST.audit || force || ST.audit.failed) { ST.audit = await api('audit', { force: !!force }); }
+  const R = auditResult(), ds = ST.main, au = ST.audit;
+  const inAcc = x => ST.acc < 0 || (x.p ? (x.p.accs || [x.p.a]).includes(ST.acc) : x.a === ST.acc);
+  let html = `<div class="sec-h"><h2>Audit Pixel & Event</h2><span class="muted small">7 hari terakhir · diperbarui maks. tiap 30 menit · ${new Intl.DateTimeFormat('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }).format(new Date(au.gen))}</span><button class="btn sm" id="audRef" style="margin-left:auto">Audit ulang sekarang</button></div>`;
+  html += `<div class="grid kpis" style="margin-bottom:14px">${ds.accounts.map((a, i) => { if (ST.acc >= 0 && i !== ST.acc) return ''; const x = R.acc[i];
+    return `<div class="card kpi"><div class="lab">${esc(a.label)}</div><div class="val">${x.bad.length ? '<span class="dn">' + x.bad.length + ' masalah</span>' : x.warn.length ? '<span style="color:var(--y)">' + x.warn.length + ' peringatan</span>' : '<span class="up">Aman</span>'}</div><div class="sub">${x.bad.length ? esc(x.bad[0]) : x.warn.length ? esc(x.warn[0]) : 'Tidak ada masalah tracking'}</div></div>`; }).join('')}</div>`;
+  if (au.errors && au.errors.length) html += `<div class="callout r" style="margin-bottom:10px">${au.errors.map(esc).join('<br>')}</div>`;
+  html += '<div class="pix">' + R.pixels.filter(inAcc).map(x => { const p = x.p, n = { bad: 0, warn: 0 }; x.checks.forEach(c => { if (n[c.lv] != null) n[c.lv]++; });
+    const evs = p.events ? Object.entries(p.events).sort((a, b) => b[1] - a[1]) : [];
+    return `<div class="card"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div><h3>${esc(p.name)}</h3><div class="small muted"><span class="idc" data-copy="${p.id}">${p.id}</span> · ${(p.accs || [p.a]).map(i => esc((ds.accounts[i] || {}).label || '')).join(', ')}</div></div>
+      <span class="chip ${n.bad ? 'c-r' : n.warn ? 'c-y' : 'c-g'}">${n.bad ? n.bad + ' masalah' : n.warn ? n.warn + ' peringatan' : 'aman'}</span></div>
+      <div class="checks">${x.checks.sort((a, b) => ({ bad: 0, warn: 1, info: 2, ok: 3 }[a.lv] - { bad: 0, warn: 1, info: 2, ok: 3 }[b.lv])).map(c => `<div class="chk">${ICON[c.lv]}<div><b>${esc(c.title)}</b>${c.detail ? `<div class="small muted">${esc(c.detail)}</div>` : ''}</div></div>`).join('')}</div>
+      <details><summary class="small">Rincian event${p.urls ? ' & URL' : ''}</summary>
+        <div style="margin-top:8px">${evs.map(([k, v]) => `<div class="ev"><span>${esc(k)}</span><span>${nf(v)}</span></div>`).join('') || '<div class="muted small">–</div>'}</div>
+        ${p.urls ? `<div class="small muted" style="margin-top:10px">URL teratas yang mengirim event</div>${p.urls.slice(0, 12).map(u => `<div class="ev"><span class="nm" style="max-width:260px">${esc(u[0])}</span><span>${nf(u[1])}</span></div>`).join('')}` : ''}
+      </details></div>`; }).join('') + '</div>';
+  if (!R.pixels.filter(inAcc).length) html += '<div class="card empty">Tidak ada pixel di akun ini</div>';
+  const opt = R.opt.filter(s => ST.acc < 0 || s.a === ST.acc);
+  html += `<div class="sec-h"><h2>Event optimasi ad set aktif</h2><span class="muted small">event yang dikejar ad set harus benar-benar terkirim</span></div>
+    <div class="tw"><table><thead><tr><th>Ad set</th><th>Campaign</th><th>Optimasi</th><th>Event</th><th>Pixel</th><th class="num">Event 7 hari</th><th>Status</th></tr></thead><tbody>
+    ${opt.map(s => { const lv = !s.ev ? 'info' : s.cnt === 0 ? 'bad' : s.cnt != null && s.cnt < 50 ? 'warn' : s.cnt == null ? 'info' : 'ok';
+      return `<tr><td class="nm">${accChip(ds, s.a)}${esc(s.n)}</td><td class="nm small">${shortCamp((ds.campaigns[s.c] || {}).n || s.c)}</td><td class="small">${esc(s.goal.toLowerCase().replace(/_/g, ' '))}</td>
+      <td>${esc(s.evName || '–')}</td><td class="small">${esc(s.pxName)}</td><td class="num">${s.cnt == null ? '–' : nf(s.cnt)}</td><td>${ICON[lv]} <span class="small">${lv === 'bad' ? 'event tidak terkirim' : lv === 'warn' ? '< 50/minggu' : lv === 'ok' ? 'oke' : s.ev ? 'tidak bisa dicek' : 'bukan optimasi pixel'}</span></td></tr>`; }).join('') || '<tr><td colspan="7" class="empty">Tidak ada ad set aktif</td></tr>'}
+    </tbody></table></div>`;
+  const pages = R.pages.filter(g => ST.acc < 0 || g.a === ST.acc);
+  html += `<div class="sec-h"><h2>Halaman tujuan iklan aktif</h2><span class="muted small">URL tujuan dicocokkan dengan URL yang mengirim event ke pixel</span></div>
+    <div class="tw"><table><thead><tr><th>Halaman</th><th class="num">Iklan aktif</th><th>Status</th></tr></thead><tbody>
+    ${pages.map(g => `<tr><td class="nm" style="max-width:420px" title="${esc(g.raw)}">${accChip(ds, g.a)}${esc(g.url)}</td><td class="num">${g.ads}</td><td>${ICON[g.lv]} <span class="small">${esc(g.st)}</span></td></tr>`).join('') || '<tr><td colspan="3" class="empty">URL tujuan tidak terbaca dari iklan aktif</td></tr>'}
+    </tbody></table></div>
+    <div class="small muted" style="margin-top:10px">Event Match Quality & deduplikasi event hanya bisa dilihat di Events Manager.</div>`;
+  return html;
+}
+
+/* ---------- TREND ---------- */
+const TL = {
+  account:  { l: 'Akun', key: ad => 'a' + ad.a },
+  campaign: { l: 'Campaign', key: ad => ad.c },
+  adset:    { l: 'Ad set', key: ad => ad.as },
+  ad:       { l: 'Iklan', key: ad => ad.id },
+  concept:  { l: 'Konsep creative', key: ad => ad.a + '|' + conceptKey(ad.n) }
+};
+function entName(ds, level, id) {
+  if (level === 'account') { const a = ds.accounts[+String(id).slice(1)]; return a ? a.label : null; }
+  if (level === 'campaign') return ds.campaigns[id] ? String(ds.campaigns[id].n).replace(/\s*-\s*\d{4}$/, '') : null;
+  if (level === 'adset') return ds.adsets[id] ? ds.adsets[id].n : null;
+  if (level === 'ad') return ds._adById[id] ? ds._adById[id].n : null;
+  return ds._concept[id] != null ? ds._concept[id] : null;
+}
+function entAcc(ds, level, id) {
+  if (level === 'account') return +String(id).slice(1);
+  if (level === 'campaign') return (ds.campaigns[id] || {}).a;
+  if (level === 'adset') return (ds.adsets[id] || {}).a;
+  if (level === 'ad') return (ds._adById[id] || {}).a;
+  return +String(id).split('|')[0];
+}
+const f2 = v => fin(v) ? v.toFixed(2).replace('.', ',') : '–';
+const TM = {
+  spend:     { l: 'Spend', f: rp, c: v => v[0], add: 1 },
+  purch:     { l: 'Purchase', f: v => fin(v) ? (Math.round(v * 10) / 10).toLocaleString('id-ID') : '–', c: v => v[8], add: 1 },
+  val:       { l: 'Nilai purchase', f: rp, c: v => v[9], add: 1 },
+  roas:      { l: 'ROAS', f: xx, c: v => dv(v[9], v[0]), ref: () => [[S.target, 'Target', '#2b8a3e'], [S.minRoas, 'Minimum', '#c27c0e'], [S.cutoff, 'Cutoff', '#d63c3c']] },
+  cpa:       { l: 'CPA', f: rp, c: v => dv(v[0], v[8]), low: 1, ref: accs => accs.length && accs.every(a => a === accs[0]) ? [[maxCpa(accs[0], ST.main), 'CPA maks', '#d63c3c']] : [] },
+  cpm:       { l: 'CPM', f: rp, c: v => dv(v[0], v[1]) * 1000, low: 1 },
+  ctr:       { l: 'Link CTR', f: v => pc(v), c: v => dv(v[4], v[1]) },
+  ctrAll:    { l: 'CTR (all)', f: v => pc(v), c: v => dv(v[3], v[1]) },
+  cpc:       { l: 'Biaya per klik link', f: rp, c: v => dv(v[0], v[4]), low: 1 },
+  lpvRate:   { l: 'Landing page rate', f: v => pc(v, 1), c: v => dv(v[5], v[4]) },
+  cLpv:      { l: 'Biaya per LPV', f: rp, c: v => dv(v[0], v[5]), low: 1 },
+  icRate:    { l: 'Checkout rate (IC/LPV)', f: v => pc(v), c: v => dv(v[7], v[5]) },
+  close:     { l: 'Closing rate (purchase/IC)', f: v => pc(v, 1), c: v => dv(v[8], v[7]) },
+  cvr:       { l: 'Konversi (purchase/LPV)', f: v => pc(v), c: v => dv(v[8], v[5]) },
+  aov:       { l: 'AOV', f: rp, c: v => dv(v[9], v[8]) },
+  contact:   { l: 'Contact', f: v => fin(v) ? (Math.round(v * 10) / 10).toLocaleString('id-ID') : '–', c: v => v[10], add: 1 },
+  cpcontact: { l: 'Cost per contact', f: rp, c: v => dv(v[0], v[10]), low: 1, ref: () => [[S.maxCpc, 'Maks', '#d63c3c']] },
+  impr:      { l: 'Impresi', f: nf, c: v => v[1], add: 1 },
+  freq:      { l: 'Frequency', f: f2, reach: 1, low: 1, ref: () => [[3.5, 'Jenuh', '#d63c3c']] },
+  reach:     { l: 'Reach', f: nf, reach: 1 },
+  hook:      { l: 'Hook rate', f: v => pc(v, 1), c: v => dv(v[12], v[1]) },
+  hold:      { l: 'Hold rate', f: v => pc(v, 1), c: v => dv(v[16], v[1]) }
+};
+const TMODES = [['multi', 'Bandingkan beberapa'], ['single', 'Satu entitas, banyak metrik'], ['h2h', 'Head-to-head'], ['period', 'Periode vs periode']];
+const TMAX = { multi: 6, single: 1, h2h: 2, period: 1 }, MMAX = { single: 4, h2h: 6 };
+const PAL = ['#3b5bdb', '#e8590c', '#2b8a3e', '#ae3ec9', '#0c8599', '#c2255c'];
+
+function trRange() {
+  const t = todayJkt();
+  if (ST.tr.days === 'top') { const [s, u] = curRange(); if (s !== 'lifetime') return [s, u]; }
+  const n = +ST.tr.days || 30; return [addD(t, -n), addD(t, -1)];
+}
+async function trData(need, u) {
+  if (need >= ST.main.since && u <= ST.main.until) return ST.main;
+  const key = need + '_' + u;
+  if (ST._trDs && ST._trDs._key === key) return ST._trDs;
+  const d = prep(await api('data', { since: need, until: u })); d._key = key; ST._trDs = d; return d;
+}
+function trBuckets(s, u, gran) {
+  const dates = []; for (let d = s; d <= u; d = addD(d, 1)) dates.push(d);
+  if (gran !== 'week') return dates.map(d => ({ label: d, dates: [d] }));
+  const out = []; for (let i = 0; i < dates.length; i += 7) out.push({ label: dates[i], dates: dates.slice(i, i + 7) });
+  return out;
+}
+function seriesVals(map, buckets, mk, smooth, gran, reachRows, adLevel) {
+  const T = TM[mk];
+  return buckets.map(b => {
+    if (T.reach) {
+      if (reachRows) { const r = reachRows[b.label]; return r ? (mk === 'freq' ? r[1] : r[0]) : null; }
+      if (adLevel && gran !== 'week') { const v = map[b.label]; return v && v[2] ? (mk === 'freq' ? v[1] / v[2] : v[2]) : null; }
+      return null;
+    }
+    const days = gran === 'day' && smooth > 1 ? Array.from({ length: smooth }, (_, k) => addD(b.label, -k)) : b.dates;
+    const v = Brain.util.sum(map, days); if (!v[0] && !v[1]) return null;
+    let x = T.c(v); if (T.add && days.length > 1) x = x / days.length;
+    return fin(x) ? x : null;
+  });
+}
+function totVal(map, dates, mk) { const T = TM[mk]; if (T.reach) return null; const v = Brain.util.sum(map, dates); if (!v[0] && !v[1]) return null; const x = T.c(v); return fin(x) ? x : null; }
+function trMarks(ds, level, id, buckets, map) {
+  const marks = {}, add = (d, txt, col) => { const i = buckets.findIndex(b => b.dates.includes(d)); if (i < 0) return; const m = marks[i] || (marks[i] = { i, items: [], col }); m.items.push(txt); if (col === '#d63c3c') m.col = col; };
+  const allDates = buckets.flatMap(b => b.dates);
+  Brain.markers(map, allDates, maxCpa(entAcc(ds, level, id), ST.main)).forEach(m => add(m.date, 'Otak: ' + (m.kinds.length ? m.kinds.join(', ') : 'ROAS 3D ' + xx(m.r3)), '#d63c3c'));
+  const adIds = ds.ads.filter(a => TL[level].key(a) === id);
+  const ids = new Set([id]); adIds.forEach(a => { ids.add(a.id); ids.add(a.as); ids.add(a.c); });
+  if (level === 'campaign') Object.values(ds.adsets).forEach(s => { if (s.c === id) ids.add(s.id); });
+  if (ST.acts && ST.acts.list) ST.acts.list.forEach(e => {
+    if (/create/.test(e.type)) return;
+    const ok = level === 'account' ? e.a === entAcc(ds, level, id) && /budget/.test(e.type)
+      : level === 'campaign' ? e.oid === id || (ds.adsets[e.oid] && ds.adsets[e.oid].c === id)
+      : level === 'adset' ? e.oid === id || (e.oid === (ds.adsets[id] || {}).c && /budget/.test(e.type))
+      : ids.has(e.oid);
+    if (!ok) return;
+    const txt = /budget/.test(e.type) && typeof e.old === 'number' && typeof e.nw === 'number' ? `Budget ${rp(budgetOf(e.old, e.a, ds))} → ${rp(budgetOf(e.nw, e.a, ds))}` : e.label;
+    add(dateJkt(e.t), txt + (e.on ? ' · ' + e.on : ''), '#3b5bdb');
+  });
+  if (level === 'campaign') { const st = campStart(ds.campaigns[id] || {}); if (st) add(st, 'Campaign mulai', '#2b8a3e'); }
+  if (level !== 'account') { const byD = {}; adIds.forEach(a => { const d = ((a.ct || '') + '').slice(0, 10); if (d) byD[d] = (byD[d] || 0) + 1; }); Object.entries(byD).forEach(([d, n]) => add(d, n + ' iklan baru dibuat', '#ae3ec9')); }
+  return Object.values(marks);
+}
+
+/* grafik garis dengan tooltip */
+let CH = {}, chSeq = 0;
+function chartBox(o) {
+  const id = 'ch' + (++chSeq), W = o.w || 760, H = o.h || 230, L = 62, R = 14, T = 16, B = 26, n = o.labels.length;
+  const vals = o.series.flatMap(s => s.v).filter(fin), refs = (o.refs || []).filter(r => fin(r[0]));
+  let max = Math.max(0, ...vals, ...refs.map(r => r[0])), min = Math.min(0, ...vals);
+  if (max === min) max = min + 1; max = min + (max - min) * 1.08;
+  const X = i => n > 1 ? L + (W - L - R) * i / (n - 1) : (L + W - R) / 2, Y = v => T + (H - T - B) * (1 - (v - min) / (max - min));
+  let g = '';
+  for (let k = 0; k <= 4; k++) { const v = min + (max - min) * k / 4, yy = Y(v); g += `<line x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}" stroke="#eef0f3"/><text x="${L - 6}" y="${yy + 4}" text-anchor="end" font-size="10" fill="#8a909c">${esc(o.fmt(v))}</text>`; }
+  const step = Math.max(1, Math.ceil(n / 8));
+  for (let i = 0; i < n; i += step) g += `<text x="${X(i)}" y="${H - 7}" text-anchor="middle" font-size="10" fill="#8a909c">${esc(o.xfmt(o.labels[i], i))}</text>`;
+  (o.marks || []).forEach(m => { const x = X(m.i); g += `<line x1="${x}" x2="${x}" y1="${T}" y2="${H - B}" stroke="${m.col}" stroke-dasharray="3 3" opacity=".75"/><circle cx="${x}" cy="${T - 2}" r="3.5" fill="${m.col}"/>`; });
+  refs.forEach(r => { const yy = Y(r[0]); g += `<line x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}" stroke="${r[2] || '#8a909c'}" stroke-dasharray="5 4" opacity=".75"/><text x="${W - R - 2}" y="${yy - 4}" text-anchor="end" font-size="10" fill="${r[2] || '#8a909c'}">${esc(r[1])} ${esc(o.fmt(r[0]))}</text>`; });
+  o.series.forEach(s => {
+    let d = '', pen = false;
+    s.v.forEach((v, i) => { if (!fin(v)) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); pen = true; });
+    g += `<path d="${d}" fill="none" stroke="${s.c}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"${s.dash ? ' stroke-dasharray="6 4"' : ''}/>`;
+    if (n <= 35) s.v.forEach((v, i) => { if (fin(v)) g += `<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="2.4" fill="${s.c}"/>`; });
+  });
+  g += `<line class="hl" x1="0" x2="0" y1="${T}" y2="${H - B}" stroke="#16181d" stroke-width="1" style="display:none"/>`;
+  CH[id] = { labels: o.labels, series: o.series, fmt: o.fmt, tfmt: o.tfmt || o.xfmt, marks: o.marks || [], W, L, R, n };
+  return `<div class="chart" id="${id}"><svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(o.title || 'grafik trend')}">${g}</svg><div class="tip" hidden></div></div>`;
+}
+function legend(series) { return `<div class="legend">${series.map(s => `<span><i style="background:${s.c}${s.dash ? ';opacity:.6' : ''}"></i>${esc(s.name)}</span>`).join('')}</div>`; }
+function bindCharts() {
+  document.querySelectorAll('.mar-app .chart').forEach(el => {
+    const c = CH[el.id]; if (!c || el._b) return; el._b = 1;
+    const svg = el.querySelector('svg'), tip = el.querySelector('.tip'), hl = svg.querySelector('.hl');
+    const show = cx => {
+      const r = svg.getBoundingClientRect(), x = (cx - r.left) / r.width * c.W;
+      let i = c.n > 1 ? Math.round((x - c.L) / (c.W - c.L - c.R) * (c.n - 1)) : 0; i = Math.max(0, Math.min(c.n - 1, i));
+      const px = c.n > 1 ? c.L + (c.W - c.L - c.R) * i / (c.n - 1) : (c.L + c.W - c.R) / 2;
+      hl.setAttribute('x1', px); hl.setAttribute('x2', px); hl.style.display = '';
+      tip.innerHTML = `<b>${esc(c.tfmt(c.labels[i], i))}</b>` + c.series.map(s => `<div><i style="background:${s.c}"></i>${esc(s.name)}: <b>${esc(c.fmt(s.v[i]))}</b></div>`).join('')
+        + c.marks.filter(m => m.i === i).map(m => m.items.map(t => `<div style="color:#ffd8a8;margin-top:3px">● ${esc(t)}</div>`).join('')).join('');
+      tip.hidden = false;
+      const ps = px / c.W * r.width, tw = tip.offsetWidth;
+      tip.style.left = (ps + 14 + tw > r.width ? Math.max(0, ps - 14 - tw) : ps + 14) + 'px';
+    };
+    el.addEventListener('mousemove', e => show(e.clientX));
+    el.addEventListener('touchstart', e => show(e.touches[0].clientX), { passive: true });
+    el.addEventListener('touchmove', e => show(e.touches[0].clientX), { passive: true });
+    el.addEventListener('mouseleave', () => { tip.hidden = true; hl.style.display = 'none'; });
+  });
+}
+function pickerList() {
+  const tr = ST.tr, q = (ST.trQ || '').toLowerCase();
+  const list = (ST.trList || []).filter(x => !q || String(x.n).toLowerCase().includes(q)).slice(0, 60);
+  return list.map(x => `<label class="pi"><input type="${TMAX[tr.mode] === 1 ? 'radio' : 'checkbox'}" name="trpick" data-tid="${esc(x.id)}" ${tr.ids.includes(x.id) ? 'checked' : ''}><span class="nm">${accChip(ST.main, x.a)}${esc(x.n)}</span><span class="small muted">${rp(x.spend)}</span></label>`).join('') || '<div class="empty small">Tidak ada yang cocok</div>';
+}
+
+async function pageTrend() {
+  await ensureSide(false);
+  const tr = ST.tr, [s, u] = trRange(), N = diffD(s, u) + 1, gran = tr.gran, smooth = gran === 'week' ? 1 : (+tr.smooth || 1);
+  const need = addD(s, -Math.max(tr.mode === 'period' ? N + 20 : 20, 20));
+  const ds = await trData(need, u), level = tr.level, keyFn = TL[level].key;
+  const totals = agg(ds, s, u, ad => keyFn(ad));
+  ST.trList = [...totals.entries()].map(([id, v]) => ({ id, spend: v[0], n: entName(ds, level, id), a: entAcc(ds, level, id) })).filter(x => x.n != null && x.spend > 0).sort((a, b) => b.spend - a.spend);
+  let ids = tr.ids.filter(id => entName(ds, level, id) != null).slice(0, TMAX[tr.mode]);
+  if (!ids.length) ids = ST.trList.slice(0, tr.mode === 'multi' ? 3 : TMAX[tr.mode]).map(x => x.id);
+  tr.ids = ids; LS.set('tr', tr);
+  const msel = (tr.mode === 'single' || tr.mode === 'h2h') ? tr.metrics.filter(m => TM[m]).slice(0, MMAX[tr.mode]) : [TM[tr.metric] ? tr.metric : 'roas'];
+  if (!msel.length) msel.push('roas');
+  let rsRows = null, rsNote = '';
+  if (msel.some(m => TM[m].reach)) {
+    if (['account', 'campaign', 'adset'].includes(level)) {
+      const inc = gran === 'week' ? 7 : 1, from = tr.mode === 'period' ? addD(s, -N) : s, key = [level, inc, from, u].join('_');
+      if (!ST.rs[key]) { try { ST.rs[key] = await api('reachSeries', { level, since: from, until: u, inc }); } catch (e) { ST.rs[key] = { rows: {}, err: e.message }; } }
+      rsRows = ST.rs[key].rows || {}; if (ST.rs[key].err) rsNote = 'Reach/frequency gagal dimuat: ' + ST.rs[key].err;
+      if (gran === 'day') rsNote = rsNote || 'Frequency harian = frekuensi dalam 1 hari (wajar ±1–1,5). Pilih tampilan Mingguan untuk melihat frekuensi 7 hari.';
+    } else if (level === 'concept') rsNote = 'Reach/frequency tidak tersedia untuk konsep (gabungan beberapa iklan).';
+    else if (gran === 'week') rsNote = 'Reach/frequency mingguan per iklan tidak tersedia — pakai tampilan Harian.';
+  }
+  const maps = dailyMaps(ds, keyFn, need, u, -1);
+  const buckets = trBuckets(s, u, gran);
+  const vals = (id, mk, bk) => seriesVals(maps[id] || {}, bk || buckets, mk, smooth, gran, rsRows ? (rsRows[id] || {}) : null, level === 'ad');
+  const nm = id => entName(ds, level, id), col = id => PAL[Math.max(0, ids.indexOf(id)) % PAL.length];
+  const xf = l => (gran === 'week' ? 'mg ' : '') + fd(l);
+  const accs = ids.map(id => entAcc(ds, level, id));
+  const refsOf = mk => TM[mk].ref ? TM[mk].ref(accs) : [];
+  const allDates = buckets.flatMap(b => b.dates), half = Math.floor(allDates.length / 2), h1 = allDates.slice(0, half), h2 = allDates.slice(half), l3 = allDates.slice(-3);
+
+  // ---- kontrol ----
+  const opt = (k, l) => `<option value="${k}" ${tr.metric === k ? 'selected' : ''}>${l}</option>`;
+  let html = `<div class="sec-h"><h2>Trend</h2><span class="muted small">${fd(s)} – ${fd(u)} · ${gran === 'week' ? 'per minggu' : smooth > 1 ? 'rata-rata bergerak ' + smooth + ' hari' : 'harian'}</span></div>
+  <div class="card trctl">
+    <div class="trrow"><span class="lbl">Level</span><select class="inp" id="trLevel">${Object.entries(TL).map(([k, v]) => `<option value="${k}" ${level === k ? 'selected' : ''}>${v.l}</option>`).join('')}</select>
+      <span class="lbl">Mode</span><div class="seg">${TMODES.map(m => `<button class="${tr.mode === m[0] ? 'on' : ''}" data-tmode="${m[0]}">${m[1]}</button>`).join('')}</div></div>
+    <div class="trrow"><span class="lbl">Rentang</span><div class="seg">${[[14, '14 hari'], [30, '30 hari'], [60, '60 hari'], ['top', 'Ikuti periode atas']].map(d => `<button class="${String(tr.days) === String(d[0]) ? 'on' : ''}" data-tdays="${d[0]}">${d[1]}</button>`).join('')}</div>
+      <span class="lbl">Tampilan</span><div class="seg"><button class="${gran === 'day' ? 'on' : ''}" data-tgran="day">Harian</button><button class="${gran === 'week' ? 'on' : ''}" data-tgran="week">Mingguan</button></div>
+      <select class="inp" id="trSmooth" ${gran === 'week' ? 'disabled' : ''}><option value="1" ${smooth === 1 ? 'selected' : ''}>Tanpa penghalusan</option><option value="3" ${smooth === 3 ? 'selected' : ''}>Rata-rata 3 hari</option><option value="7" ${smooth === 7 ? 'selected' : ''}>Rata-rata 7 hari</option></select></div>
+    <div class="trrow"><span class="lbl">Metrik</span>${(tr.mode === 'single' || tr.mode === 'h2h')
+      ? `<div class="mchips">${Object.entries(TM).map(([k, v]) => `<button class="mchip ${msel.includes(k) ? 'on' : ''}" data-tmetric="${k}">${v.l}</button>`).join('')}</div><span class="small muted">maks ${MMAX[tr.mode]}</span>`
+      : `<select class="inp" id="trMetric">${Object.entries(TM).map(([k, v]) => opt(k, v.l)).join('')}</select>`}</div>
+    <div class="trrow" style="align-items:flex-start"><span class="lbl">${TL[level].l}</span><div class="picker" style="flex:1;min-width:240px">
+      <div class="chosen">${ids.map(id => `<span class="cchip"><i style="background:${col(id)}"></i><span class="nm">${esc(nm(id))}</span>${TMAX[tr.mode] > 1 ? `<button data-trm="${esc(id)}" aria-label="hapus">×</button>` : ''}</span>`).join('')}<span class="small muted" style="align-self:center">pilih ${TMAX[tr.mode] === 1 ? '1' : 'maks ' + TMAX[tr.mode]}</span></div>
+      <input type="search" class="inp" id="trQ" placeholder="Cari ${TL[level].l.toLowerCase()}…" value="${esc(ST.trQ || '')}">
+      <div class="plist" id="plist">${pickerList()}</div></div></div>
+  </div>`;
+  if (rsNote) html += `<div class="callout" style="margin-top:10px">${esc(rsNote)}</div>`;
+  if (!ids.length) return html + '<div class="card empty" style="margin-top:12px">Tidak ada data di rentang ini</div>';
+
+  const tableRows = (list, mk) => list.map(id => { const m = maps[id] || {}, a = totVal(m, allDates, mk), b1 = totVal(m, h1, mk), b2 = totVal(m, h2, mk), c3 = totVal(m, l3, mk), T = TM[mk];
+    return `<tr><td class="nm"><i class="dotc" style="background:${col(id)}"></i>${esc(nm(id))}</td><td class="num">${T.f(a)}</td><td class="num">${T.f(b1)}</td><td class="num">${T.f(b2)}</td><td class="num">${delta(b2, b1, !T.low)}</td><td class="num">${T.f(c3)}</td></tr>`; }).join('');
+  const thead = first => `<thead><tr><th>${first}</th><th class="num">Seluruh periode</th><th class="num">Paruh pertama</th><th class="num">Paruh kedua</th><th class="num">Perubahan</th><th class="num">3 hari terakhir</th></tr></thead>`;
+
+  if (tr.mode === 'multi') {
+    const mk = msel[0], series = ids.map(id => ({ name: nm(id), c: col(id), v: vals(id, mk) }));
+    html += `<div class="card" style="margin-top:12px"><h3>${TM[mk].l}</h3>${legend(series)}${chartBox({ labels: buckets.map(b => b.label), series, fmt: TM[mk].f, refs: refsOf(mk), xfmt: xf, h: 280, title: TM[mk].l })}</div>
+      <div class="tw" style="margin-top:12px"><table>${thead(TL[level].l)}<tbody>${tableRows(ids, mk)}</tbody></table></div>`;
+  } else if (tr.mode === 'single') {
+    const id = ids[0], marks = trMarks(ds, level, id, buckets, maps[id] || {});
+    if (['campaign', 'adset', 'ad'].includes(level) && ds === ST.main) {
+      const br = brainRows(level, id)[0];
+      if (br) html += `<div class="callout ${br.res.cls === 'Loser' ? 'r' : br.res.cls === 'Winner' ? 'g' : ''}" style="margin-top:12px"><b>Otak: ${br.res.cls} — ${esc(br.res.action)}.</b> ${br.res.reasons.map(esc).join(' ')}${br.res.tracking ? ' <b>⚠ Tracking bermasalah: ' + esc(br.res.tracking) + ' — angka ROAS bisa tidak akurat.</b>' : ''}</div>`;
+    }
+    html += `<div class="legend" style="margin-top:12px"><span><i style="background:#d63c3c"></i>sinyal penurunan (otak)</span><span><i style="background:#3b5bdb"></i>perubahan budget/status</span><span><i style="background:#2b8a3e"></i>campaign mulai</span><span><i style="background:#ae3ec9"></i>iklan baru</span></div>`;
+    msel.forEach(mk => { const series = [{ name: TM[mk].l, c: col(id), v: vals(id, mk) }];
+      html += `<div class="card" style="margin-top:10px"><h3>${TM[mk].l} <span class="small muted" style="font-weight:400">· ${esc(nm(id))}</span></h3>${chartBox({ labels: buckets.map(b => b.label), series, fmt: TM[mk].f, refs: refsOf(mk), marks, xfmt: xf, h: 190, title: TM[mk].l })}</div>`; });
+    html += `<div class="tw" style="margin-top:12px"><table>${thead('Metrik')}<tbody>${msel.map(mk => { const m = maps[id] || {}, T = TM[mk], a = totVal(m, allDates, mk), b1 = totVal(m, h1, mk), b2 = totVal(m, h2, mk);
+      return `<tr><td>${T.l}</td><td class="num">${T.f(a)}</td><td class="num">${T.f(b1)}</td><td class="num">${T.f(b2)}</td><td class="num">${delta(b2, b1, !T.low)}</td><td class="num">${T.f(totVal(m, l3, mk))}</td></tr>`; }).join('')}</tbody></table></div>`;
+  } else if (tr.mode === 'h2h') {
+    if (ids.length < 2) html += `<div class="callout" style="margin-top:12px">Pilih 2 ${TL[level].l.toLowerCase()} untuk dibandingkan.</div>`;
+    html += `<div style="margin-top:12px">${legend(ids.map(id => ({ name: nm(id), c: col(id) })))}</div><div class="h2h">${msel.map(mk => { const series = ids.map(id => ({ name: nm(id), c: col(id), v: vals(id, mk) }));
+      return `<div class="card"><h3>${TM[mk].l}</h3>${chartBox({ labels: buckets.map(b => b.label), series, fmt: TM[mk].f, refs: refsOf(mk), xfmt: xf, w: 480, h: 230, title: TM[mk].l })}</div>`; }).join('')}</div>`;
+    html += `<div class="tw" style="margin-top:12px"><table><thead><tr><th>Metrik (seluruh periode)</th>${ids.map(id => `<th class="num"><i class="dotc" style="background:${col(id)}"></i>${esc(nm(id)).slice(0, 40)}</th>`).join('')}</tr></thead><tbody>
+      ${msel.map(mk => { const T = TM[mk], v = ids.map(id => totVal(maps[id] || {}, allDates, mk)); const best = v.length === 2 && fin(v[0]) && fin(v[1]) && Math.abs(v[0] - v[1]) > Math.abs(v[1]) * 0.005 ? ((v[0] > v[1]) !== !!T.low ? 0 : 1) : -1;
+        return `<tr><td>${T.l}</td>${v.map((x, i) => `<td class="num">${i === best ? '<b>' + T.f(x) + ' ✓</b>' : T.f(x)}</td>`).join('')}</tr>`; }).join('')}</tbody></table></div>`;
+  } else {
+    const id = ids[0], mk = msel[0], pb = trBuckets(addD(s, -N), addD(s, -1), gran).slice(0, buckets.length);
+    const cur = vals(id, mk), prev = vals(id, mk, pb);
+    const series = [{ name: 'Periode ini (' + fd(s) + ' – ' + fd(u) + ')', c: '#3b5bdb', v: cur }, { name: 'Periode sebelumnya (' + fd(addD(s, -N)) + ' – ' + fd(addD(s, -1)) + ')', c: '#9aa1ad', v: prev, dash: 1 }];
+    html += `<div class="card" style="margin-top:12px"><h3>${TM[mk].l} <span class="small muted" style="font-weight:400">· ${esc(nm(id))}</span></h3>${legend(series)}${chartBox({ labels: buckets.map((b, i) => i), series, fmt: TM[mk].f, refs: refsOf(mk), xfmt: (l, i) => (gran === 'week' ? 'Mg ' : 'H') + (i + 1), tfmt: (l, i) => `${fd(buckets[i].label)} vs ${fd((pb[i] || {}).label || buckets[i].label)}`, h: 280, title: TM[mk].l })}</div>`;
+    const pd = pb.flatMap(b => b.dates), m = maps[id] || {};
+    html += `<div class="grid kpis" style="margin-top:12px">${['spend', 'purch', 'roas', 'cpa', 'cpm', 'ctr', 'lpvRate', 'cpcontact'].map(k => { const T = TM[k], a = totVal(m, allDates, k), b = totVal(m, pd, k);
+      return `<div class="card kpi"><div class="lab">${T.l}</div><div class="val" style="font-size:19px">${T.f(a)}</div><div class="sub">${delta(a, b, !T.low)} · sebelumnya ${T.f(b)}</div></div>`; }).join('')}</div>`;
+  }
   return html;
 }
 
@@ -744,12 +1159,14 @@ async function render() {
   if (s !== 'lifetime') { $('dSince').value = s; $('dUntil').value = u; }
   document.querySelector('.mar-app .pills').style.opacity = PERIOD_PAGES[ST.page] ? 1 : .45;
   if (!ST.main) return;
+  CH = {};
   try {
     let html;
     if (ST.page === 'today') html = await pageToday();
-    else if (ST.page === 'decide') html = pageDecide();
+    else if (ST.page === 'decide') html = await pageDecide();
+    else if (ST.page === 'trend') html = await pageTrend();
     else if (ST.page === 'new') html = pageNew();
-    else if (ST.page === 'pixel') html = await pagePixel(false);
+    else if (ST.page === 'audit') html = await pageAudit(false);
     else {
       if (ST.preset === 'life' && ST.page !== 'creative') { ST.preset = '30d'; return render(); }
       v.innerHTML = '<div class="loading"><span class="spin"></span> Memuat periode…</div>';
@@ -757,6 +1174,7 @@ async function render() {
       html = ST.page === 'diag' ? await pageDiag() : ST.page === 'creative' ? pageCreative() : pageCpa();
     }
     v.innerHTML = html;
+    bindCharts();
   } catch (e) {
     v.innerHTML = `<div class="card"><b>Gagal memuat:</b> ${esc(e.message)}</div>`;
   }
@@ -774,8 +1192,8 @@ async function loadMain(force) {
     const d = prep(await api('data', { force: !!force }));
     const wasMain = ST.ds === ST.main;
     ST.main = d; if (wasMain || !ST.ds) ST.ds = d;
-    ST.hourly = {}; ST.reach = {};
-    if (force) { ST.pixels = null; ST.life = null; }
+    ST.hourly = {}; ST.reach = {}; ST.reach7 = null; ST.rs = {}; ST._trDs = null;
+    if (force) { ST.pixels = null; ST.life = null; ST.audit = null; ST.acts = null; }
     const sel = $('accSel'), cur = ST.acc;
     sel.innerHTML = `<option value="-1">Semua akun</option>` + d.accounts.map((a, i) => `<option value="${i}">${esc(a.label)}</option>`).join('');
     sel.value = String(cur >= 0 && cur < d.accounts.length ? cur : -1); ST.acc = +sel.value;
@@ -785,10 +1203,19 @@ async function loadMain(force) {
 }
 
 document.addEventListener('click', async e => {
-  const el = e.target.closest('[data-page],[data-preset],[data-camp],[data-concept],[data-copy],[data-sort],[data-del],#noteAdd,#pixRef,#mclose,#refBtn,#setBtn,#dApply,#loginBtn,#saveSet,#logoutBtn');
+  const el = e.target.closest('[data-page],[data-preset],[data-camp],[data-concept],[data-copy],[data-sort],[data-del],[data-declevel],[data-tmode],[data-tdays],[data-tgran],[data-tmetric],[data-trm],[data-ent],#noteAdd,#audRef,#mclose,#refBtn,#setBtn,#dApply,#loginBtn,#saveSet,#logoutBtn');
   if (!el || !el.closest('.mar-app')) return;
   if (el.dataset.copy) { e.stopPropagation(); return copy(el.dataset.copy); }
-  if (el.dataset.page) { ST.page = el.dataset.page; LS.set('page', ST.page); return render(); }
+  if (el.dataset.page) { e.preventDefault(); ST.page = el.dataset.page; LS.set('page', ST.page); return render(); }
+  if (el.dataset.declevel) { ST.decLevel = el.dataset.declevel; LS.set('decLevel', ST.decLevel); return render(); }
+  if (el.dataset.ent) { e.preventDefault(); Object.assign(ST.tr, { level: el.dataset.entlevel, mode: 'single', ids: [el.dataset.ent] }); ST.trQ = ''; LS.set('tr', ST.tr); ST.page = 'trend'; LS.set('page', 'trend'); window.scrollTo(0, 0); return render(); }
+  if (el.dataset.tmode) { ST.tr.mode = el.dataset.tmode; ST.tr.ids = ST.tr.ids.slice(0, TMAX[ST.tr.mode]); const want = ST.tr.mode === 'h2h' ? 2 : ST.tr.mode === 'multi' ? 3 : 1; if (ST.tr.ids.length < want && ST.trList) ST.tr.ids = [...new Set(ST.tr.ids.concat(ST.trList.map(x => x.id)))].slice(0, want); LS.set('tr', ST.tr); return render(); }
+  if (el.dataset.tdays) { ST.tr.days = el.dataset.tdays === 'top' ? 'top' : +el.dataset.tdays; LS.set('tr', ST.tr); return render(); }
+  if (el.dataset.tgran) { ST.tr.gran = el.dataset.tgran; LS.set('tr', ST.tr); return render(); }
+  if (el.dataset.tmetric) { const k = el.dataset.tmetric, m = ST.tr.metrics.filter(x => TM[x]); const i = m.indexOf(k);
+    if (i >= 0) { if (m.length > 1) m.splice(i, 1); } else { if (m.length >= MMAX[ST.tr.mode]) return toast('Maksimal ' + MMAX[ST.tr.mode] + ' metrik'); m.push(k); }
+    ST.tr.metrics = m; LS.set('tr', ST.tr); return render(); }
+  if (el.dataset.trm) { ST.tr.ids = ST.tr.ids.filter(x => x !== el.dataset.trm); if (!ST.tr.ids.length && ST.trList && ST.trList[0]) ST.tr.ids = []; LS.set('tr', ST.tr); return render(); }
   if (el.dataset.preset) { ST.preset = el.dataset.preset; LS.set('preset', ST.preset); return render(); }
   if (el.dataset.sort) { const k = el.dataset.sort, so = ST.sort.creative || { k: 'score', d: -1 }; ST.sort.creative = { k, d: so.k === k ? -so.d : -1 }; return render(); }
   if (el.dataset.concept) return showConcept(el.dataset.concept);
@@ -800,7 +1227,7 @@ document.addEventListener('click', async e => {
   switch (el.id) {
     case 'noteAdd': { const v = $('noteInp').value.trim(); if (!v) return; const n = LS.get('notes', []);
       n.unshift({ t: v, d: false, at: new Intl.DateTimeFormat('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date()) }); LS.set('notes', n); return render(); }
-    case 'pixRef': $('view').innerHTML = '<div class="loading"><span class="spin"></span> Memuat pixel…</div>'; try { $('view').innerHTML = await pagePixel(true); } catch (err) { toast(err.message); } return;
+    case 'audRef': $('view').innerHTML = '<div class="loading"><span class="spin"></span> Mengaudit pixel… (±30 detik)</div>'; try { $('view').innerHTML = await pageAudit(true); } catch (err) { toast(err.message); render(); } return;
     case 'mclose': return closeModal();
     case 'refBtn': return loadMain(true);
     case 'setBtn': return openSettings();
@@ -816,11 +1243,20 @@ document.addEventListener('change', e => {
   if (t.id === 'accSel') { ST.acc = +t.value; LS.set('acc', ST.acc); ST.diagCamp = ''; return render(); }
   if (t.id === 'diagSel') { ST.diagCamp = t.value; return render(); }
   if (t.id === 'inact') { ST.showInactive = t.checked; return render(); }
+  if (t.id === 'trLevel') { ST.tr.level = t.value; ST.tr.ids = []; ST.trQ = ''; LS.set('tr', ST.tr); return render(); }
+  if (t.id === 'trMetric') { ST.tr.metric = t.value; LS.set('tr', ST.tr); return render(); }
+  if (t.id === 'trSmooth') { ST.tr.smooth = +t.value; LS.set('tr', ST.tr); return render(); }
+  if (t.dataset && t.dataset.tid !== undefined) { const id = t.dataset.tid, max = TMAX[ST.tr.mode];
+    if (max === 1) ST.tr.ids = [id];
+    else if (t.checked) { if (ST.tr.ids.length >= max) { t.checked = false; return toast('Maksimal ' + max + ' untuk mode ini'); } ST.tr.ids.push(id); }
+    else ST.tr.ids = ST.tr.ids.filter(x => x !== id);
+    LS.set('tr', ST.tr); return render(); }
   if (t.dataset && t.dataset.note !== undefined) { const n = LS.get('notes', []); n[+t.dataset.note].d = t.checked; LS.set('notes', n); return render(); }
   const map = { cfCtr: ['minCtr', +t.value || 0], cfP: ['minPurch', +t.value || 0], cfCheap: ['cheap', t.checked], cfRoas: ['roasOk', t.checked], cfScored: ['scored', t.checked] };
   if (map[t.id]) { ST.cf[map[t.id][0]] = map[t.id][1]; LS.set('cf', ST.cf); return render(); }
 });
 document.addEventListener('input', e => {
+  if (e.target.id === 'trQ') { ST.trQ = e.target.value; const pl = $('plist'); if (pl) pl.innerHTML = pickerList(); return; }
   if (e.target.id === 'cfQ') { clearTimeout(window._qh); const v = e.target.value; window._qh = setTimeout(() => { ST.cf.q = v; LS.set('cf', ST.cf); render().then(() => { const q = $('cfQ'); if (q) { q.focus(); q.setSelectionRange(v.length, v.length); } }); }, 250); }
 });
 document.addEventListener('keydown', e => {
@@ -838,8 +1274,9 @@ function openSettings() {
   const ds = ST.main;
   openModal(`<h2>Pengaturan</h2><div class="muted small" style="margin:4px 0 14px">Tersimpan di browser ini.</div>
   <div class="set-grid login" style="margin:0;padding:0;border:0;max-width:none">
-    <div><label>BEP ROAS</label><input class="inp" id="sBep" type="number" step="0.1" value="${S.bep}"></div>
-    <div><label>Target ROAS</label><input class="inp" id="sTarget" type="number" step="0.1" value="${S.target}"></div>
+    <div><label>ROAS cutoff (di bawah = Loser)</label><input class="inp" id="sCut" type="number" step="0.1" value="${S.cutoff}"></div>
+    <div><label>ROAS minimum (Winner, pertahankan)</label><input class="inp" id="sMin" type="number" step="0.1" value="${S.minRoas}"></div>
+    <div><label>ROAS target (Winner, layak scale)</label><input class="inp" id="sTarget" type="number" step="0.1" value="${S.target}"></div>
     <div><label>Umur minimal sebelum evaluasi (hari)</label><input class="inp" id="sAge" type="number" value="${S.minAge}"></div>
     <div><label>Cost per contact maksimal (Rp)</label><input class="inp" id="sCpc" type="number" value="${S.maxCpc}"></div>
     ${ds ? ds.accounts.map((a, i) => `<div><label>CPA maks ${esc(a.label)} (kosong = otomatis ${rp(maxCpaAuto(i))})</label><input class="inp" data-mc="${esc(a.label)}" type="number" value="${S.maxCpa[a.label] || ''}"></div>`).join('') : ''}
@@ -850,10 +1287,10 @@ function openSettings() {
 }
 function maxCpaAuto(i) { const save = S.maxCpa; S.maxCpa = {}; const v = maxCpa(i, ST.main); S.maxCpa = save; return v; }
 function saveSettings() {
-  S.bep = +$('sBep').value || DEF.bep; S.target = +$('sTarget').value || DEF.target; S.minAge = +$('sAge').value || DEF.minAge;
+  S.cutoff = +$('sCut').value || DEF.cutoff; S.minRoas = +$('sMin').value || DEF.minRoas; S.target = +$('sTarget').value || DEF.target; S.minAge = +$('sAge').value || DEF.minAge;
   S.maxCpc = +$('sCpc').value || DEF.maxCpc; S.auto = $('sAuto').checked;
   S.maxCpa = {}; document.querySelectorAll('.mar-app [data-mc]').forEach(i => { if (+i.value) S.maxCpa[i.dataset.mc] = +i.value; });
-  LS.set('settings', S);
+  LS.set('settings', S); applyBrain();
   const na = $('sApi').value.trim(); if (na && na !== API) { API = na; LS.set('api', API); closeModal(); return logout(); }
   closeModal(); toast('Pengaturan disimpan'); render();
 }
