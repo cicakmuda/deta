@@ -278,6 +278,15 @@
 .mar-app .legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
 .mar-app .h2h{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 
+.mar-app .logi{display:flex;gap:12px;align-items:flex-start;padding:12px 20px;border-bottom:1px solid var(--line2)}
+.mar-app .logi:last-child{border-bottom:0}
+.mar-app .logt{flex:0 0 44px;font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums;padding-top:6px}
+.mar-app .avatar{flex:0 0 30px;width:30px;height:30px;border-radius:50%;background:var(--acc-soft);color:var(--acc);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.mar-app .logb{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;font-size:13px}
+.mar-app .logo2{min-width:0}
+.mar-app .logv{display:flex;align-items:center;gap:8px;font-size:13px;flex-wrap:wrap}
+.mar-app .logv .old{padding:2px 8px;border-radius:6px;background:var(--n-soft);color:var(--ink2);text-decoration:line-through}
+.mar-app .logv .new{padding:2px 8px;border-radius:6px;background:var(--acc-soft);color:var(--acc);font-weight:600}
 /* misc */
 .mar-app .prog{height:6px;background:var(--n-soft);border-radius:3px;overflow:hidden;min-width:80px}
 .mar-app .prog i{display:block;height:6px;background:var(--acc)}
@@ -364,6 +373,7 @@
         <div class="navg"><div class="navl">Health</div>
           <a href="#" data-page="audit" title="Pixel Audit"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><span class="lbl">Pixel Audit</span><span class="bdg" id="bdgAudit" hidden></span><span class="dotb" id="dotAudit" hidden></span></a>
           <a href="#" data-page="new" title="New Campaigns"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span class="lbl">New Campaigns</span></a>
+          <a href="#" data-page="log" title="Change Log"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg><span class="lbl">Change Log</span></a>
         </div>
       </nav>
       <div class="sb-foot">
@@ -1114,6 +1124,9 @@ async function pageToday() {
   const ht = H(t), hy = H(y), h = hourJkt();
   const sumTo = (arr, hh) => arr.slice(0, hh + 1).reduce((s, r) => s.map((x, i) => x + r[i]), [0, 0, 0, 0, 0]);
   const a = sumTo(ht, h), b = sumTo(hy, h);
+  // nilai hari ini memakai total akun (sama dengan Ads Manager); pembanding = kemarin s/d jam yang sama
+  const AD = ds.accDaily, accs = ds.accounts.map((x, i) => i).filter(i => ST.acc < 0 || i === ST.acc);
+  if (AD) { const z = [0, 0, 0, 0, 0]; accs.forEach(i => { const r = (AD[i] || {})[t]; if (r) { z[0] += r[0]; z[1] += r[1]; z[2] += r[2]; z[3] += r[3]; z[4] += r[4]; } }); if (z[0] || z[3]) a.splice(0, 5, ...z); }
   const HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
   const dow = HARI[new Date(t + 'T12:00:00Z').getUTCDay()];
   let html = head('Today', `${dow}, ${fd(t)} · s/d pukul ${String(h).padStart(2, '0')}:59 WIB · dibandingkan kemarin di jam yang sama`, accSeg());
@@ -1124,6 +1137,8 @@ async function pageToday() {
     ${kcard('ROAS', dv(a[4], a[0]), dv(b[4], b[0]), xx, true, 'kemarin')}
     ${kcard('CPA', dv(a[0], a[3]), dv(b[0], b[3]), rp, false, 'kemarin')}
   </section>`;
+  const sc = syncCheck(ds, accs);
+  if (sc) html += `<div class="callout y"><b>Data per iklan belum sama dengan total akun</b> di ${sc.days} hari terakhir (selisih ${sc.purch} purchase, ${rp(sc.spend)} spend). Angka total di atas sudah memakai total akun. Coba klik Refresh; kalau tetap berbeda, kemungkinan ada iklan yang dihapus sebelum data tersimpan.</div>`;
   // laju per jam
   const pm = ST.pace || 'spend';
   const cum = (arr, f) => { let s = [0, 0, 0, 0, 0]; return arr.map(r => { s = s.map((x, i) => x + r[i]); return f(s); }); };
@@ -1160,6 +1175,18 @@ async function pageToday() {
       <td class="bl" style="white-space:nowrap">${r ? `<span class="chip ${CLS[r.res.cls]}">${r.res.cls}</span><div class="sub2">${esc(r.res.action)}</div>` : '–'}</td></tr>`; }).join('') || '<tr><td colspan="11" class="empty">Tidak ada campaign aktif</td></tr>'}
     </tbody></table></div></section>`;
   return html;
+}
+
+/** bandingkan jumlah baris per iklan dengan total akun (7 hari terakhir + hari ini) */
+function syncCheck(ds, accs) {
+  if (!ds.accDaily) return null;
+  const t = todayJkt(); let days = 0, dp = 0, dsp = 0;
+  for (let k = 0; k <= 7; k++) {
+    const d = addD(t, -k); let ap = 0, as = 0, tp = 0, ts = 0;
+    accs.forEach(i => { const r = (ds.accDaily[i] || {})[d]; if (r) { tp += r[3]; ts += r[0]; } const v = tot(ds, d, d, null, i); ap += v[M.purch]; as += v[M.spend]; });
+    if (Math.abs(tp - ap) >= 1 || Math.abs(ts - as) > Math.max(1000, ts * 0.01)) { days++; dp += tp - ap; dsp += ts - as; }
+  }
+  return days ? { days, purch: Math.round(dp), spend: dsp } : null;
 }
 
 /* =====================================================================
@@ -1503,6 +1530,97 @@ async function loadPreviewFrame(ad) {
 
 
 /* =====================================================================
+   6. CHANGE LOG
+   ===================================================================== */
+const LOGCAT = [
+  ['all', 'Semua', null],
+  ['budget', 'Budget', /budget|spend_cap/],
+  ['status', 'On / off', /run_status|status/],
+  ['create', 'Dibuat / dihapus', /^create|delete|archive/],
+  ['creative', 'Konten iklan', /creative|^update_ad$|ad_review|update_ad_(name|status_review|url|link)/],
+  ['target', 'Target & bid', /target|bid|optimization|schedule|audience|placement|attribution/],
+  ['other', 'Lainnya', null]
+];
+const STATUS_ID = { active: 'Aktif', paused: 'Dijeda', deleted: 'Dihapus', archived: 'Diarsipkan', inactive: 'Nonaktif', '1': 'Aktif', '2': 'Nonaktif' };
+function logCat(e) {
+  for (const c of LOGCAT) if (c[2] && c[2].test(e.type)) return c[0];
+  return 'other';
+}
+function logVal(e, v) {
+  if (v == null || v === '') return '–';
+  if (typeof v === 'number' && /budget|bid|spend_cap|amount/.test(e.type)) return rp(budgetOf(v, e.a, ST.main));
+  const k = String(v).toLowerCase();
+  return STATUS_ID[k] || String(v);
+}
+function logLevel(ot) { return { CAMPAIGN: 'campaign', CAMPAIGN_GROUP: 'campaign', AD_SET: 'adset', CAMPAIGN_SET: 'adset', ADSET: 'adset', AD: 'ad', ADGROUP: 'ad' }[String(ot || '').toUpperCase()] || null; }
+function logObjLabel(ot) { return { campaign: 'Campaign', adset: 'Ad set', ad: 'Iklan' }[logLevel(ot)] || (ot ? String(ot).toLowerCase().replace(/_/g, ' ') : 'Akun'); }
+/** dampak perubahan budget: ROAS 3 hari sebelum vs sesudah (hari penuh) */
+function logImpact(e) {
+  const ds = ST.main, lv = logLevel(e.ot); if (!ds || !lv || lv === 'ad' || !/budget/.test(e.type)) return '';
+  const d = dateJkt(e.t), y = addD(todayJkt(), -1), aft = addD(d, 1); if (aft > y) return '<span class="small muted">Dampak: belum ada hari penuh sesudah perubahan</span>';
+  const f = lv === 'campaign' ? ad => ad.c === e.oid : ad => ad.as === e.oid;
+  const b = der(tot(ds, addD(d, -3), addD(d, -1), f, -1)), aEnd = addD(d, 3) > y ? y : addD(d, 3), a = der(tot(ds, aft, aEnd, f, -1));
+  if (!b.spend && !a.spend) return '';
+  const n = diffD(aft, aEnd) + 1;
+  return `<span class="small muted">ROAS 3 hari sebelum ${roasChip(b.roas, b.spend)} → ${n} hari sesudah ${roasChip(a.roas, a.spend)} · purchase ${nf(b.purch)} → ${nf(a.purch)}</span>`;
+}
+async function pageLog() {
+  const days = ST.logDays || 30;
+  ST.actsBy = ST.actsBy || {};
+  let L;
+  if (days === 30) { if (!ST.acts || !ST.acts.days) ST.acts = await api('activities', { days: 30 }); L = ST.acts; }
+  else { if (!ST.actsBy[days]) ST.actsBy[days] = await api('activities', { days }); L = ST.actsBy[days]; }
+  const ds = ST.main, f = ST.logF || { cat: 'all', actor: '', q: '' };
+  const base = (L.list || []).filter(e => ST.acc < 0 || e.a === ST.acc);
+  const who = e => e.actor || e.app || 'Sistem Meta';
+  const actors = [...new Set(base.map(who))].sort();
+  const cnt = {}; base.forEach(e => { const c = logCat(e); cnt[c] = (cnt[c] || 0) + 1; });
+  const list = base.filter(e => (f.cat === 'all' || logCat(e) === f.cat) && (!f.actor || who(e) === f.actor)
+    && (!f.q || (String(e.on || '') + ' ' + who(e) + ' ' + e.label).toLowerCase().includes(f.q.toLowerCase())));
+  const tm = new Intl.DateTimeFormat('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' });
+  let html = head('Change Log', `Riwayat perubahan dari activity log Meta · ${days} hari terakhir · siapa mengubah apa`,
+    `<div class="per"><span>Rentang</span><select id="logDays" aria-label="Rentang">${[7, 14, 30, 90].map(d => `<option value="${d}" ${d === days ? 'selected' : ''}>${d} hari</option>`).join('')}</select></div>${accSeg()}`);
+  if (L.errors && L.errors.length) html += `<div class="callout r">${L.errors.map(esc).join('<br>')}</div>`;
+  const people = new Set(base.filter(e => e.actor).map(e => e.actor));
+  html += `<section class="grid kpis">
+    <div class="card kpi"><div class="lab">Total perubahan</div><div class="val">${nf(base.length)}</div><div class="sub">${days} hari terakhir</div></div>
+    <div class="card kpi"><div class="lab">Perubahan budget</div><div class="val">${nf(cnt.budget || 0)}</div><div class="sub">naik/turun budget</div></div>
+    <div class="card kpi"><div class="lab">On / off</div><div class="val">${nf(cnt.status || 0)}</div><div class="sub">aktif ↔ dijeda</div></div>
+    <div class="card kpi"><div class="lab">Orang yang mengubah</div><div class="val">${people.size}</div><div class="sub">${esc([...people].slice(0, 3).join(', ') || '–')}${people.size > 3 ? ', …' : ''}</div></div>
+  </section>`;
+  html += `<div class="filters">
+    <div class="seg" role="group" aria-label="Jenis perubahan">${LOGCAT.map(c => `<button type="button" class="${f.cat === c[0] ? 'on' : ''}" data-lcat="${c[0]}">${c[1]}${c[0] !== 'all' && cnt[c[0]] ? ' · ' + cnt[c[0]] : ''}</button>`).join('')}</div>
+    <select class="inp" id="logActor" aria-label="Diubah oleh" style="height:38px"><option value="">Semua orang</option>${actors.map(a => `<option value="${esc(a)}" ${f.actor === a ? 'selected' : ''}>${esc(a)}</option>`).join('')}</select>
+    <input type="search" id="logQ" placeholder="Cari nama campaign / iklan…" value="${esc(f.q)}" aria-label="Cari">
+    <span class="small muted">${nf(list.length)} perubahan</span></div>`;
+  if (!list.length) return html + '<div class="card empty">Tidak ada perubahan yang cocok</div>';
+  const groups = {}; list.slice(0, 600).forEach(e => { const d = dateJkt(e.t); (groups[d] = groups[d] || []).push(e); });
+  const HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+  const ini = n => String(n).split(/\s+/).filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase() || '?';
+  html += Object.keys(groups).sort().reverse().map(d => `<section class="card" style="padding:0;overflow:hidden">
+    <div class="card-h" style="padding:14px 20px 10px;margin:0;border-bottom:1px solid var(--line2)"><h2>${HARI[new Date(d + 'T12:00:00Z').getUTCDay()]}, ${fd(d)}</h2><span class="small muted">${groups[d].length} perubahan</span></div>
+    ${groups[d].map(e => { const lv = logLevel(e.ot), cat = logCat(e), hasVal = e.old != null || e.nw != null, w = who(e);
+      const catCls = { budget: 'c-b', status: 'c-y', create: 'c-g', creative: 'c-n', target: 'c-n', other: 'c-n' }[cat];
+      const canGo = lv && (lv !== 'campaign' || ds.campaigns[e.oid]) && (lv !== 'adset' || ds.adsets[e.oid]) && (lv !== 'ad' || ds._adById[e.oid]);
+      return `<div class="logi">
+        <div class="logt">${tm.format(new Date(e.t))}</div>
+        <div class="avatar" title="${esc(w)}">${esc(ini(w))}</div>
+        <div class="logb">
+          <div><b>${esc(w)}</b> <span class="muted">${esc(e.label)}</span> <span class="chip ${catCls}" style="font-weight:500">${LOGCAT.find(c => c[0] === cat)[1]}</span></div>
+          <div class="logo2">${accChip(ds, e.a)}<span class="small muted">${esc(logObjLabel(e.ot))}</span> <span class="nm" style="max-width:520px;display:inline-block;vertical-align:bottom" title="${esc(e.on || '')}">${esc(e.on || e.oid || '–')}</span></div>
+          ${hasVal ? `<div class="logv"><span class="old">${esc(logVal(e, e.old))}</span><span aria-hidden="true">→</span><span class="new">${esc(logVal(e, e.nw))}</span></div>` : ''}
+          ${logImpact(e)}
+          ${!hasVal && e.raw && e.raw !== '{}' && e.raw !== '""' ? `<details><summary class="small">Detail</summary><code class="small" style="white-space:pre-wrap;word-break:break-all;color:var(--ink2)">${esc(e.raw)}</code></details>` : ''}
+        </div>
+        ${canGo ? `<button type="button" class="btn sm" data-ent="${esc(e.oid)}" data-entlevel="${lv}">Trend</button>` : ''}
+      </div>`; }).join('')}
+  </section>`).join('');
+  if (list.length > 600) html += `<div class="small muted">Menampilkan 600 perubahan terbaru — persempit dengan filter.</div>`;
+  html += `<div class="small muted">Sumber: activity log Meta (sama dengan menu "Riwayat aktivitas" di Ads Manager). Perubahan lewat aplikasi/API tercatat dengan nama aplikasinya.</div>`;
+  return html;
+}
+
+/* =====================================================================
    RENDER
    ===================================================================== */
 async function render() {
@@ -1518,6 +1636,7 @@ async function render() {
       case 'trend': html = await pageTrend(); break;
       case 'audit': html = await pageAudit(false); break;
       case 'new': html = pageNew(); break;
+      case 'log': html = await pageLog(); break;
       default:
         if (ST.preset === 'life' && ST.page !== 'creative') ST.preset = '30d';
         await ensureDs();
@@ -1552,7 +1671,7 @@ async function loadMain(force) {
     const wasMain = ST.ds === ST.main;
     ST.main = d; if (wasMain || !ST.ds) ST.ds = d;
     ST.hourly = {}; ST.reach = {}; ST.reach7 = null; ST.rs = {}; ST._trDs = null;
-    if (force) { ST.life = null; ST.audit = null; ST.acts = null; ST.pvCache = {}; }
+    if (force) { ST.life = null; ST.audit = null; ST.acts = null; ST.actsBy = {}; ST.pvCache = {}; }
     if (ST.acc >= d.accounts.length) ST.acc = -1;
     $('brandSub').textContent = d.accounts.length + ' accounts';
   } catch (e) { toast(e.message); if (!ST.main) $('view').innerHTML = `<div class="card"><b>Gagal memuat data:</b> ${esc(e.message)}</div>`; }
@@ -1569,7 +1688,7 @@ function setSidebar(c) {
 /* =====================================================================
    EVENTS
    ===================================================================== */
-const SEL = '[data-decnav],[data-page],[data-acc],[data-camp],[data-concept],[data-copy],[data-sort],[data-del],[data-declevel],[data-dcls],[data-sel],[data-addnote],[data-tmode],[data-tdays],[data-tgran],[data-tmetric],[data-tm1],[data-trm],[data-ent],[data-cmp],[data-cview],[data-pace],[data-pix],[data-atab],[data-pvnav],[data-pvad],[data-pfmt],[data-close],#noteAdd,#audRef,#mclose,#refBtn,#setBtn,#dApply,#trApply,#loginBtn,#saveSet,#logoutBtn,#sbToggle';
+const SEL = '[data-lcat],[data-decnav],[data-page],[data-acc],[data-camp],[data-concept],[data-copy],[data-sort],[data-del],[data-declevel],[data-dcls],[data-sel],[data-addnote],[data-tmode],[data-tdays],[data-tgran],[data-tmetric],[data-tm1],[data-trm],[data-ent],[data-cmp],[data-cview],[data-pace],[data-pix],[data-atab],[data-pvnav],[data-pvad],[data-pfmt],[data-close],#noteAdd,#audRef,#mclose,#refBtn,#setBtn,#dApply,#trApply,#loginBtn,#saveSet,#logoutBtn,#sbToggle';
 document.addEventListener('click', async e => {
   const el = e.target.closest(SEL);
   if (!el || !el.closest('.mar-app')) return;
@@ -1590,6 +1709,7 @@ document.addEventListener('click', async e => {
     const go = D.go; if (go === 'diag') { ST.diagCamp = D.camp; if (ST.preset === 'life' || ST.preset === 'today') ST.preset = '7d'; }
     ST.page = go; LS.set('page', go); loadingView(); window.scrollTo(0, 0); return render();
   }
+  if (D.lcat) { ST.logF = Object.assign({ cat: 'all', actor: '', q: '' }, ST.logF, { cat: D.lcat }); return render(); }
   if (D.sel) { ST.decSel = D.sel; return openDecision(D.sel); }
   if (D.decnav) { const l = ST._decRows || [], i = l.findIndex(x => x.e.id === ST.decSel) + (+D.decnav); if (l[i]) openDecision(l[i].e.id); return; }
   if (D.dcls) { ST.decCls = D.dcls; ST.decSel = null; return render(); }
@@ -1635,6 +1755,8 @@ document.addEventListener('change', e => {
     ST.preset = t.value; LS.set('preset', ST.preset); loadingView(); return render();
   }
   if (t.id === 'diagSel') { ST.diagCamp = t.value; return render(); }
+  if (t.id === 'logDays') { ST.logDays = +t.value; loadingView(); return render(); }
+  if (t.id === 'logActor') { ST.logF = Object.assign({ cat: 'all', actor: '', q: '' }, ST.logF, { actor: t.value }); return render(); }
   if (t.id === 'inact') { ST.showInactive = t.checked; return render(); }
   if (t.id === 'trLevel') { ST.tr.level = t.value; ST.tr.ids = []; ST.trQ = ''; LS.set('tr', ST.tr); return render(); }
   if (t.id === 'trSmooth') { ST.tr.smooth = +t.value; LS.set('tr', ST.tr); return render(); }
@@ -1651,6 +1773,7 @@ document.addEventListener('change', e => {
 });
 document.addEventListener('input', e => {
   if (e.target.id === 'trQ') { ST.trQ = e.target.value; const pl = $('plist'); if (pl) pl.innerHTML = pickerList(); return; }
+  if (e.target.id === 'logQ') { clearTimeout(window._lq); const v = e.target.value; window._lq = setTimeout(() => { ST.logF = Object.assign({ cat: 'all', actor: '', q: '' }, ST.logF, { q: v }); render().then(() => { const q = $('logQ'); if (q) { q.focus(); q.setSelectionRange(v.length, v.length); } }); }, 300); return; }
   if (e.target.id === 'cfQ') { clearTimeout(window._qh); const v = e.target.value; window._qh = setTimeout(() => { ST.cf.q = v; LS.set('cf', ST.cf); render().then(() => { const q = $('cfQ'); if (q) { q.focus(); q.setSelectionRange(v.length, v.length); } }); }, 250); }
 });
 document.addEventListener('keydown', e => {
