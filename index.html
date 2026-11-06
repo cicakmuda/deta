@@ -133,7 +133,7 @@
 .mar-app .c-g{background:var(--g-soft);color:var(--g)} .mar-app .c-y{background:var(--y-soft);color:var(--y)}
 .mar-app .c-r{background:var(--r-soft);color:var(--r)} .mar-app .c-n{background:var(--n-soft);color:var(--ink2)}
 .mar-app .c-b{background:var(--acc-soft);color:var(--acc)}
-.mar-app .tag{display:inline-block;padding:2px 6px;border-radius:5px;font-size:11px;font-weight:600;background:var(--n-soft);color:var(--ink2);margin-right:6px;vertical-align:1px}
+.mar-app .tag{display:inline-block;white-space:nowrap;flex:0 0 auto;padding:2px 6px;border-radius:5px;font-size:11px;font-weight:600;background:var(--n-soft);color:var(--ink2);margin-right:6px;vertical-align:1px}
 .mar-app .why{font-size:12px;color:var(--ink2);min-width:220px}
 .mar-app .sub2{font-size:12px;color:var(--ink3);margin-top:2px}
 
@@ -278,15 +278,19 @@
 .mar-app .legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
 .mar-app .h2h{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 
-.mar-app .logi{display:flex;gap:12px;align-items:flex-start;padding:12px 20px;border-bottom:1px solid var(--line2)}
-.mar-app .logi:last-child{border-bottom:0}
-.mar-app .logt{flex:0 0 44px;font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums;padding-top:6px}
-.mar-app .avatar{flex:0 0 30px;width:30px;height:30px;border-radius:50%;background:var(--acc-soft);color:var(--acc);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
-.mar-app .logb{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;font-size:13px}
-.mar-app .logo2{min-width:0}
-.mar-app .logv{display:flex;align-items:center;gap:8px;font-size:13px;flex-wrap:wrap}
-.mar-app .logv .old{padding:2px 8px;border-radius:6px;background:var(--n-soft);color:var(--ink2);text-decoration:line-through}
-.mar-app .logv .new{padding:2px 8px;border-radius:6px;background:var(--acc-soft);color:var(--acc);font-weight:600}
+.mar-app .avatar{border-radius:50%;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+.mar-app .lstats{padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.mar-app .lstat{padding:14px 18px;border-right:1px solid var(--line2);display:flex;flex-direction:column;gap:2px}
+.mar-app .lstat:last-child{border-right:0}
+.mar-app .lstat .l{font-size:12px;color:var(--ink2)} .mar-app .lstat .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums} .mar-app .lstat .s{font-size:12px;color:var(--ink3)}
+.mar-app .seg button .cnt{font-size:11px;opacity:.7;margin-left:2px}
+.mar-app .ltab td{padding-top:9px;padding-bottom:9px}
+.mar-app .ltab tr.lday td{background:#F7F8FA;font-size:12px;font-weight:700;color:#3A3F49;padding:9px 16px 7px;border-top:1px solid var(--line2)}
+.mar-app .ltab tr.lday td span{font-weight:400;color:var(--ink3)}
+.mar-app .pcard{display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:10px;border:1px solid var(--line2);background:#fff;text-align:left;color:var(--ink);width:100%}
+.mar-app .pcard:hover{border-color:#C9CDD5}
+.mar-app .pcard.on{border:2px solid var(--acc);padding:9px;background:#F5F7FF}
+.mar-app .pbar{display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--n-soft);width:100%}
 /* misc */
 .mar-app .prog{height:6px;background:var(--n-soft);border-radius:3px;overflow:hidden;min-width:80px}
 .mar-app .prog i{display:block;height:6px;background:var(--acc)}
@@ -1532,37 +1536,71 @@ async function loadPreviewFrame(ad) {
 /* =====================================================================
    6. CHANGE LOG
    ===================================================================== */
-const LOGCAT = [
-  ['all', 'Semua', null],
-  ['budget', 'Budget', /budget|spend_cap/],
-  ['status', 'On / off', /run_status|status/],
-  ['create', 'Dibuat / dihapus', /^create|delete|archive/],
-  ['creative', 'Konten iklan', /creative|^update_ad$|ad_review|update_ad_(name|status_review|url|link)/],
-  ['target', 'Target & bid', /target|bid|optimization|schedule|audience|placement|attribution/],
-  ['other', 'Lainnya', null]
-];
-const STATUS_ID = { active: 'Aktif', paused: 'Dijeda', deleted: 'Dihapus', archived: 'Diarsipkan', inactive: 'Nonaktif', '1': 'Aktif', '2': 'Nonaktif' };
-function logCat(e) {
-  for (const c of LOGCAT) if (c[2] && c[2].test(e.type)) return c[0];
+const LOGCAT = [['all', 'Semua'], ['budget', 'Budget'], ['status', 'On / off'], ['ad', 'Iklan & konten'], ['target', 'Target & bid'], ['other', 'Lainnya']];
+const LOGKIND = {
+  up: ['↑', 'Budget naik', 'c-g', 'budget'], dn: ['↓', 'Budget turun', 'c-y', 'budget'], budget: ['Rp', 'Budget diubah', 'c-b', 'budget'],
+  pause: ['❚❚', 'Dijeda', 'c-r', 'status'], play: ['▶', 'Diaktifkan', 'c-g', 'status'], status: ['⏻', 'Status diubah', 'c-n', 'status'],
+  create: ['+', 'Dibuat', 'c-b', 'ad'], del: ['✕', 'Dihapus', 'c-n', 'ad'], edit: ['✎', 'Konten diubah', 'c-n', 'ad'],
+  target: ['◎', 'Target/bid', 'c-n', 'target'], other: ['•', 'Lainnya', 'c-n', 'other']
+};
+const STATUS_ID = { active: 'Aktif', paused: 'Dijeda', deleted: 'Dihapus', archived: 'Diarsipkan', inactive: 'Nonaktif' };
+function logKind(e) {
+  const t = e.type;
+  if (/budget|spend_cap/.test(t)) return (typeof e.old === 'number' && typeof e.nw === 'number') ? (e.nw > e.old ? 'up' : e.nw < e.old ? 'dn' : 'budget') : 'budget';
+  if (/run_status|_status$/.test(t) && !/review/.test(t)) { const n = String(e.nw || '').toLowerCase(); return /pause|inactive/.test(n) ? 'pause' : /active/.test(n) ? 'play' : 'status'; }
+  if (/^create/.test(t)) return 'create';
+  if (/delete|archive/.test(t)) return 'del';
+  if (/target|bid|optimization|schedule|audience|placement|attribution/.test(t)) return 'target';
+  if (/creative|^update_ad$|update_ad_|ad_review|name/.test(t)) return 'edit';
   return 'other';
 }
 function logVal(e, v) {
   if (v == null || v === '') return '–';
   if (typeof v === 'number' && /budget|bid|spend_cap|amount/.test(e.type)) return rp(budgetOf(v, e.a, ST.main));
-  const k = String(v).toLowerCase();
-  return STATUS_ID[k] || String(v);
+  return STATUS_ID[String(v).toLowerCase()] || String(v);
 }
 function logLevel(ot) { return { CAMPAIGN: 'campaign', CAMPAIGN_GROUP: 'campaign', AD_SET: 'adset', CAMPAIGN_SET: 'adset', ADSET: 'adset', AD: 'ad', ADGROUP: 'ad' }[String(ot || '').toUpperCase()] || null; }
 function logObjLabel(ot) { return { campaign: 'Campaign', adset: 'Ad set', ad: 'Iklan' }[logLevel(ot)] || (ot ? String(ot).toLowerCase().replace(/_/g, ' ') : 'Akun'); }
-/** dampak perubahan budget: ROAS 3 hari sebelum vs sesudah (hari penuh) */
+function logWho(e) { return e.actor || e.app || 'Sistem Meta'; }
+const AVC = [['#EBEFFF', '#2F54EB'], ['#F3E8FF', '#7E3AB8'], ['#E3F4EA', '#17804A'], ['#FCF0DC', '#9A5B05'], ['#E0F2F5', '#0C6E7E'], ['#FCE8E7', '#B02A25']];
+function avatar(name, size) {
+  const n = String(name || '?'), ini = n === 'Sistem Meta' ? 'M' : (n.split(/\s+/).filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase() || '?');
+  let h = 0; for (const ch of n) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const c = n === 'Sistem Meta' ? ['#EEF0F3', '#555B67'] : AVC[h % AVC.length], s = size || 28;
+  return `<span class="avatar" style="width:${s}px;height:${s}px;flex:0 0 ${s}px;background:${c[0]};color:${c[1]}" aria-hidden="true">${esc(ini)}</span>`;
+}
+function logParent(e) {
+  const ds = ST.main, lv = logLevel(e.ot);
+  if (lv === 'ad') { const a = ds._adById[e.oid]; return a ? shortCamp((ds.campaigns[a.c] || {}).n || '', 40) : ''; }
+  if (lv === 'adset') { const s = ds.adsets[e.oid]; return s ? shortCamp((ds.campaigns[s.c] || {}).n || '', 40) : ''; }
+  return '';
+}
+/** ROAS 3 hari sebelum vs sesudah perubahan budget (hari penuh) */
 function logImpact(e) {
-  const ds = ST.main, lv = logLevel(e.ot); if (!ds || !lv || lv === 'ad' || !/budget/.test(e.type)) return '';
-  const d = dateJkt(e.t), y = addD(todayJkt(), -1), aft = addD(d, 1); if (aft > y) return '<span class="small muted">Dampak: belum ada hari penuh sesudah perubahan</span>';
+  const ds = ST.main, lv = logLevel(e.ot); if (!ds || !lv || lv === 'ad' || !/budget/.test(e.type)) return null;
+  const d = dateJkt(e.t), y = addD(todayJkt(), -1), aft = addD(d, 1);
+  if (aft > y) return { note: 'belum ada hari penuh' };
   const f = lv === 'campaign' ? ad => ad.c === e.oid : ad => ad.as === e.oid;
   const b = der(tot(ds, addD(d, -3), addD(d, -1), f, -1)), aEnd = addD(d, 3) > y ? y : addD(d, 3), a = der(tot(ds, aft, aEnd, f, -1));
-  if (!b.spend && !a.spend) return '';
-  const n = diffD(aft, aEnd) + 1;
-  return `<span class="small muted">ROAS 3 hari sebelum ${roasChip(b.roas, b.spend)} → ${n} hari sesudah ${roasChip(a.roas, a.spend)} · purchase ${nf(b.purch)} → ${nf(a.purch)}</span>`;
+  if (!b.spend && !a.spend) return null;
+  return { b, a, days: diffD(aft, aEnd) + 1 };
+}
+function impactHtml(im) {
+  if (!im) return '<span class="muted">—</span>';
+  if (im.note) return `<span class="small muted">${im.note}</span>`;
+  const up = fin(im.a.roas) && fin(im.b.roas) && im.a.roas >= im.b.roas;
+  return `<span class="muted num">${im.b.spend ? xx(im.b.roas) : '–'}</span> <span style="color:#9AA1AD">→</span> <b class="num" style="color:${!im.a.spend ? 'var(--ink3)' : up ? 'var(--g)' : 'var(--r)'}">${im.a.spend ? xx(im.a.roas) : '–'}</b>${im.days < 3 ? `<span class="small muted"> (${im.days} hr)</span>` : ''}`;
+}
+/** gabungkan perubahan serupa: orang, jenis, nilai & akun sama dalam 5 menit */
+function logGroups(list, merge) {
+  const out = [];
+  list.forEach(e => {
+    const k = logKind(e), last = out[out.length - 1];
+    if (merge && last && last.k === k && logWho(last.items[0]) === logWho(e) && last.items[0].a === e.a && String(last.items[0].old) === String(e.old) && String(last.items[0].nw) === String(e.nw)
+      && Math.abs(Date.parse(last.items[last.items.length - 1].t) - Date.parse(e.t)) <= 5 * 60000 && logLevel(last.items[0].ot) === logLevel(e.ot)) last.items.push(e);
+    else out.push({ k, items: [e] });
+  });
+  return out;
 }
 async function pageLog() {
   const days = ST.logDays || 30;
@@ -1570,54 +1608,104 @@ async function pageLog() {
   let L;
   if (days === 30) { if (!ST.acts || !ST.acts.days) ST.acts = await api('activities', { days: 30 }); L = ST.acts; }
   else { if (!ST.actsBy[days]) ST.actsBy[days] = await api('activities', { days }); L = ST.actsBy[days]; }
-  const ds = ST.main, f = ST.logF || { cat: 'all', actor: '', q: '' };
+  const ds = ST.main, f = Object.assign({ cat: 'all', actor: '', q: '', merge: true }, ST.logF);
   const base = (L.list || []).filter(e => ST.acc < 0 || e.a === ST.acc);
-  const who = e => e.actor || e.app || 'Sistem Meta';
-  const actors = [...new Set(base.map(who))].sort();
-  const cnt = {}; base.forEach(e => { const c = logCat(e); cnt[c] = (cnt[c] || 0) + 1; });
-  const list = base.filter(e => (f.cat === 'all' || logCat(e) === f.cat) && (!f.actor || who(e) === f.actor)
-    && (!f.q || (String(e.on || '') + ' ' + who(e) + ' ' + e.label).toLowerCase().includes(f.q.toLowerCase())));
+  const catOf = e => LOGKIND[logKind(e)][3];
+  const cnt = {}, kc = {}; base.forEach(e => { cnt[catOf(e)] = (cnt[catOf(e)] || 0) + 1; const k = logKind(e); kc[k] = (kc[k] || 0) + 1; });
+  const list = base.filter(e => (f.cat === 'all' || catOf(e) === f.cat) && (!f.actor || logWho(e) === f.actor)
+    && (!f.q || (String(e.on || '') + ' ' + logWho(e) + ' ' + e.label + ' ' + logParent(e)).toLowerCase().includes(f.q.toLowerCase())));
+  const groups = logGroups(list, f.merge);
+  ST._logGroups = groups;
   const tm = new Intl.DateTimeFormat('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' });
-  let html = head('Change Log', `Riwayat perubahan dari activity log Meta · ${days} hari terakhir · siapa mengubah apa`,
+  // ---------- header & ringkasan
+  const people = {}; base.forEach(e => { const w = logWho(e), c = catOf(e); const p = people[w] || (people[w] = { n: 0, budget: 0, status: 0, other: 0 }); p.n++; if (c === 'budget') p.budget++; else if (c === 'status') p.status++; else p.other++; });
+  const humans = Object.keys(people).filter(n => n !== 'Sistem Meta');
+  let html = head('Change Log', 'Siapa mengubah apa di akun iklan · dari activity log Meta',
     `<div class="per"><span>Rentang</span><select id="logDays" aria-label="Rentang">${[7, 14, 30, 90].map(d => `<option value="${d}" ${d === days ? 'selected' : ''}>${d} hari</option>`).join('')}</select></div>${accSeg()}`);
   if (L.errors && L.errors.length) html += `<div class="callout r">${L.errors.map(esc).join('<br>')}</div>`;
-  const people = new Set(base.filter(e => e.actor).map(e => e.actor));
-  html += `<section class="grid kpis">
-    <div class="card kpi"><div class="lab">Total perubahan</div><div class="val">${nf(base.length)}</div><div class="sub">${days} hari terakhir</div></div>
-    <div class="card kpi"><div class="lab">Perubahan budget</div><div class="val">${nf(cnt.budget || 0)}</div><div class="sub">naik/turun budget</div></div>
-    <div class="card kpi"><div class="lab">On / off</div><div class="val">${nf(cnt.status || 0)}</div><div class="sub">aktif ↔ dijeda</div></div>
-    <div class="card kpi"><div class="lab">Orang yang mengubah</div><div class="val">${people.size}</div><div class="sub">${esc([...people].slice(0, 3).join(', ') || '–')}${people.size > 3 ? ', …' : ''}</div></div>
+  const stat = (l, v, s) => `<div class="lstat"><span class="l">${l}</span><span class="v">${v}</span><span class="s">${s}</span></div>`;
+  html += `<section class="card lstats" aria-label="Ringkasan">
+    ${stat('Total perubahan', nf(base.length), days + ' hari terakhir')}
+    ${stat('Budget', nf(cnt.budget || 0), `${kc.up || 0} naik · ${kc.dn || 0} turun`)}
+    ${stat('On / off', nf(cnt.status || 0), `${kc.pause || 0} dijeda · ${kc.play || 0} diaktifkan`)}
+    ${stat('Iklan & konten', nf(cnt.ad || 0), `${kc.create || 0} dibuat · ${kc.edit || 0} diubah`)}
+    ${stat('Orang', nf(humans.length), esc(humans.slice(0, 2).join(', ') || '–') + (humans.length > 2 ? ', …' : ''))}
   </section>`;
+  // ---------- filter
   html += `<div class="filters">
-    <div class="seg" role="group" aria-label="Jenis perubahan">${LOGCAT.map(c => `<button type="button" class="${f.cat === c[0] ? 'on' : ''}" data-lcat="${c[0]}">${c[1]}${c[0] !== 'all' && cnt[c[0]] ? ' · ' + cnt[c[0]] : ''}</button>`).join('')}</div>
-    <select class="inp" id="logActor" aria-label="Diubah oleh" style="height:38px"><option value="">Semua orang</option>${actors.map(a => `<option value="${esc(a)}" ${f.actor === a ? 'selected' : ''}>${esc(a)}</option>`).join('')}</select>
-    <input type="search" id="logQ" placeholder="Cari nama campaign / iklan…" value="${esc(f.q)}" aria-label="Cari">
-    <span class="small muted">${nf(list.length)} perubahan</span></div>`;
-  if (!list.length) return html + '<div class="card empty">Tidak ada perubahan yang cocok</div>';
-  const groups = {}; list.slice(0, 600).forEach(e => { const d = dateJkt(e.t); (groups[d] = groups[d] || []).push(e); });
-  const HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-  const ini = n => String(n).split(/\s+/).filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase() || '?';
-  html += Object.keys(groups).sort().reverse().map(d => `<section class="card" style="padding:0;overflow:hidden">
-    <div class="card-h" style="padding:14px 20px 10px;margin:0;border-bottom:1px solid var(--line2)"><h2>${HARI[new Date(d + 'T12:00:00Z').getUTCDay()]}, ${fd(d)}</h2><span class="small muted">${groups[d].length} perubahan</span></div>
-    ${groups[d].map(e => { const lv = logLevel(e.ot), cat = logCat(e), hasVal = e.old != null || e.nw != null, w = who(e);
-      const catCls = { budget: 'c-b', status: 'c-y', create: 'c-g', creative: 'c-n', target: 'c-n', other: 'c-n' }[cat];
-      const canGo = lv && (lv !== 'campaign' || ds.campaigns[e.oid]) && (lv !== 'adset' || ds.adsets[e.oid]) && (lv !== 'ad' || ds._adById[e.oid]);
-      return `<div class="logi">
-        <div class="logt">${tm.format(new Date(e.t))}</div>
-        <div class="avatar" title="${esc(w)}">${esc(ini(w))}</div>
-        <div class="logb">
-          <div><b>${esc(w)}</b> <span class="muted">${esc(e.label)}</span> <span class="chip ${catCls}" style="font-weight:500">${LOGCAT.find(c => c[0] === cat)[1]}</span></div>
-          <div class="logo2">${accChip(ds, e.a)}<span class="small muted">${esc(logObjLabel(e.ot))}</span> <span class="nm" style="max-width:520px;display:inline-block;vertical-align:bottom" title="${esc(e.on || '')}">${esc(e.on || e.oid || '–')}</span></div>
-          ${hasVal ? `<div class="logv"><span class="old">${esc(logVal(e, e.old))}</span><span aria-hidden="true">→</span><span class="new">${esc(logVal(e, e.nw))}</span></div>` : ''}
-          ${logImpact(e)}
-          ${!hasVal && e.raw && e.raw !== '{}' && e.raw !== '""' ? `<details><summary class="small">Detail</summary><code class="small" style="white-space:pre-wrap;word-break:break-all;color:var(--ink2)">${esc(e.raw)}</code></details>` : ''}
-        </div>
-        ${canGo ? `<button type="button" class="btn sm" data-ent="${esc(e.oid)}" data-entlevel="${lv}">Trend</button>` : ''}
-      </div>`; }).join('')}
-  </section>`).join('');
-  if (list.length > 600) html += `<div class="small muted">Menampilkan 600 perubahan terbaru — persempit dengan filter.</div>`;
-  html += `<div class="small muted">Sumber: activity log Meta (sama dengan menu "Riwayat aktivitas" di Ads Manager). Perubahan lewat aplikasi/API tercatat dengan nama aplikasinya.</div>`;
-  return html;
+    <div class="seg" role="group" aria-label="Jenis perubahan">${LOGCAT.map(c => `<button type="button" class="${f.cat === c[0] ? 'on' : ''}" data-lcat="${c[0]}">${c[1]} <span class="cnt">${c[0] === 'all' ? base.length : (cnt[c[0]] || 0)}</span></button>`).join('')}</div>
+    <input type="search" id="logQ" placeholder="Cari campaign / iklan…" value="${esc(f.q)}" aria-label="Cari campaign atau iklan" style="flex:1;max-width:360px">
+    <label><input type="checkbox" id="logMerge" ${f.merge ? 'checked' : ''}> Gabungkan perubahan serupa</label>
+    ${f.actor ? `<span class="cchip"><span>Oleh: ${esc(f.actor)}</span><button type="button" data-lact="" aria-label="Hapus filter orang">×</button></span>` : ''}
+  </div>`;
+  // ---------- tabel
+  const byDay = {}; groups.slice(0, 500).forEach((g, i) => { const d = dateJkt(g.items[0].t); (byDay[d] = byDay[d] || []).push([g, i]); });
+  const HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'], t0 = todayJkt();
+  const dayLabel = d => (d === t0 ? 'Hari ini, ' : d === addD(t0, -1) ? 'Kemarin, ' : '') + HARI[new Date(d + 'T12:00:00Z').getUTCDay()] + ' ' + fd(d);
+  let table = `<section class="grow tw" style="background:#fff"><table class="ltab" style="min-width:680px"><thead><tr><th>Oleh</th><th>Perubahan</th><th>Objek</th><th>Sebelum → sesudah · dampak ROAS 3 hari</th></tr></thead>`;
+  if (!groups.length) table += `<tbody><tr><td colspan="4" class="empty">Tidak ada perubahan yang cocok</td></tr></tbody>`;
+  Object.keys(byDay).sort().reverse().forEach(d => {
+    const rows = byDay[d], n = rows.reduce((s, r) => s + r[0].items.length, 0);
+    table += `<tbody><tr class="lday"><td colspan="4">${dayLabel(d)} <span>· ${n} perubahan</span></td></tr>`;
+    rows.forEach(([g, i]) => {
+      const e = g.items[0], K = LOGKIND[g.k], lv = logLevel(e.ot), extra = g.items.length - 1, hasVal = e.old != null || e.nw != null;
+      const pct = (g.k === 'up' || g.k === 'dn') && e.old ? (e.nw / e.old - 1) : null;
+      const sub = [logObjLabel(e.ot), logParent(e)].filter(Boolean).join(' · ');
+      table += `<tr class="click" data-logrow="${i}">
+        <td style="white-space:nowrap;vertical-align:top"><span style="display:inline-flex;align-items:center;gap:8px">${avatar(logWho(e))}<span><span style="display:block;max-width:110px;overflow:hidden;text-overflow:ellipsis">${esc(logWho(e))}</span><span class="small muted num">${tm.format(new Date(e.t))}</span></span></span></td>
+        <td style="white-space:nowrap;vertical-align:top"><span class="chip ${K[2]}"><span aria-hidden="true">${K[0]}</span> ${K[1]}</span></td>
+        <td style="vertical-align:top;max-width:230px"><div style="display:flex;align-items:center;gap:6px;min-width:0">${accChip(ds, e.a)}<span class="nm" style="font-weight:500;max-width:150px" title="${esc(e.on || '')}">${esc(e.on || e.oid || '–')}</span>${extra ? `<span class="pill c-b" style="flex:0 0 auto">+${extra} ${esc(logObjLabel(e.ot).toLowerCase())}</span>` : ''}</div><div class="sub2">${esc(sub)}</div></td>
+        <td style="white-space:nowrap;vertical-align:top;padding-top:11px">${hasVal ? `<span class="muted">${esc(logVal(e, e.old))}</span> <span style="color:#9AA1AD">→</span> <b>${esc(logVal(e, e.nw))}</b>${fin(pct) ? ` <span class="pill ${pct > 0 ? 'c-g' : 'c-y'}" style="font-size:11px">${pct > 0 ? '+' : '−'}${Math.round(Math.abs(pct) * 100)}%</span>` : ''}` : '<span style="color:#9AA1AD">—</span>'}${g.k === 'up' || g.k === 'dn' || g.k === 'budget' ? `<div class="small" style="margin-top:3px"><span class="muted">ROAS</span> ${impactHtml(logImpact(e))}</div>` : ''}</td>
+      </tr>`;
+    });
+    table += '</tbody>';
+  });
+  table += `</table><div class="small muted" style="padding:12px 16px;border-top:1px solid var(--line2)">Klik baris untuk detail${groups.length > 500 ? ' · menampilkan 500 baris terbaru, persempit dengan filter' : ''} · Sumber: activity log Meta (sama dengan "Riwayat aktivitas" di Ads Manager)</div></section>`;
+  // ---------- panel kanan
+  const pl = Object.entries(people).sort((a, b) => b[1].n - a[1].n);
+  let side = `<aside class="side-col" style="display:flex;flex-direction:column;gap:12px">
+    <div class="card"><div class="card-h"><h2>Siapa yang mengubah</h2><span class="small muted">klik untuk filter</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px">${pl.map(([n, p]) => `<button type="button" class="pcard ${f.actor === n ? 'on' : ''}" data-lact="${esc(f.actor === n ? '' : n)}" aria-pressed="${f.actor === n}">
+        <span style="display:flex;align-items:center;gap:10px;width:100%">${avatar(n)}<b style="flex:1;font-size:13px">${esc(n)}</b><b class="num">${p.n}</b></span>
+        <span class="pbar"><i style="width:${p.budget / p.n * 100}%;background:#2F54EB"></i><i style="width:${p.status / p.n * 100}%;background:#C98A1B"></i><i style="flex:1;background:#9AA1AD"></i></span>
+        <span class="small muted">${p.budget} budget · ${p.status} on/off · ${p.other} lainnya</span></button>`).join('') || '<div class="small muted">Belum ada perubahan</div>'}</div>
+      <div class="legend" style="margin-top:10px"><span><i style="background:#2F54EB;height:8px;width:8px;border-radius:2px"></i>Budget</span><span><i style="background:#C98A1B;height:8px;width:8px;border-radius:2px"></i>On/off</span><span><i style="background:#9AA1AD;height:8px;width:8px;border-radius:2px"></i>Lainnya</span></div></div>`;
+  // aktivitas per hari
+  const nd = Math.min(days, 30), dd = []; for (let i = nd - 1; i >= 0; i--) dd.push(addD(t0, -i));
+  const perDay = dd.map(d => base.filter(e => dateJkt(e.t) === d).length), mx = Math.max(1, ...perDay), peak = perDay.indexOf(mx);
+  const bw = 280 / nd;
+  side += `<div class="card"><h2 style="margin-bottom:8px">Aktivitas per hari</h2>
+    <svg viewBox="0 0 280 112" width="100%" role="img" aria-label="Jumlah perubahan per hari, puncak ${mx} pada ${fd(dd[peak])}">${perDay.map((v, i) => { const h = v ? Math.max(3, v / mx * 74) : 0; return `<rect x="${(i * bw + bw * 0.15).toFixed(1)}" y="${(92 - h).toFixed(1)}" width="${(bw * 0.7).toFixed(1)}" height="${h.toFixed(1)}" rx="2" fill="${i === peak && v ? '#2F54EB' : '#C7D2FB'}"><title>${fd(dd[i])}: ${v}</title></rect>`; }).join('')}
+      ${mx ? `<text x="${(peak * bw + bw / 2).toFixed(1)}" y="${(92 - mx / mx * 74 - 5).toFixed(1)}" font-size="10" text-anchor="middle" fill="#2F54EB" font-weight="700">${mx}</text>` : ''}
+      <g font-size="9" fill="#636975"><text x="0" y="106">${fd(dd[0])}</text><text x="280" y="106" text-anchor="end">${fd(dd[nd - 1])}</text></g></svg>
+    <div class="small muted">Puncak ${fd(dd[peak])}: ${mx} perubahan</div></div>`;
+  // perlu dicek
+  const warn = [];
+  base.filter(e => /budget/.test(e.type) && logKind(e) === 'up').forEach(e => { const im = logImpact(e); if (im && im.a && im.b && im.b.spend && im.a.spend && fin(im.a.roas) && fin(im.b.roas) && im.a.roas < im.b.roas * 0.8) warn.push(['r', `<b>${esc(e.on || '')}</b> — ROAS turun dari ${xx(im.b.roas)} ke ${xx(im.a.roas)} setelah budget dinaikkan ${fd(dateJkt(e.t))}`]); });
+  const bo = {}; base.filter(e => /budget/.test(e.type)).forEach(e => (bo[e.oid] = bo[e.oid] || []).push(e));
+  Object.values(bo).forEach(arr => { for (let i = 0; i + 1 < arr.length; i++) { if (Math.abs(Date.parse(arr[i].t) - Date.parse(arr[i + 1].t)) <= 3 * 864e5) { warn.push(['y', `<b>${esc(arr[0].on || '')}</b> — budget diubah ${arr.length}× (2 kali dalam 3 hari; learning bisa ter-reset)`]); break; } } });
+  side += `<div class="card"><h2 style="margin-bottom:8px">Perlu dicek</h2>${warn.length ? warn.slice(0, 6).map(w => `<div style="display:flex;gap:10px;font-size:13px;padding:6px 0"><span style="flex:0 0 8px;width:8px;height:8px;border-radius:50%;margin-top:6px;background:${w[0] === 'r' ? 'var(--r)' : '#C98A1B'}"></span><span>${w[1]}</span></div>`).join('') : '<div class="small muted">Tidak ada pola perubahan yang mencurigakan.</div>'}</div></aside>`;
+  return html + `<div class="row">${table}${side}</div>`;
+}
+function openLogDetail(i) {
+  const g = (ST._logGroups || [])[i]; if (!g) return;
+  const ds = ST.main, K = LOGKIND[g.k], e0 = g.items[0];
+  const dt = new Intl.DateTimeFormat('id-ID', { timeZone: 'Asia/Jakarta', weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+  const im = (g.k === 'up' || g.k === 'dn' || g.k === 'budget') ? logImpact(e0) : null;
+  const html = `<div style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div style="display:flex;gap:12px;align-items:center">${avatar(logWho(e0), 40)}<div><div class="small muted">${esc(dt.format(new Date(e0.t)))}</div><h2 style="font-size:18px;font-weight:700">${esc(logWho(e0))}</h2></div></div>
+      <button type="button" class="ib x" data-close="1" aria-label="Tutup">×</button></div>
+    <div><span class="chip ${K[2]}"><span aria-hidden="true">${K[0]}</span> ${K[1]}</span> <span class="muted">${esc(e0.label)}</span>${g.items.length > 1 ? ` <span class="pill c-b">${g.items.length} objek</span>` : ''}</div>
+    ${im && im.b ? `<div class="callout ${fin(im.a.roas) && fin(im.b.roas) && im.a.roas < im.b.roas * 0.8 ? 'r' : ''}">Dampak: ROAS 3 hari sebelum <b>${im.b.spend ? xx(im.b.roas) : '–'}</b> (${nf(im.b.purch)} purchase) → ${im.days} hari sesudah <b>${im.a.spend ? xx(im.a.roas) : '–'}</b> (${nf(im.a.purch)} purchase)</div>` : ''}
+    <div class="tw"><table><thead><tr><th>Objek</th><th>Sebelum → sesudah</th><th></th></tr></thead><tbody>
+      ${g.items.map(e => { const lv = logLevel(e.ot), ok = lv && (lv !== 'campaign' || ds.campaigns[e.oid]) && (lv !== 'adset' || ds.adsets[e.oid]) && (lv !== 'ad' || ds._adById[e.oid]), hv = e.old != null || e.nw != null;
+        return `<tr><td>${accChip(ds, e.a)}<b>${esc(e.on || e.oid || '–')}</b><div class="sub2">${esc([logObjLabel(e.ot), logParent(e)].filter(Boolean).join(' · '))} · ID <span class="idc" data-copy="${esc(e.oid || '')}">${esc(e.oid || '–')}</span></div></td>
+        <td style="white-space:nowrap">${hv ? `<span class="muted">${esc(logVal(e, e.old))}</span> → <b>${esc(logVal(e, e.nw))}</b>` : '—'}</td>
+        <td style="text-align:right">${ok ? `<button type="button" class="btn sm" data-ent="${esc(e.oid)}" data-entlevel="${lv}">Trend</button>` : ''}</td></tr>`; }).join('')}
+    </tbody></table></div>
+    ${e0.raw && e0.raw !== '{}' && e0.raw !== '""' ? `<details><summary>Data mentah dari Meta</summary><code class="small" style="display:block;margin-top:8px;white-space:pre-wrap;word-break:break-all;color:var(--ink2);background:#F7F8FA;padding:10px;border-radius:8px">${esc(e0.raw)}</code></details>` : ''}
+  </div>`;
+  openModal(html, 'dec');
 }
 
 /* =====================================================================
@@ -1688,7 +1776,7 @@ function setSidebar(c) {
 /* =====================================================================
    EVENTS
    ===================================================================== */
-const SEL = '[data-lcat],[data-decnav],[data-page],[data-acc],[data-camp],[data-concept],[data-copy],[data-sort],[data-del],[data-declevel],[data-dcls],[data-sel],[data-addnote],[data-tmode],[data-tdays],[data-tgran],[data-tmetric],[data-tm1],[data-trm],[data-ent],[data-cmp],[data-cview],[data-pace],[data-pix],[data-atab],[data-pvnav],[data-pvad],[data-pfmt],[data-close],#noteAdd,#audRef,#mclose,#refBtn,#setBtn,#dApply,#trApply,#loginBtn,#saveSet,#logoutBtn,#sbToggle';
+const SEL = '[data-logrow],[data-lact],[data-lcat],[data-decnav],[data-page],[data-acc],[data-camp],[data-concept],[data-copy],[data-sort],[data-del],[data-declevel],[data-dcls],[data-sel],[data-addnote],[data-tmode],[data-tdays],[data-tgran],[data-tmetric],[data-tm1],[data-trm],[data-ent],[data-cmp],[data-cview],[data-pace],[data-pix],[data-atab],[data-pvnav],[data-pvad],[data-pfmt],[data-close],#noteAdd,#audRef,#mclose,#refBtn,#setBtn,#dApply,#trApply,#loginBtn,#saveSet,#logoutBtn,#sbToggle';
 document.addEventListener('click', async e => {
   const el = e.target.closest(SEL);
   if (!el || !el.closest('.mar-app')) return;
@@ -1709,7 +1797,9 @@ document.addEventListener('click', async e => {
     const go = D.go; if (go === 'diag') { ST.diagCamp = D.camp; if (ST.preset === 'life' || ST.preset === 'today') ST.preset = '7d'; }
     ST.page = go; LS.set('page', go); loadingView(); window.scrollTo(0, 0); return render();
   }
-  if (D.lcat) { ST.logF = Object.assign({ cat: 'all', actor: '', q: '' }, ST.logF, { cat: D.lcat }); return render(); }
+  if (D.lcat) { ST.logF = Object.assign({ cat: 'all', actor: '', q: '', merge: true }, ST.logF, { cat: D.lcat }); return render(); }
+  if (D.lact !== undefined) { ST.logF = Object.assign({ cat: 'all', actor: '', q: '', merge: true }, ST.logF, { actor: D.lact }); return render(); }
+  if (D.logrow !== undefined) return openLogDetail(+D.logrow);
   if (D.sel) { ST.decSel = D.sel; return openDecision(D.sel); }
   if (D.decnav) { const l = ST._decRows || [], i = l.findIndex(x => x.e.id === ST.decSel) + (+D.decnav); if (l[i]) openDecision(l[i].e.id); return; }
   if (D.dcls) { ST.decCls = D.dcls; ST.decSel = null; return render(); }
@@ -1756,7 +1846,7 @@ document.addEventListener('change', e => {
   }
   if (t.id === 'diagSel') { ST.diagCamp = t.value; return render(); }
   if (t.id === 'logDays') { ST.logDays = +t.value; loadingView(); return render(); }
-  if (t.id === 'logActor') { ST.logF = Object.assign({ cat: 'all', actor: '', q: '' }, ST.logF, { actor: t.value }); return render(); }
+  if (t.id === 'logMerge') { ST.logF = Object.assign({ cat: 'all', actor: '', q: '', merge: true }, ST.logF, { merge: t.checked }); return render(); }
   if (t.id === 'inact') { ST.showInactive = t.checked; return render(); }
   if (t.id === 'trLevel') { ST.tr.level = t.value; ST.tr.ids = []; ST.trQ = ''; LS.set('tr', ST.tr); return render(); }
   if (t.id === 'trSmooth') { ST.tr.smooth = +t.value; LS.set('tr', ST.tr); return render(); }
@@ -1773,7 +1863,7 @@ document.addEventListener('change', e => {
 });
 document.addEventListener('input', e => {
   if (e.target.id === 'trQ') { ST.trQ = e.target.value; const pl = $('plist'); if (pl) pl.innerHTML = pickerList(); return; }
-  if (e.target.id === 'logQ') { clearTimeout(window._lq); const v = e.target.value; window._lq = setTimeout(() => { ST.logF = Object.assign({ cat: 'all', actor: '', q: '' }, ST.logF, { q: v }); render().then(() => { const q = $('logQ'); if (q) { q.focus(); q.setSelectionRange(v.length, v.length); } }); }, 300); return; }
+  if (e.target.id === 'logQ') { clearTimeout(window._lq); const v = e.target.value; window._lq = setTimeout(() => { ST.logF = Object.assign({ cat: 'all', actor: '', q: '', merge: true }, ST.logF, { q: v }); render().then(() => { const q = $('logQ'); if (q) { q.focus(); q.setSelectionRange(v.length, v.length); } }); }, 300); return; }
   if (e.target.id === 'cfQ') { clearTimeout(window._qh); const v = e.target.value; window._qh = setTimeout(() => { ST.cf.q = v; LS.set('cf', ST.cf); render().then(() => { const q = $('cfQ'); if (q) { q.focus(); q.setSelectionRange(v.length, v.length); } }); }, 250); }
 });
 document.addEventListener('keydown', e => {
