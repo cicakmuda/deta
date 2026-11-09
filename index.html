@@ -174,6 +174,38 @@
 .mar-app dl.kv dt{color:var(--ink3)} .mar-app dl.kv dd{margin:0;text-align:right;font-weight:600}
 .mar-app .btns{display:flex;flex-wrap:wrap;gap:8px}
 .mar-app .btns .btn{flex:1 1 120px;height:40px}
+.mar-app .hs{box-shadow:inset 0 0 0 1.5px var(--g)}
+.mar-app .c-r-t{color:var(--r)} .mar-app .c-g-t{color:var(--g)}
+.mar-app .lbgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+.mar-app .lbc{display:flex;flex-direction:column;gap:8px;min-width:0}
+.mar-app .lbh{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap}
+.mar-app .lbh h3{font-size:15px;font-weight:700;margin:0}
+.mar-app .lbh .seg button{height:28px;padding:0 10px;font-size:12px}
+.mar-app .lbavg{font-size:12px;color:var(--ink3)}
+.mar-app .lbl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.mar-app .lbr{position:relative;display:flex;align-items:center;gap:10px;width:100%;padding:6px 8px;border-radius:8px;background:none;border:0;text-align:left;color:var(--ink);cursor:pointer;overflow:hidden}
+.mar-app .lbr:hover{background:#F4F5F7}
+.mar-app .lbr .bar{position:absolute;left:0;top:0;bottom:0;background:var(--acc-soft);opacity:.6;border-radius:8px;z-index:0;pointer-events:none}
+.mar-app .lbr>span:not(.bar){position:relative;z-index:1}
+.mar-app .lbr .rk{width:18px;flex:none;font-size:12px;font-weight:700;color:var(--ink3);text-align:center}
+.mar-app .lbr .th{width:34px;height:34px;flex:none;border-radius:6px;background:var(--n-soft);overflow:hidden}
+.mar-app .lbr .th img{width:100%;height:100%;object-fit:cover;display:block}
+.mar-app .lbr .nm{flex:1;min-width:0;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mar-app .lbr .nm small{display:block;font-weight:400;color:var(--ink3);font-size:12px;overflow:hidden;text-overflow:ellipsis}
+.mar-app .lbr .val{flex:none}
+.mar-app .lbpat summary{cursor:pointer;display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
+.mar-app .lbpat{margin-bottom:14px}
+.mar-app .ccard .cmet{font-size:12px;color:var(--ink3)}
+.mar-app .rmeter{display:flex;flex-direction:column;gap:4px;min-width:120px}
+.mar-app .rmeter .bar{height:6px;border-radius:3px;background:var(--n-soft);overflow:hidden}
+.mar-app .rmeter .bar i{display:block;height:100%;border-radius:3px}
+.mar-app .rmeter .lbl span{white-space:nowrap}
+.mar-app .rmeter .lbl{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 8px;font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums}
+.mar-app .rbox{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.mar-app .rtab{width:100%;border-collapse:collapse;font-size:13px}
+.mar-app .rtab th,.mar-app .rtab td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.mar-app .rtab th{font-size:12px;color:var(--ink3);font-weight:600}
+.mar-app .rtab td:first-child{white-space:nowrap;font-weight:600}
 .mar-app .reasons{margin:0;padding-left:18px;font-size:13px;color:#3A3F49;display:flex;flex-direction:column;gap:4px}
 
 /* diagnosis */
@@ -372,6 +404,7 @@
         </div>
         <div class="navg"><div class="navl">Analyze</div>
           <a href="#" data-page="creative" title="Creative Lab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9l5 3-5 3z"/></svg><span class="lbl">Creative Lab</span></a>
+          <a href="#" data-page="board" title="Leaderboard"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span class="lbl">Leaderboard</span></a>
           <a href="#" data-page="cpa" title="CPA &amp; Profit"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v12H3z"/><path d="M16 13h2M3 10h18"/></svg><span class="lbl">CPA &amp; Profit</span></a>
         </div>
         <div class="navg"><div class="navl">Health</div>
@@ -410,10 +443,20 @@ const LS = {
   set(k, v) { try { localStorage.setItem('mad_' + k, JSON.stringify(v)); } catch (e) {} },
   del(k) { try { localStorage.removeItem('mad_' + k); } catch (e) {} }
 };
-const DEF = { cutoff: 1.1, minRoas: 2, target: 2.5, minAge: 7, maxCpc: 250000, maxCpa: {}, auto: true };
+const DEF = { cutoff: 1.1, minRoas: 2, target: 2.5, minAge: 7, maxCpc: 250000, maxCpa: {}, auto: true,
+  content: { killMult: 1.5, tofMult: 2, lossMult: 3, streakMult: 2, ctrGood: 1.2, ctrKill: 0.5 },
+  metric: { waClose: 14, hookMin: 3, hookOk: 4.5, hookScale: 6, lpvMin: 60, lpvOk: 70, lpvScale: 80 } };
 let S = Object.assign({}, DEF, LS.get('settings', {}));
 if (S.bep && !LS.get('settings', {}).minRoas) S.minRoas = S.bep; delete S.bep;
-function applyBrain() { Brain.setConfig({ cutoff: S.cutoff, minRoas: S.minRoas, target: S.target, minAge: S.minAge }); }
+S.content = Object.assign({}, DEF.content, S.content || {});
+S.metric = Object.assign({}, DEF.metric, S.metric || {});
+let ST_RULES = null;   // cache rule konten per iklan
+function applyBrain() {
+  const c = S.content;
+  Brain.setConfig({ cutoff: S.cutoff, minRoas: S.minRoas, target: S.target, minAge: S.minAge,
+    content: { killMult: c.killMult, tofMult: c.tofMult, lossMult: c.lossMult, streakMult: c.streakMult, ctrGood: c.ctrGood / 100, ctrKill: c.ctrKill / 100 } });
+  ST_RULES = null;
+}
 applyBrain();
 let API = LS.get('api', '') || CONFIG.API_URL;
 let SESSION = LS.get('session', null);
@@ -512,6 +555,49 @@ function der(v) {
     lpvRate: dv(v[M.lpv], v[M.link]), icRate: dv(v[M.ic], v[M.lpv]), close: dv(v[M.purch], v[M.ic]), aov: dv(v[M.val], v[M.purch]),
     hook: dv(v[M.p25], v[M.impr]), hold: dv(v[M.thru], v[M.impr]), r50: dv(v[M.p50], v[M.p25]), cpc: dv(v[M.spend], v[M.contact]) };
 }
+/* ---------- ambang sehat per akun (AOV & biaya trafik 30D + Settings) ---------- */
+let TH_CACHE = null;
+/** closing: purchase ÷ LPV (landing page) atau purchase ÷ kontak (campaign WA, LPV hampir 0) */
+function closingOf(d) {
+  if (d.lpv >= 10 && d.lpv >= d.contact) return { v: dv(d.purch, d.lpv), src: 'LP' };
+  if (d.contact > 0) return { v: dv(d.purch, d.contact), src: 'WA' };
+  return { v: dv(d.purch, d.lpv), src: 'LP' };
+}
+function TH(a) {
+  const ds = ST.main; if (!ds) return null;
+  const key = ds.gen + '|' + JSON.stringify([S.cutoff, S.minRoas, S.target, S.maxCpa, S.metric]);
+  if (!TH_CACHE || TH_CACHE.key !== key) TH_CACHE = { key, m: {} };
+  if (TH_CACHE.m[a]) return TH_CACHE.m[a];
+  const t = todayJkt(), s = addD(t, -30), u = addD(t, -1), M2 = S.metric;
+  const camps = agg(ds, s, u, ad => ad.c, a);
+  let lpS = 0, lpV = 0, waP = 0, waC = 0;
+  camps.forEach(v => { const d = der(v); if (d.lpv >= 10 && d.lpv >= d.contact) { lpS += d.spend; lpV += d.lpv; } else if (d.contact >= 5) { waP += d.purch; waC += d.contact; } });
+  const base = maxCpa(a, ds) * S.minRoas;          // = AOV 30D (atau CPA maks manual × ROAS minimum)
+  const cpa = { cut: base / S.cutoff, ok: base / S.minRoas, scale: base / S.target };
+  const waClose = waC >= 30 ? waP / waC : M2.waClose / 100;
+  const cLpv = lpV ? lpS / lpV : NaN;
+  const r = { base, cpa, waClose, waAuto: waC >= 30, cLpv,
+    cpc: { cut: cpa.cut * waClose, ok: cpa.ok * waClose, scale: cpa.scale * waClose },
+    closeLp: { cut: cLpv / cpa.cut, ok: cLpv / cpa.ok, scale: cLpv / cpa.scale },
+    closeWa: { cut: waClose * 0.6, ok: waClose, scale: waClose * 1.25 },
+    hook: { cut: M2.hookMin / 100, ok: M2.hookOk / 100, scale: M2.hookScale / 100 },
+    lpvr: { cut: M2.lpvMin / 100, ok: M2.lpvOk / 100, scale: M2.lpvScale / 100 } };
+  return (TH_CACHE.m[a] = r);
+}
+/** kelas warna: merah < batas minimum · kuning di antara · hijau ≥ sehat (biru tebal = layak scale) */
+function hcls(kind, v, a, src) {
+  const T = TH(a); if (!T || !fin(v)) return 'c-n';
+  const low = kind === 'cpa' || kind === 'cpc';
+  const L = kind === 'close' ? (src === 'WA' ? T.closeWa : T.closeLp) : T[kind];
+  if (!L || !fin(L.cut)) return 'c-n';
+  if (low) return v <= L.scale ? 'c-g hs' : v <= L.ok ? 'c-g' : v <= L.cut ? 'c-y' : 'c-r';
+  return v >= L.scale ? 'c-g hs' : v >= L.ok ? 'c-g' : v >= L.cut ? 'c-y' : 'c-r';
+}
+function mchip(kind, v, a, txt, src) { return fin(v) ? `<span class="chip ${hcls(kind, v, a, src)}">${txt}</span>` : '<span class="chip c-n">–</span>'; }
+function closeChip(d, a) { const c = closingOf(d); if (!d.purch && !(d.lpv || d.contact)) return '<span class="chip c-n">–</span>'; return mchip('close', c.v, a, pc(c.v) + `<small style="font-weight:500;opacity:.7"> ${c.src}</small>`, c.src); }
+function cpcChip(d, a) { return d.contact ? mchip('cpc', d.cpc, a, rp(d.cpc)) : '<span class="chip c-n">–</span>'; }
+function cpaChip(d, a) { return d.purch ? mchip('cpa', d.cpa, a, rp(d.cpa)) : (d.spend ? `<span class="chip ${d.spend > TH(a).cpa.cut ? 'c-r' : 'c-n'}" title="belum ada purchase">0p</span>` : '<span class="chip c-n">–</span>'); }
+
 
 /* ---------- range ---------- */
 const PRESETS = [['today', 'Hari ini'], ['yday', 'Kemarin'], ['3d', '3D'], ['7d', '7D'], ['14d', '14D'], ['30d', '30D'], ['life', 'Lifetime']];
@@ -629,22 +715,48 @@ async function ensureSide(withReach) {
 function entitiesOf(level, ds) {
   if (level === 'campaign') return ds.campIds.map(id => { const c = ds.campaigns[id]; return { id, n: c.n, a: c.a, active: campActive(c), start: campStart(c), camp: id, st: c.st }; });
   if (level === 'adset') return Object.values(ds.adsets).map(s => { const c = ds.campaigns[s.c] || {}; return { id: s.id, n: s.n, a: s.a, active: s.st === 'ACTIVE' && campActive(c), start: ((s.ct || '') + '').slice(0, 10) || campStart(c), camp: s.c, st: s.st, sub: c.n }; });
-  return ds.ads.map(a => { const c = ds.campaigns[a.c] || {}, s = ds.adsets[a.as] || {}; return { id: a.id, n: a.n, a: a.a, active: a.st === 'ACTIVE' && (!s.st || s.st === 'ACTIVE') && campActive(c), start: ((a.ct || '') + '').slice(0, 10) || null, camp: a.c, st: a.st, sub: c.n }; });
+  return ds.ads.map(a => { const c = ds.campaigns[a.c] || {}, s = ds.adsets[a.as] || {}; return { id: a.id, n: a.n, a: a.a, active: a.st === 'ACTIVE' && (!s.st || s.st === 'ACTIVE') && campActive(c), start: ((a.ct || '') + '').slice(0, 10) || null, camp: a.c, as: a.as, st: a.st, sub: c.n, ad: a }; });
 }
 /** jalankan brain untuk semua entitas di satu level */
-function brainRows(level, onlyId) {
-  const ds = ST.main, t = todayJkt();
+function brainRows(level, onlyId, allAcc) {
+  const ds = ST.main, t = todayJkt(), isAd = level === 'ad';
   const keyFn = level === 'campaign' ? ad => ad.c : level === 'adset' ? ad => ad.as : ad => ad.id;
-  const maps = dailyMaps(ds, keyFn, addD(t, -21), t, -1);
+  const maps = dailyMaps(ds, keyFn, addD(t, isAd ? -Brain.cfg.content.lookback - 1 : -21), t, -1);
   const R7 = ST.reach7 ? (level === 'campaign' ? ST.reach7.camp : level === 'adset' ? ST.reach7.adset : ST.reach7.ad) || {} : {};
-  return entitiesOf(level, ds).filter(e => (onlyId ? e.id === onlyId : (ST.acc < 0 || e.a === ST.acc))).map(e => {
+  const MC = {}, mcOf = a => (MC[a] != null ? MC[a] : (MC[a] = maxCpa(a, ds)));
+  const d14 = new Set(Brain.util.days(t, 14));
+  return entitiesOf(level, ds).filter(e => (onlyId ? e.id === onlyId : (allAcc || ST.acc < 0 || e.a === ST.acc))).map(e => {
     const map = maps[e.id] || {}, age = e.start ? diffD(e.start, t) : null;
     const budget = level === 'campaign' ? campBudget(ds, e.id) : level === 'adset' ? adsetBudget(ds, e.id) : null;
     const freq = (R7[e.id] || [])[1];
-    const res = Brain.evaluate(map, { today: t, active: e.active, age, start: e.start, maxCpa: maxCpa(e.a, ds), budget, freq7: freq,
-      budgetEvents: level === 'ad' ? [] : budgetEvents(level, e.id, ds), tracking: trackingOf(e.a) });
-    return { e, res, map, age, budget, freq, spend14: Object.values(map).reduce((s, v) => s + v[0], 0) };
+    const res = Brain.evaluate(map, { today: t, active: e.active, age, start: e.start, maxCpa: mcOf(e.a), budget, freq7: freq,
+      budgetEvents: isAd ? [] : budgetEvents(level, e.id, ds), tracking: trackingOf(e.a) });
+    const rule = isAd ? Brain.contentRule(map, { today: t, active: e.active, age, maxCpa: mcOf(e.a), freq7: freq, budgetEvents: adBudgetEvents(e, ds) }) : null;
+    return { e, res, rule, map, age, budget, freq, spend14: Object.entries(map).reduce((s, [d, v]) => s + (d14.has(d) || d === t ? v[0] : 0), 0) };
   });
+}
+/** kenaikan/penurunan budget di campaign & ad set induk sebuah iklan */
+function adBudgetEvents(e, ds) {
+  if (!ST.acts || !ST.acts.list) return [];
+  const ids = new Set([e.camp, e.as].filter(Boolean));
+  return ST.acts.list.filter(x => /budget/.test(x.type) && ids.has(x.oid) && typeof x.old === 'number' && typeof x.nw === 'number')
+    .map(x => ({ date: dateJkt(x.t), old: budgetOf(x.old, x.a, ds), nw: budgetOf(x.nw, x.a, ds) }));
+}
+/** rule konten untuk semua iklan (semua akun), di-cache per dataset */
+function adRules() {
+  const key = (ST.main && ST.main.gen) + '|' + (ST.acts ? ST.acts.list.length : 0);
+  if (ST_RULES && ST_RULES.key === key) return ST_RULES.map;
+  const map = {}; brainRows('ad', null, true).forEach(r => { map[r.e.id] = r; });
+  ST_RULES = { key, map }; return map;
+}
+const RTONE = { r: 'c-r', y: 'c-y', b: 'c-b', g: 'c-g', n: 'c-n' };
+const RCOL = { r: '#C0352F', y: '#C98A1B', b: '#2F54EB', g: '#17804A', n: '#9AA1AD' };
+function ruleChip(rule, withAct) { if (!rule) return ''; return `<span class="chip ${RTONE[rule.tone]}" title="${esc(rule.action)}">${esc(withAct ? rule.action : rule.label)}</span>`; }
+function ruleMeter(rule, wide) {
+  const L = rule && rule.limit; if (!L || !(L.max > 0)) return '';
+  const p = Math.min(1, L.used / L.max), over = L.used >= L.max;
+  const col = over ? '#C0352F' : p >= 0.66 ? '#C98A1B' : '#2F54EB';
+  return `<div class="rmeter" title="${esc(L.text)}"><div class="bar"><i style="width:${Math.max(3, Math.round(p * 100))}%;background:${col}"></i></div><div class="lbl"><span>${rp(L.used)} / ${rp(L.max)}</span>${wide ? `<span>${esc(L.text)}</span>` : `<span>${over ? 'lewat batas' : Math.round(p * 100) + '%'}</span>`}</div></div>`;
 }
 const CLS = { Winner: 'c-g', Watchlist: 'c-y', Loser: 'c-r', Tunggu: 'c-b', Nonaktif: 'c-n' };
 const SEVTXT = { severe: ['c-r', 'parah'], confirmed: ['c-r', 'terkonfirmasi'], early: ['c-y', 'early warning'] };
@@ -1168,15 +1280,16 @@ async function pageToday() {
   const br = {}; brainRows('campaign').forEach(r => br[r.e.id] = r);
   const ids = ds.campIds.filter(id => { const c = ds.campaigns[id]; if (ST.acc >= 0 && c.a !== ST.acc) return false; return campActive(c) || (W[0].get(id) || Z())[0] > 0; })
     .sort((p, q) => ((W[0].get(q) || Z())[0] - (W[0].get(p) || Z())[0]) || ((W[2].get(q) || Z())[0] - (W[2].get(p) || Z())[0]));
-  html += `<section class="card" style="padding-bottom:18px"><div class="card-h"><h2>Campaign aktif hari ini</h2><span class="small muted">ROAS per periode · hijau ≥ ${xx(S.minRoas)} · kuning ${xx(S.cutoff)}–${xx(S.minRoas)} · merah &lt; ${xx(S.cutoff)} · klik untuk diagnosis</span></div>
-    <div class="tw"><table style="min-width:1080px"><thead>
-      <tr><th rowspan="2" style="vertical-align:bottom">Campaign</th><th colspan="2" style="text-align:center;padding-bottom:2px">Hari ini</th><th colspan="7" class="bl" style="text-align:center;padding-bottom:2px">ROAS</th><th rowspan="2" class="bl" style="vertical-align:bottom">Status otak</th></tr>
-      <tr><th class="num">Spend</th><th class="num">Purch</th>${P.map((p, i) => `<th class="num${i === 0 ? ' bl' : ''}">${p[0]}</th>`).join('')}</tr>
+  html += `<section class="card" style="padding-bottom:18px"><div class="card-h"><h2>Campaign aktif hari ini</h2><span class="small muted">7D = 7 hari penuh s/d kemarin · warna CPA, cost/contact &amp; closing = patokan akun (lihat Leaderboard) · ROAS hijau ≥ ${xx(S.minRoas)} · kuning ${xx(S.cutoff)}–${xx(S.minRoas)} · merah &lt; ${xx(S.cutoff)} · klik untuk diagnosis</span></div>
+    <div class="tw"><table style="min-width:1420px"><thead>
+      <tr><th rowspan="2" style="vertical-align:bottom">Campaign</th><th colspan="2" style="text-align:center;padding-bottom:2px">Hari ini</th><th colspan="4" class="bl" style="text-align:center;padding-bottom:2px">7D</th><th colspan="7" class="bl" style="text-align:center;padding-bottom:2px">ROAS</th><th rowspan="2" class="bl" style="vertical-align:bottom">Status otak</th></tr>
+      <tr><th class="num">Spend</th><th class="num">Purch</th><th class="num bl">CPM</th><th class="num">CPA</th><th class="num">Cost/contact</th><th class="num">Closing</th>${P.map((p, i) => `<th class="num${i === 0 ? ' bl' : ''}">${p[0]}</th>`).join('')}</tr>
     </thead><tbody>
-    ${ids.map(id => { const c = ds.campaigns[id], v0 = der((W[0].get(id)) || Z()), r = br[id];
+    ${ids.map(id => { const c = ds.campaigns[id], v0 = der((W[0].get(id)) || Z()), r = br[id], v7 = der((W[2] && W[2].get(id)) || Z());
       return `<tr class="click" data-camp="${id}" data-go="diag"><td class="nm" title="${esc(c.n)}">${accChip(ds, c.a)}${shortCamp(c.n)}</td><td class="num">${rp(v0.spend)}</td><td class="num">${nf(v0.purch)}</td>
+      <td class="num bl">${v7.impr ? rp(v7.cpm) : '–'}</td><td class="num">${cpaChip(v7, c.a)}</td><td class="num">${cpcChip(v7, c.a)}</td><td class="num">${closeChip(v7, c.a)}</td>
       ${W.map((w, i) => { if (!w) return `<td class="num${i === 0 ? ' bl' : ''}"><span class="chip c-n">–</span></td>`; const v = der(w.get(id) || Z()); return `<td class="num${i === 0 ? ' bl' : ''}">${roasChip(v.roas, v.spend)}</td>`; }).join('')}
-      <td class="bl" style="white-space:nowrap">${r ? `<span class="chip ${CLS[r.res.cls]}">${r.res.cls}</span><div class="sub2">${esc(r.res.action)}</div>` : '–'}</td></tr>`; }).join('') || '<tr><td colspan="11" class="empty">Tidak ada campaign aktif</td></tr>'}
+      <td class="bl" style="white-space:nowrap">${r ? `<span class="chip ${CLS[r.res.cls]}">${r.res.cls}</span><div class="sub2">${esc(r.res.action)}</div>` : '–'}</td></tr>`; }).join('') || '<tr><td colspan="15" class="empty">Tidak ada campaign aktif</td></tr>'}
     </tbody></table></div></section>`;
   return html;
 }
@@ -1200,6 +1313,7 @@ async function pageDecide() {
   await ensureSide(true);
   const ds = ST.main, y = addD(todayJkt(), -1), lv = ST.decLevel;
   const all = brainRows(lv).filter(r => r.e.active || (ST.showInactive && r.spend14 > 0));
+  if (lv === 'ad') return decideAds(all, y);
   all.sort((a, b) => (Brain.CLASS_ORDER[a.res.cls] - Brain.CLASS_ORDER[b.res.cls]) || (Brain.SEV_ORDER[a.res.sev] - Brain.SEV_ORDER[b.res.sev]) || (b.res.m.s7 - a.res.m.s7));
   const sum = Brain.summary(all.map(r => r.res)), cls = ST.decCls || 'all';
   const rows = cls === 'all' ? all : all.filter(r => r.res.cls === cls);
@@ -1214,13 +1328,13 @@ async function pageDecide() {
   html += `<div class="ctabs" role="tablist" aria-label="Filter kelas">${tabs.map(tb => `<button type="button" role="tab" aria-selected="${cls === tb[0]}" class="ctab ${cls === tb[0] ? 'on' : ''}" data-dcls="${tb[0]}"><span class="t"><i style="background:${tb[2]}"></i>${tb[1]}<b>${tb[3]}</b></span><span class="s">spend 7D ${rp(tb[4])}</span></button>`).join('')}</div>`;
   const lvName = LV.find(l => l[0] === lv)[1];
   html += `<section style="display:flex;flex-direction:column;gap:8px">
-    <div class="tw"><table style="min-width:640px"><thead><tr><th>${lvName}</th><th>ROAS 3D · 7D · 14D</th><th class="num">Spend 7D</th><th class="num">CPA 7D</th><th>Kelas &amp; aksi</th></tr></thead><tbody>
-    ${rows.map(r => { const m = r.res.m, mc = maxCpa(r.e.a, ds);
+    <div class="tw"><table style="min-width:980px"><thead><tr><th>${lvName}</th><th>ROAS 3D · 7D · 14D</th><th class="num">Spend 7D</th><th class="num">CPM 7D</th><th class="num">CPA 7D</th><th class="num">Cost/contact 7D</th><th class="num">Closing 7D</th><th>Kelas &amp; aksi</th></tr></thead><tbody>
+    ${rows.map(r => { const m = r.res.m, mc = maxCpa(r.e.a, ds), d7 = der(Brain.util.sum(r.map, Brain.util.days(todayJkt(), 7)));
       const meta = [r.age != null ? r.age + ' hari' : null, r.budget ? rp(r.budget) + '/hari' : (lv === 'campaign' ? 'budget di ad set' : null), r.res.tracking ? '⚠ tracking' : null, lv !== 'campaign' && r.e.sub ? shortCamp(r.e.sub, 34) : null].filter(Boolean).join(' · ');
       return `<tr class="click${sel && sel.e.id === r.e.id ? ' sel' : ''}" data-sel="${r.e.id}"><td><div class="nm" style="max-width:320px;font-weight:600" title="${esc(r.e.n)}">${accChip(ds, r.e.a)}${shortCamp(r.e.n)}</div><div class="sub2">${meta}</div></td>
       <td style="white-space:nowrap">${roasChip(m.r3, m.s3)} ${roasChip(m.r7, m.s7)} ${roasChip(m.r14, 1)}</td><td class="num">${rp(m.s7)}</td>
-      <td class="num"><span class="${!m.p7 ? '' : m.cpa7 <= mc ? '' : 'dn'}">${rp(m.cpa7)}</span></td>
-      <td><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="chip ${CLS[r.res.cls]}">${r.res.cls}</span><b style="font-size:13px">${esc(r.res.action)}</b></div><div class="sub2">${r.res.signals.length ? esc(r.res.signals.map(s => s.t).join(' · ')) : sevLabel(r.res) || ''}</div></td></tr>`; }).join('') || `<tr><td colspan="5" class="empty">Tidak ada ${lvName.toLowerCase()} di kelas ini</td></tr>`}
+      <td class="num">${d7.impr ? rp(d7.cpm) : '–'}</td><td class="num">${cpaChip(d7, r.e.a)}</td><td class="num">${cpcChip(d7, r.e.a)}</td><td class="num">${closeChip(d7, r.e.a)}</td>
+      <td><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="chip ${CLS[r.res.cls]}">${r.res.cls}</span><b style="font-size:13px">${esc(r.res.action)}</b></div><div class="sub2">${r.res.signals.length ? esc(r.res.signals.map(s => s.t).join(' · ')) : sevLabel(r.res) || ''}</div></td></tr>`; }).join('') || `<tr><td colspan="8" class="empty">Tidak ada ${lvName.toLowerCase()} di kelas ini</td></tr>`}
     </tbody></table></div>
     <label class="small muted" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="inact" ${ST.showInactive ? 'checked' : ''}> tampilkan yang tidak aktif</label>
     <div class="small muted">Aturan: Winner = ROAS 3D &amp; 7D ≥ minimum &amp; stabil (scale kalau ≥ target, maks 20–30% tiap 3–4 hari) · Loser = ROAS 3D &amp; 7D &lt; cutoff, atau spend ≥ 1,5× CPA maks tanpa purchase · sinyal penurunan vs 14 hari sebelumnya: ROAS −20%, CPA +30%, CTR −20%, frequency ≥ 3,5 · dashboard tidak mengubah apa pun di akun.</div>
@@ -1228,30 +1342,76 @@ async function pageDecide() {
   ${notesCard()}`;
   return html;
 }
+/* ---------- Decision Board level Iklan = Rule konten ---------- */
+const LVTABS = () => [['campaign', 'Campaign'], ['adset', 'Ad set'], ['ad', 'Iklan']];
+function decideAds(all, y) {
+  const ds = ST.main, R = Brain.RULES;
+  all.sort((a, b) => (R[a.rule.key].order - R[b.rule.key].order) || (b.rule.m.spend - a.rule.m.spend));
+  const cnt = {}; all.forEach(r => { const k = r.rule.key; cnt[k] = cnt[k] || { n: 0, s: 0 }; cnt[k].n++; cnt[k].s += r.rule.m.spend; });
+  let cls = ST.decCls || 'all'; if (cls !== 'all' && !cnt[cls]) cls = 'all';
+  const rows = cls === 'all' ? all : all.filter(r => r.rule.key === cls);
+  ST._decRows = rows; ST._decLv = 'ad';
+  const lb = Brain.cfg.content.lookback;
+  let html = head('Decision Board', `Rule konten per iklan · ${lb} hari terakhir + hari ini · batas = kelipatan CPA maks per akun`,
+    `<button type="button" class="btn" data-rules="1">Lihat aturan</button><div class="seg" role="group" aria-label="Level">${LVTABS().map(l => `<button type="button" class="${l[0] === 'ad' ? 'on' : ''}" data-declevel="${l[0]}">${l[1]}</button>`).join('')}</div>${accSeg()}`);
+  const keys = Object.keys(R).filter(k => cnt[k]).sort((a, b) => R[a].order - R[b].order);
+  const tabs = [['all', 'Semua', '#15171C', all.length, all.reduce((s, r) => s + r.rule.m.spend, 0)]].concat(keys.map(k => [k, R[k].label, RCOL[R[k].tone], cnt[k].n, cnt[k].s]));
+  html += `<div class="ctabs" role="tablist" aria-label="Filter rule">${tabs.map(tb => `<button type="button" role="tab" aria-selected="${cls === tb[0]}" class="ctab ${cls === tb[0] ? 'on' : ''}" data-dcls="${tb[0]}"><span class="t"><i style="background:${tb[2]}"></i>${esc(tb[1])}<b>${tb[3]}</b></span><span class="s">spend ${lb}D ${rp(tb[4])}</span></button>`).join('')}</div>`;
+  html += `<section style="display:flex;flex-direction:column;gap:8px">
+    <div class="tw"><table style="min-width:900px"><thead><tr><th>Iklan</th><th class="num">Spend · purchase · ROAS</th><th class="num">Link CTR · LPV/klik · IC</th><th style="width:170px">Batas</th><th>Rule &amp; aksi</th></tr></thead><tbody>
+    ${rows.map(r => { const m = r.rule.m;
+      return `<tr class="click" data-sel="${r.e.id}"><td><div class="nm" style="max-width:300px;font-weight:600" title="${esc(r.e.n)}">${accChip(ds, r.e.a)}${esc(r.e.n)}</div><div class="sub2">${shortCamp(r.e.sub, 40)}${r.age != null ? ' · ' + r.age + ' hari' : ''}</div></td>
+      <td class="num" style="white-space:nowrap">${rp(m.spend)} · ${nf(m.purch)}p · ${roasChip(m.roas, m.spend)}</td>
+      <td class="num" style="white-space:nowrap">${pc(m.ctr)} · ${fin(m.lpvRate) ? pc(m.lpvRate, 0) : '–'} · ${nf(m.ic)}</td>
+      <td>${ruleMeter(r.rule) || '<span class="small muted">–</span>'}</td>
+      <td><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">${ruleChip(r.rule)}<b style="font-size:13px">${r.rule.action !== r.rule.label ? esc(r.rule.action) : ''}</b></div><div class="sub2" style="max-width:380px">${esc(r.rule.reasons[0] || '')}</div></td></tr>`; }).join('') || '<tr><td colspan="5" class="empty">Tidak ada iklan di grup ini</td></tr>'}
+    </tbody></table></div>
+    <label class="small muted" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="inact" ${ST.showInactive ? 'checked' : ''}> tampilkan yang tidak aktif</label>
+    <div class="small muted">Batas = spend dibanding batas rule yang sedang berlaku (biru aman · kuning ≥ 66% · merah lewat batas). Dashboard tidak mengubah apa pun di akun.</div>
+  </section>
+  ${notesCard()}`;
+  return html;
+}
+function ruleBlock(r) {
+  const ru = r.rule, m = ru.m, ds = ST.main, lb = Brain.cfg.content.lookback;
+  return `<div class="dp-act ${RTONE[ru.tone]}"><span class="k">RULE KONTEN${ru.kase ? ' · KASUS ' + ru.kase : ''} · ${esc(ru.label.toUpperCase())}</span><span class="a">${esc(ru.action)}</span></div>
+    ${ru.limit ? `<div class="rbox">${ruleMeter(ru, true)}</div>` : ''}
+    <ul class="reasons">${ru.reasons.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+    <dl class="kv">
+      <dt>Spend ${lb}D</dt><dd>${rp(m.spend)}</dd>
+      <dt>Purchase · ROAS</dt><dd>${nf(m.purch)} · ${xx(m.roas)}</dd>
+      <dt>CPA</dt><dd><span class="${m.purch && m.cpa > m.maxCpa ? 'dn' : ''}">${rp(m.cpa)}</span> <span style="font-weight:400;color:var(--ink3)">/ maks ${rp(m.maxCpa)}</span></dd>
+      <dt>Link CTR · LPV/klik</dt><dd>${pc(m.ctr)} · ${fin(m.lpvRate) ? pc(m.lpvRate, 0) : 'LPV tidak terlacak'}</dd>
+      <dt>Initiate checkout</dt><dd>${nf(m.ic)}</dd>
+      <dt>Kosong beruntun</dt><dd>${m.streakN ? m.streakN + ' hari · ' + rp(m.streakSpend) : '–'}</dd>
+    </dl>
+    <div class="small muted">Otak ROAS (level iklan): ${esc(r.res.cls)} — ${esc(r.res.action)}</div>`;
+}
 function detailPanel(r, lv) {
   const ds = ST.main, m = r.res.m, mc = maxCpa(r.e.a, ds), k = CLS[r.res.cls], t = todayJkt();
   const days = []; for (let i = 14; i >= 1; i--) days.push(addD(t, -i));
   const vals = days.map(d => { const v = r.map[d]; return v && v[0] ? v[9] / v[0] : null; });
   const sv = sevLabel(r.res), lvTxt = { campaign: 'campaign', adset: 'ad set', ad: 'iklan' }[lv];
   const sigCls = s => s.k === 'freq' ? 'c-y' : 'c-r';
-  const noteTxt = `${r.res.action}: ${String(r.e.n).replace(/\s*-\s*\d{4}$/, '')} (${ds.accounts[r.e.a].label})`;
+  const isAd = lv === 'ad' && r.rule;
+  const noteTxt = `${isAd ? r.rule.action : r.res.action}: ${String(r.e.n).replace(/\s*-\s*\d{4}$/, '')}${isAd && r.e.sub ? ' — ' + String(r.e.sub).replace(/\s*-\s*\d{4}$/, '') : ''} (${ds.accounts[r.e.a].label})`;
   const list = ST._decRows || [], idx = list.findIndex(x => x.e.id === r.e.id);
   return `<div class="card dp">
     <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div style="min-width:0"><div class="small muted">${esc(ds.accounts[r.e.a].label)} · ${lvTxt}${r.age != null ? ' · ' + r.age + ' hari' : ''}</div><h2 style="font-size:18px;font-weight:700;margin-top:2px">${shortCamp(r.e.n)}</h2>${lv !== 'campaign' && r.e.sub ? `<div class="sub2">${shortCamp(r.e.sub)}</div>` : ''}</div>
       <div class="pv-nav"><button type="button" class="ib" data-decnav="-1" aria-label="Sebelumnya" ${idx <= 0 ? 'disabled' : ''}>‹</button><span class="small muted" style="min-width:52px;text-align:center">${idx + 1} dari ${list.length}</span><button type="button" class="ib" data-decnav="1" aria-label="Berikutnya" ${idx < 0 || idx >= list.length - 1 ? 'disabled' : ''}>›</button><button type="button" class="ib x" data-close="1" aria-label="Tutup" style="margin-left:4px">×</button></div></div>
-    <div class="dp-act ${k}"><span class="k">${r.res.cls.toUpperCase()}${sv ? ' · ' + sv.toUpperCase() : ''}</span><span class="a">${esc(r.res.action)}</span><span class="small">${esc(r.res.reasons[0] || '')}</span></div>
+    ${isAd ? ruleBlock(r) : `<div class="dp-act ${k}"><span class="k">${r.res.cls.toUpperCase()}${sv ? ' · ' + sv.toUpperCase() : ''}</span><span class="a">${esc(r.res.action)}</span><span class="small">${esc(r.res.reasons[0] || '')}</span></div>`}
     <div class="tiles">${[['ROAS 3D', m.r3, m.s3], ['ROAS 7D', m.r7, m.s7], ['ROAS 14D', m.r14, 1]].map(x => `<div class="tile"><div class="l">${x[0]}</div><div class="v" style="color:${!x[2] || !fin(x[1]) ? 'var(--ink3)' : x[1] >= S.minRoas ? 'var(--g)' : x[1] >= S.cutoff ? 'var(--y)' : 'var(--r)'}">${x[2] ? xx(x[1]) : '–'}</div></div>`).join('')}</div>
     <div><div class="fl">ROAS harian, 14 hari</div>${chartBox({ labels: days, series: [{ name: 'ROAS', c: '#2F54EB', v: vals }], fmt: xx, xfmt: l => fd(l), refs: S.minRoas === S.cutoff ? [[S.minRoas, 'Min/Cutoff', '#C0352F']] : [[S.minRoas, 'Min', '#17804A'], [S.cutoff, 'Cutoff', '#C0352F']], w: 480, h: 170, title: 'ROAS harian' })}</div>
     ${r.res.signals.length ? `<div><div class="fl">Sinyal penurunan</div><div style="display:flex;flex-wrap:wrap;gap:6px">${r.res.signals.map(s => `<span class="chip ${sigCls(s)}" title="${esc(s.d)}">${esc(s.t)}</span>`).join('')}</div></div>` : ''}
-    ${r.res.reasons.length > 1 ? `<ul class="reasons">${r.res.reasons.slice(1).map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+    ${!isAd && r.res.reasons.length > 1 ? `<ul class="reasons">${r.res.reasons.slice(1).map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
     ${r.res.tracking ? `<div class="callout r" style="padding:8px 10px">⚠ Tracking bermasalah: ${esc(r.res.tracking)} — angka ROAS bisa tidak akurat.</div>` : ''}
-    <dl class="kv">
+    ${isAd ? '' : `<dl class="kv">
       ${r.budget ? `<dt>Budget/hari</dt><dd>${rp(r.budget)}</dd>` : ''}
       <dt>Spend 7D</dt><dd>${rp(m.s7)}</dd>
       <dt>Purchase 7D</dt><dd>${nf(m.p7)}</dd>
       <dt>CPA 7D</dt><dd><span class="${m.p7 && m.cpa7 > mc ? 'dn' : ''}">${rp(m.cpa7)}</span> <span style="font-weight:400;color:var(--ink3)">/ maks ${rp(mc)}</span></dd>
       <dt>Frequency 7D</dt><dd>${fin(r.freq) ? r.freq.toFixed(2).replace('.', ',') : '–'}</dd>
-    </dl>
+    </dl>`}
     <div class="btns">
       <button type="button" class="btn pri" data-ent="${r.e.id}" data-entlevel="${lv}">Lihat trend</button>
       <button type="button" class="btn" data-camp="${r.e.camp}" data-go="diag">Diagnosis</button>
@@ -1434,14 +1594,23 @@ function topAd(ds, g) {
   const s = g.ads.slice().sort((a, b) => ((ds.ads[b.ai].st === 'ACTIVE') - (ds.ads[a.ai].st === 'ACTIVE')) || (b.v[0] - a.v[0]));
   return ds.ads[s[0].ai];
 }
-function pageCreative() {
+/** rule paling mendesak di antara iklan aktif sebuah konsep */
+function conceptRule(g, RM) {
+  let best = null;
+  g.ads.forEach(x => { const r = RM[ST.ds.ads[x.ai].id]; if (!r || !r.rule || r.rule.key === 'off') return;
+    if (!best || Brain.RULES[r.rule.key].order < Brain.RULES[best.key].order) best = r.rule; });
+  return best;
+}
+async function pageCreative() {
+  await ensureSide(false);
+  const RM = ST.main ? adRules() : {};
   const ds = ST.ds, [s, u] = curRange(), { list, med } = buildConcepts(ds, s, u), f = ST.cf, view = ST.cview || 'grid';
   let rows = list.filter(g => (ST.acc < 0 || g.a === ST.acc) && g.d.spend > 0);
   rows = rows.filter(g => (!f.minCtr || g.d.ctr * 100 >= f.minCtr) && (!f.cheap || (med[g.a] && g.d.cLpv <= med[g.a]))
     && (!f.minPurch || g.d.purch >= f.minPurch) && (!f.roasOk || g.d.roas >= S.minRoas) && (!f.scored || g.score != null)
     && (!f.q || g.name.toLowerCase().includes(f.q.toLowerCase())));
   const so = ST.sort.creative || { k: 'score', d: -1 };
-  const gv = (g, k) => k === 'score' ? (g.score == null ? -1 : g.score) : k === 'name' ? g.name : (fin(g.d[k]) ? g.d[k] : -1);
+  const gv = (g, k) => { if (k === 'score') return g.score == null ? -1 : g.score; if (k === 'name') return g.name; const x = k === 'closing' ? closingOf(g.d).v : g.d[k]; return fin(x) ? x : -1; };
   rows.sort((a, b) => { const x = gv(a, so.k), y = gv(b, so.k); return (x > y ? 1 : x < y ? -1 : 0) * so.d; });
   ST._concepts = list; ST._crList = rows.map(g => g.key);
   let html = head('Creative Lab', `${rangeLabel()} · konten dikelompokkan per konsep · klik untuk preview`,
@@ -1454,24 +1623,25 @@ function pageCreative() {
     <label><input type="checkbox" id="cfRoas" ${f.roasOk ? 'checked' : ''}> ROAS ≥ minimum</label>
     <label><input type="checkbox" id="cfScored" ${f.scored ? 'checked' : ''}> Hanya yang punya skor</label>
     <span class="small muted">${rows.length} konsep</span>
-    ${view === 'grid' ? `<label style="margin-left:auto">Urutkan <select class="inp" id="cfSort" style="height:34px">${[['score', 'Skor'], ['spend', 'Spend'], ['roas', 'ROAS'], ['purch', 'Purchase'], ['ctr', 'Link CTR'], ['cLpv', 'Biaya/LPV']].map(o => `<option value="${o[0]}" ${so.k === o[0] ? 'selected' : ''}>${o[1]}</option>`).join('')}</select></label>` : ''}
+    ${view === 'grid' ? `<label style="margin-left:auto">Urutkan <select class="inp" id="cfSort" style="height:34px">${[['score', 'Skor'], ['spend', 'Spend'], ['roas', 'ROAS'], ['val', 'Purchase value'], ['purch', 'Purchase'], ['cpa', 'CPA'], ['ctr', 'Link CTR'], ['hook', 'Hook'], ['closing', 'Closing'], ['cpc', 'Cost/contact'], ['cLpv', 'Biaya/LPV']].map(o => `<option value="${o[0]}" ${so.k === o[0] ? 'selected' : ''}>${o[1]}</option>`).join('')}</select></label>` : ''}
   </div>`;
   if (view === 'grid') {
     html += `<section class="cgrid">${rows.slice(0, 120).map(g => { const ad = topAd(ds, g), img = ad.img || ad.th;
       return `<button type="button" class="ccard" data-concept="${esc(g.key)}"><span class="cthumb">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : ''}<span class="play"><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>${g.score != null ? `<span class="chip ${LABCLS[g.label]}">${g.label} ${g.score}</span>` : ''}</span>
-        <span class="cbody"><b title="${esc(g.name)}">${esc(g.name)}</b><span>${accChip(ds, g.a).replace('class="tag"', 'class="tag" style="margin-right:4px"')}ROAS ${xx(g.d.roas)} · CPA ${rp(g.d.cpa)}</span><span>Spend ${rp(g.d.spend)} · ${g.ads.length} iklan</span></span></button>`; }).join('') || '<div class="card empty" style="grid-column:1/-1">Tidak ada konten yang cocok dengan filter</div>'}</section>`;
+        <span class="cbody"><b title="${esc(g.name)}">${esc(g.name)}</b>${(cr => cr ? `<span>${ruleChip(cr, true)}</span>` : '')(conceptRule(g, RM))}<span>${accChip(ds, g.a).replace('class="tag"', 'class="tag" style="margin-right:4px"')}ROAS ${xx(g.d.roas)} · CPA ${rp(g.d.cpa)}</span><span>Spend ${rp(g.d.spend)} · ${g.ads.length} iklan</span><span class="cmet">CPM ${rp(g.d.cpm)} · CTR ${pc(g.d.ctr)} · Hook ${g.v[M.p25] ? pc(g.d.hook, 1) : '–'} · Closing ${pc(closingOf(g.d).v)}</span></span></button>`; }).join('') || '<div class="card empty" style="grid-column:1/-1">Tidak ada konten yang cocok dengan filter</div>'}</section>`;
   } else {
-    const cols = [['name', 'Konsep', 0], ['score', 'Skor', 1], ['spend', 'Spend', 1], ['ctr', 'Link CTR', 1], ['ctrAll', 'CTR (all)', 1], ['hook', 'Hook', 1], ['hold', 'Hold', 1], ['r50', 'Retensi 50%', 1], ['cLpv', 'Biaya/LPV', 1], ['purch', 'Purchase', 1], ['roas', 'ROAS', 1], ['cpa', 'CPA', 1]];
-    html += `<div class="tw"><table style="min-width:1100px"><thead><tr>${cols.map(c => `<th class="${c[2] ? 'num' : ''}" data-sort="${c[0]}">${c[1]}${so.k === c[0] ? (so.d < 0 ? ' ↓' : ' ↑') : ''}</th>`).join('')}<th>Status</th></tr></thead><tbody>
-    ${rows.slice(0, 400).map(g => { const d = g.d, m = med[g.a];
+    const cols = [['name', 'Konsep', 0], ['score', 'Skor', 1], ['spend', 'Spend', 1], ['cpm', 'CPM', 1], ['ctr', 'Link CTR', 1], ['hook', 'Hook', 1], ['r50', 'Retensi 50%', 1], ['lpvRate', 'LPV rate', 1], ['cLpv', 'Biaya/LPV', 1], ['cpc', 'Cost/contact', 1], ['closing', 'Closing', 1], ['purch', 'Purch', 1], ['val', 'Purchase value', 1], ['roas', 'ROAS', 1], ['cpa', 'CPA', 1]];
+    html += `<div class="tw"><table style="min-width:1560px"><thead><tr>${cols.map(c => `<th class="${c[2] ? 'num' : ''}" data-sort="${c[0]}">${c[1]}${so.k === c[0] ? (so.d < 0 ? ' ↓' : ' ↑') : ''}</th>`).join('')}<th>Status</th><th>Rule</th></tr></thead><tbody>
+    ${rows.slice(0, 400).map(g => { const d = g.d, m = med[g.a], cr = conceptRule(g, RM);
       return `<tr class="click" data-concept="${esc(g.key)}"><td class="nm" title="${esc(g.name)}">${accChip(ds, g.a)}${esc(g.name)} <span class="small muted">${g.ads.length > 1 ? '×' + g.ads.length : ''}</span></td>
       <td class="num">${g.score != null ? `<span class="chip ${LABCLS[g.label]}">${g.label} ${g.score}</span>` : '<span class="chip c-n">–</span>'}</td>
-      <td class="num">${rp(d.spend)}</td><td class="num">${pc(d.ctr)}</td><td class="num">${pc(d.ctrAll)}</td><td class="num">${pc(d.hook, 1)}</td><td class="num">${pc(d.hold, 1)}</td><td class="num">${pc(d.r50, 0)}</td>
-      <td class="num"><span class="chip ${!d.lpv ? 'c-n' : m && d.cLpv <= m ? 'c-g' : 'c-n'}">${rp(d.cLpv)}</span></td><td class="num">${nf(d.purch)}</td><td class="num">${roasChip(d.roas, d.spend)}</td><td class="num">${rp(d.cpa)}</td>
-      <td style="white-space:nowrap">${g.active.length ? `<span class="chip c-g">Aktif</span>${g.active.length > 1 ? ` <span class="small muted">${g.active.length} iklan</span>` : ''}` : '<span class="chip c-n">Nonaktif</span>'}</td></tr>`; }).join('') || '<tr><td colspan="13" class="empty">Tidak ada konten yang cocok dengan filter</td></tr>'}
+      <td class="num">${rp(d.spend)}</td><td class="num">${d.impr ? rp(d.cpm) : '–'}</td><td class="num">${pc(d.ctr)}</td><td class="num">${g.v[M.p25] ? mchip('hook', d.hook, g.a, pc(d.hook, 1)) : '–'}</td><td class="num">${pc(d.r50, 0)}</td>
+      <td class="num">${d.lpv ? mchip('lpvr', d.lpvRate, g.a, pc(d.lpvRate, 0)) : '–'}</td><td class="num"><span class="chip ${!d.lpv ? 'c-n' : m && d.cLpv <= m ? 'c-g' : 'c-n'}">${rp(d.cLpv)}</span></td><td class="num">${cpcChip(d, g.a)}</td><td class="num">${closeChip(d, g.a)}</td>
+      <td class="num">${nf(d.purch)}</td><td class="num">${d.val ? rp(d.val) : '–'}</td><td class="num">${roasChip(d.roas, d.spend)}</td><td class="num">${cpaChip(d, g.a)}</td>
+      <td style="white-space:nowrap">${g.active.length ? `<span class="chip c-g">Aktif</span>${g.active.length > 1 ? ` <span class="small muted">${g.active.length} iklan</span>` : ''}` : '<span class="chip c-n">Nonaktif</span>'}</td><td style="white-space:nowrap">${cr ? ruleChip(cr, true) : '<span class="small muted">–</span>'}</td></tr>`; }).join('') || '<tr><td colspan="17" class="empty">Tidak ada konten yang cocok dengan filter</td></tr>'}
     </tbody></table></div>`;
   }
-  html += `<div class="small muted">Skor = 30% hook + 20% hold + 15% retensi + 35% ROAS (persentil per akun; minimal 2 purchase atau Rp3jt spend) · Hook = tonton 25% ÷ impresi · Hold = ThruPlay ÷ impresi · Link CTR hanya klik ke website.</div>`;
+  html += `<div class="small muted">Rule = aksi paling mendesak di antara iklan aktif konsep ini (detail per iklan di preview atau Decision Board → Iklan) · <a href="#" data-rules="1">lihat aturan</a> · Skor = 30% hook + 20% hold + 15% retensi + 35% ROAS (persentil per akun; minimal 2 purchase atau Rp3jt spend) · Hook = tonton 25% ÷ impresi · Hold = ThruPlay ÷ impresi · Link CTR hanya klik ke website.</div>`;
   return html;
 }
 const PFMT = [['MOBILE_FEED_STANDARD', 'Feed'], ['INSTAGRAM_STORY', 'Story'], ['INSTAGRAM_REELS', 'Reels']];
@@ -1489,6 +1659,7 @@ function renderPreview() {
   const rmax = Math.max(0.0001, ...RET.map(x => x[1]));
   const ads = g.ads.slice().sort((a, b) => b.v[0] - a.v[0]);
   const fb = fbLink(ad.post);
+  const RM = ST.main ? adRules() : {}, sr = RM[ad.id];
   const html = `<div class="pv">
     <div class="pv-h"><div style="flex:1;min-width:200px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><h2>${esc(g.name)}</h2>${g.score != null ? `<span class="pill ${LABCLS[g.label]}">${g.label} ${g.score}</span>` : ''}</div>
       <div class="small muted">${esc(ds.accounts[g.a].label)} · ${g.ads.length} iklan · ${s === 'lifetime' ? 'lifetime' : fd(s) + ' – ' + fd(u)}</div></div>
@@ -1501,10 +1672,16 @@ function renderPreview() {
         <div class="small muted" style="text-align:center">${esc(ad.n)}${fb ? ` · <a href="${esc(fb)}" target="_blank" rel="noopener">Buka di Facebook ↗</a>` : ''}</div>
       </div>
       <div class="pv-r">
-        <div class="tiles">${[['Spend', rp(d.spend)], ['Purchase', nf(d.purch)], ['ROAS', xx(d.roas), d.spend ? (d.roas >= S.minRoas ? 'var(--g)' : d.roas >= S.cutoff ? 'var(--y)' : 'var(--r)') : ''], ['CPA', rp(d.cpa)], ['Link CTR', pc(d.ctr)], ['Biaya/LPV', rp(d.cLpv)]].map(x => `<div class="tile"><div class="l">${x[0]}</div><div class="v" style="${x[2] ? 'color:' + x[2] : ''}">${x[1]}</div></div>`).join('')}</div>
+        ${sr && sr.rule && sr.rule.key !== 'off' ? `<div class="rbox"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="small muted">Rule iklan ini</span>${ruleChip(sr.rule)}<b style="font-size:14px">${esc(sr.rule.action)}</b></div>${ruleMeter(sr.rule, true)}<ul class="reasons">${sr.rule.reasons.map(x => `<li>${esc(x)}</li>`).join('')}</ul><div class="small muted">${shortCamp((ds.campaigns[ad.c] || {}).n || '')} · ${Brain.cfg.content.lookback} hari terakhir · <a href="#" data-rules="1">lihat aturan</a></div></div>` : ''}
+        <div class="tiles">${(() => { const K = { 'c-g': 'var(--g)', 'c-y': 'var(--y)', 'c-r': 'var(--r)' }, col = c => K[String(c).split(' ')[0]] || '', cl = closingOf(d);
+          return [['Spend', rp(d.spend)], ['Purchase value', d.val ? rp(d.val) : '–'], ['ROAS', xx(d.roas), d.spend ? (d.roas >= S.minRoas ? 'var(--g)' : d.roas >= S.cutoff ? 'var(--y)' : 'var(--r)') : ''],
+            ['CPA', d.purch ? rp(d.cpa) : '0 purchase', d.purch ? col(hcls('cpa', d.cpa, g.a)) : ''], ['CPM', rp(d.cpm)], ['Link CTR', pc(d.ctr)],
+            ['Hook rate', V[M.p25] ? pc(d.hook, 1) : '–', V[M.p25] ? col(hcls('hook', d.hook, g.a)) : ''], ['Retensi 50%', pc(d.r50, 0)], ['LPV rate', d.lpv ? pc(d.lpvRate, 0) : '–', d.lpv ? col(hcls('lpvr', d.lpvRate, g.a)) : ''],
+            ['Cost/contact', d.contact ? rp(d.cpc) : '–', d.contact ? col(hcls('cpc', d.cpc, g.a)) : ''], ['Closing ' + cl.src, pc(cl.v), col(hcls('close', cl.v, g.a, cl.src))], ['Purchase', nf(d.purch)]]
+            .map(x => `<div class="tile"><div class="l">${x[0]}</div><div class="v" style="${x[2] ? 'color:' + x[2] : ''}">${x[1]}</div></div>`).join(''); })()}</div>
         <div><div class="fl">Retensi video<span>% dari impresi</span></div>${V[M.p25] ? RET.map(x => `<div class="ret" style="margin-bottom:6px"><span>${x[0]}</span><span class="bar"><i style="width:${Math.round(x[1] / rmax * 100)}%"></i></span><b class="num">${pc(x[1], 1)}</b></div>`).join('') : '<div class="small muted">Bukan video / belum ada data tonton.</div>'}</div>
         <div><div class="fl">Dipakai di<span>klik untuk ganti preview</span></div>${ads.map(x => { const a = ds.ads[x.ai], dd = der(x.v);
-          return `<button type="button" class="used ${a.id === ad.id ? 'on' : ''}" data-pvad="${a.id}"><span class="pill ${a.st === 'ACTIVE' ? 'c-g' : 'c-n'}">${a.st === 'ACTIVE' ? 'Aktif' : esc(String(a.st || '–').toLowerCase().replace(/_/g, ' '))}</span><span style="flex:1;min-width:160px">${shortCamp((ds.campaigns[a.c] || {}).n || a.c)}<span class="sub2" style="display:block">${esc(a.n)}</span></span><span class="small muted num">ROAS ${xx(dd.roas)} · ${rp(dd.spend)}</span></button>`; }).join('')}</div>
+          return `<button type="button" class="used ${a.id === ad.id ? 'on' : ''}" data-pvad="${a.id}"><span class="pill ${a.st === 'ACTIVE' ? 'c-g' : 'c-n'}">${a.st === 'ACTIVE' ? 'Aktif' : esc(String(a.st || '–').toLowerCase().replace(/_/g, ' '))}</span><span style="flex:1;min-width:160px">${shortCamp((ds.campaigns[a.c] || {}).n || a.c)}<span class="sub2" style="display:block">${esc(a.n)}</span></span><span class="small muted num">ROAS ${xx(dd.roas)} · ${rp(dd.spend)}</span>${RM[a.id] && RM[a.id].rule && RM[a.id].rule.key !== 'off' ? ruleChip(RM[a.id].rule) : ''}</button>`; }).join('')}</div>
         <div class="grid two" style="gap:8px">
           <div class="idbox"><span><span class="small muted">Creative ID</span><code>${esc(ad.cr || '–')}</code></span>${ad.cr ? `<button type="button" class="btn sm" data-copy="${esc(ad.cr)}">Salin</button>` : ''}</div>
           <div class="idbox"><span><span class="small muted">Post ID</span><code>${esc(ad.post || '–')}</code></span>${ad.post ? `<button type="button" class="btn sm" data-copy="${esc(ad.post)}">Salin</button>` : ''}</div>
@@ -1726,9 +1903,9 @@ async function render() {
       case 'new': html = pageNew(); break;
       case 'log': html = await pageLog(); break;
       default:
-        if (ST.preset === 'life' && ST.page !== 'creative') ST.preset = '30d';
+        if (ST.preset === 'life' && ST.page !== 'creative' && ST.page !== 'board') ST.preset = '30d';
         await ensureDs();
-        html = ST.page === 'diag' ? await pageDiag() : ST.page === 'creative' ? pageCreative() : pageCpa();
+        html = ST.page === 'diag' ? await pageDiag() : ST.page === 'creative' ? await pageCreative() : ST.page === 'board' ? await pageBoard() : pageCpa();
     }
     v.innerHTML = html;
     bindCharts();
@@ -1776,7 +1953,7 @@ function setSidebar(c) {
 /* =====================================================================
    EVENTS
    ===================================================================== */
-const SEL = '[data-logrow],[data-lact],[data-lcat],[data-decnav],[data-page],[data-acc],[data-camp],[data-concept],[data-copy],[data-sort],[data-del],[data-declevel],[data-dcls],[data-sel],[data-addnote],[data-tmode],[data-tdays],[data-tgran],[data-tmetric],[data-tm1],[data-trm],[data-ent],[data-cmp],[data-cview],[data-pace],[data-pix],[data-atab],[data-pvnav],[data-pvad],[data-pfmt],[data-close],#noteAdd,#audRef,#mclose,#refBtn,#setBtn,#dApply,#trApply,#loginBtn,#saveSet,#logoutBtn,#sbToggle';
+const SEL = '[data-lbm],[data-rules],[data-logrow],[data-lact],[data-lcat],[data-decnav],[data-page],[data-acc],[data-camp],[data-concept],[data-copy],[data-sort],[data-del],[data-declevel],[data-dcls],[data-sel],[data-addnote],[data-tmode],[data-tdays],[data-tgran],[data-tmetric],[data-tm1],[data-trm],[data-ent],[data-cmp],[data-cview],[data-pace],[data-pix],[data-atab],[data-pvnav],[data-pvad],[data-pfmt],[data-close],#noteAdd,#audRef,#mclose,#refBtn,#setBtn,#dApply,#trApply,#loginBtn,#saveSet,#logoutBtn,#sbToggle';
 document.addEventListener('click', async e => {
   const el = e.target.closest(SEL);
   if (!el || !el.closest('.mar-app')) return;
@@ -1789,6 +1966,8 @@ document.addEventListener('click', async e => {
   if (D.pvad) { ST.pv.ad = D.pvad; return renderPreview(); }
   if (D.pfmt) { ST.pv.fmt = D.pfmt; return renderPreview(); }
   if (D.close) return closeModal();
+  if (D.lbm) { const [k, m] = D.lbm.split(':'), lb = LS.get('lb', {}); lb[k] = m; LS.set('lb', lb); return render(); }
+  if (D.concept && D.lbk) ST._crList = (ST._lbLists || {})[D.lbk] || [D.concept];
   if (D.concept) return openPreview(D.concept);
   if (D.cmp) { closeModal(); const others = (ST._crList || []).filter(k => k !== D.cmp).slice(0, 2); Object.assign(ST.tr, { level: 'concept', mode: 'multi', ids: [D.cmp].concat(others) }); LS.set('tr', ST.tr); ST.page = 'trend'; LS.set('page', 'trend'); loadingView(); window.scrollTo(0, 0); return render(); }
   if (D.ent) { closeModal(); Object.assign(ST.tr, { level: D.entlevel, mode: 'single', ids: [D.ent] }); ST.trQ = ''; LS.set('tr', ST.tr); ST.page = 'trend'; LS.set('page', 'trend'); loadingView(); window.scrollTo(0, 0); return render(); }
@@ -1797,6 +1976,7 @@ document.addEventListener('click', async e => {
     const go = D.go; if (go === 'diag') { ST.diagCamp = D.camp; if (ST.preset === 'life' || ST.preset === 'today') ST.preset = '7d'; }
     ST.page = go; LS.set('page', go); loadingView(); window.scrollTo(0, 0); return render();
   }
+  if (D.rules) return openRules();
   if (D.lcat) { ST.logF = Object.assign({ cat: 'all', actor: '', q: '', merge: true }, ST.logF, { cat: D.lcat }); return render(); }
   if (D.lact !== undefined) { ST.logF = Object.assign({ cat: 'all', actor: '', q: '', merge: true }, ST.logF, { actor: D.lact }); return render(); }
   if (D.logrow !== undefined) return openLogDetail(+D.logrow);
@@ -1874,6 +2054,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && (e.target.id === 'pwInp' || e.target.id === 'apiInp')) doLogin();
   if (e.key === 'Enter' && e.target.id === 'noteInp') $('noteAdd').click();
 });
+document.addEventListener('toggle', e => { if (e.target && e.target.id === 'lbPat') LS.set('lbPat', e.target.open); }, true);
 $('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
 
 function openModal(html, cls) { ST.decOpen = false; $('mboxEl').className = 'mbox ' + (cls || 'pad'); $('mclose').hidden = cls === 'wide' || cls === 'dec'; $('mbody').innerHTML = html; $('modal').hidden = false; }
@@ -1886,6 +2067,129 @@ function openDecision(id) {
 }
 
 
+/* =====================================================================
+   LEADERBOARD — konten terbaik / terburuk per metrik (kartu ala Shopify)
+   ===================================================================== */
+function patokanCard(accs) {
+  const ds = ST.main;
+  const row = (lbl, f) => `<tr><td>${lbl}</td>${accs.map(a => { const T = TH(a); return `<td class="num">${f(T)}</td>`; }).join('')}</tr>`;
+  const tri = (L, fmt) => `<span class="c-r-t">${fmt(L.cut)}</span> · <span class="c-g-t">${fmt(L.ok)}</span> · <b>${fmt(L.scale)}</b>`;
+  return `<details class="card lbpat"${LS.get('lbPat', false) ? ' open' : ''} id="lbPat"><summary><b>Patokan akun</b> <span class="small muted">batas minimum · sehat · layak scale — dari AOV &amp; biaya trafik 30 hari, ROAS ${xx(S.cutoff)} / ${xx(S.minRoas)} / ${xx(S.target)}</span></summary>
+    <div class="tw" style="margin-top:10px"><table class="rtab" style="min-width:520px"><thead><tr><th>Metrik</th>${accs.map(a => `<th class="num">${esc(ds.accounts[a].label)}</th>`).join('')}</tr></thead><tbody>
+    ${row('CPA', T => tri(T.cpa, rp))}
+    ${row('Cost per contact', T => tri(T.cpc, rp) + `<div class="small muted">closing kontak ${pc(T.waClose, 0)}${T.waAuto ? '' : ' (asumsi)'}</div>`)}
+    ${row('Closing LP (purchase ÷ LPV)', T => fin(T.cLpv) ? tri(T.closeLp, v => pc(v)) + `<div class="small muted">biaya/LPV ${rp(T.cLpv)}</div>` : '–')}
+    ${row('Hook rate', T => tri(T.hook, v => pc(v, 1)))}
+    ${row('LPV rate', T => tri(T.lpvr, v => pc(v, 0)))}
+    </tbody></table></div>
+    <div class="small muted" style="margin-top:14px;line-height:2">Warna di dashboard: <span class="chip c-r">di bawah minimum</span> <span class="chip c-y">minimum–sehat</span> <span class="chip c-g">sehat</span> <span class="chip c-g hs">layak scale</span> · hook, LPV rate &amp; closing kontak bisa diubah di Settings.</div></details>`;
+}
+const LB_CARDS = [
+  { k: 'cpa', t: 'CPA', unit: 'cpa', best: 'Termurah', worst: 'Termahal', sub: 'minimal 2 purchase · terburuk ikut menghitung spend ≥ CPA maks tanpa purchase' },
+  { k: 'roas', t: 'ROAS', unit: 'roas', best: 'Tertinggi', worst: 'Terendah', sub: 'spend ≥ CPA maks atau ≥ 2 purchase' },
+  { k: 'spend', t: 'Spender terbesar', unit: 'spend', best: 'Paling boros tapi bagus', worst: 'Paling boros tapi jelek', sub: 'bagus = ROAS ≥ minimum · jelek = ROAS di bawah cutoff' },
+  { k: 'hook', t: 'Hook rate', unit: 'hook', best: 'Terbaik', worst: 'Terburuk', sub: 'tonton 25% ÷ impresi · minimal 3.000 impresi' },
+  { k: 'lpvr', t: 'LPV rate', unit: 'lpvr', best: 'Terbaik', worst: 'Terburuk', sub: 'LPV ÷ klik link · minimal 50 klik, LPV terlacak' },
+  { k: 'cpc', t: 'Cost per contact', unit: 'cpc', best: 'Termurah', worst: 'Termahal', sub: 'minimal 3 kontak' },
+  { k: 'close', t: 'Closing rate', unit: 'close', best: 'Tertinggi', worst: 'Terendah', sub: 'purchase ÷ LPV (atau ÷ kontak untuk campaign WA) · minimal 100 LPV / 10 kontak' },
+  { k: 'newc', t: 'Campaign baru', unit: 'roas', best: 'Terbaik', worst: 'Terburuk', sub: 'campaign yang mulai dalam 14 hari terakhir · ROAS periode ini', camp: true }
+];
+function lbList(key, mode, rows, camps) {
+  const mc = a => maxCpa(a, ST.main), by = (f, dir) => (p, q) => (dir * (f(p) - f(q))) || (q.d.spend - p.d.spend);
+  const cl = g => closingOf(g.d);
+  switch (key) {
+    case 'cpa': return mode === 'best' ? rows.filter(g => g.d.purch >= 2).sort(by(g => g.d.cpa, 1))
+      : rows.filter(g => g.d.purch ? g.d.purch >= 1 && g.d.spend >= mc(g.a) : g.d.spend >= mc(g.a)).sort(by(g => g.d.purch ? g.d.cpa : g.d.spend * 1.0001 + 1e12, -1));
+    case 'roas': { const ok = rows.filter(g => g.d.spend >= mc(g.a) || g.d.purch >= 2); return ok.sort(by(g => fin(g.d.roas) ? g.d.roas : 0, mode === 'best' ? -1 : 1)); }
+    case 'spend': return (mode === 'best' ? rows.filter(g => g.d.purch >= 2 && g.d.roas >= S.minRoas) : rows.filter(g => !(g.d.roas >= S.cutoff))).sort((p, q) => q.d.spend - p.d.spend);
+    case 'hook': return rows.filter(g => g.d.impr >= 3000 && g.v[M.p25] > 0).sort(by(g => g.d.hook, mode === 'best' ? -1 : 1));
+    case 'lpvr': return rows.filter(g => g.d.link >= 50 && g.d.lpv > 0).sort(by(g => g.d.lpvRate, mode === 'best' ? -1 : 1));
+    case 'cpc': return rows.filter(g => g.d.contact >= 3).sort(by(g => g.d.cpc, mode === 'best' ? 1 : -1));
+    case 'close': return rows.filter(g => g.d.lpv >= 100 || g.d.contact >= 10).sort(by(g => fin(cl(g).v) ? cl(g).v : 0, mode === 'best' ? -1 : 1));
+    case 'newc': return camps.slice().sort(mode === 'best' ? (p, q) => ((fin(q.d.roas) ? q.d.roas : 0) - (fin(p.d.roas) ? p.d.roas : 0)) || (q.d.spend - p.d.spend)
+      : (p, q) => ((fin(p.d.roas) ? p.d.roas : 0) - (fin(q.d.roas) ? q.d.roas : 0)) || (q.d.spend - p.d.spend));
+  }
+  return [];
+}
+function lbVal(unit, g) {
+  const d = g.d, a = g.a;
+  switch (unit) {
+    case 'cpa': return { n: d.purch ? d.cpa : NaN, h: d.purch ? mchip('cpa', d.cpa, a, rp(d.cpa)) : `<span class="chip c-r">${rp(d.spend)} · 0p</span>` };
+    case 'roas': return { n: d.roas, h: roasChip(d.roas, d.spend) };
+    case 'spend': return { n: d.spend, h: `<b class="num">${rp(d.spend)}</b>` };
+    case 'hook': return { n: d.hook, h: mchip('hook', d.hook, a, pc(d.hook, 1)) };
+    case 'lpvr': return { n: d.lpvRate, h: mchip('lpvr', d.lpvRate, a, pc(d.lpvRate, 0)) };
+    case 'cpc': return { n: d.cpc, h: mchip('cpc', d.cpc, a, rp(d.cpc)) };
+    case 'close': return { n: closingOf(d).v, h: closeChip(d, a) };
+  }
+  return { n: NaN, h: '' };
+}
+function lbSub(unit, g) {
+  const d = g.d, p = [rp(d.spend)];
+  if (unit !== 'roas') p.push('ROAS ' + xx(d.roas)); else p.push(nf(d.purch) + ' purchase');
+  if (unit === 'spend') p.push('CPA ' + rp(d.cpa));
+  if (unit === 'hook') p.push('retensi 50% ' + pc(d.r50, 0));
+  if (unit === 'lpvr') p.push(nf(d.lpv) + ' LPV');
+  if (unit === 'cpc') p.push(nf(d.contact) + ' kontak');
+  if (unit === 'close') p.push(nf(d.purch) + ' purchase');
+  return p.join(' · ');
+}
+async function pageBoard() {
+  const ds = ST.ds, [s, u] = curRange(), { list } = buildConcepts(ds, s, u), t = todayJkt();
+  const rows = list.filter(g => (ST.acc < 0 || g.a === ST.acc) && g.d.spend > 0);
+  ST._concepts = list; ST._lbLists = {};
+  const lb = Object.assign({}, LS.get('lb', {}));
+  // campaign baru (mulai ≤ 14 hari lalu) — ROAS periode ini
+  const cm = agg(ds, s === 'lifetime' ? ds.since : s, u === 'lifetime' ? t : u, ad => ad.c);
+  const camps = [...cm.entries()].map(([id, v]) => { const c = ST.main.campaigns[id] || ds.campaigns[id] || {}; const st = campStart(c); return { id, c, a: c.a, st, age: st ? diffD(st, t) : null, d: der(v) }; })
+    .filter(x => x.c.n && (ST.acc < 0 || x.a === ST.acc) && x.age != null && x.age <= 14 && x.d.spend > 0);
+  const accs = (ST.acc >= 0 ? [ST.acc] : ST.main.accounts.map((_, i) => i)).filter(a => ST.acc >= 0 || rows.some(g => g.a === a));
+  const A = der(rows.reduce((v, g) => { for (let i = 0; i < NM; i++) v[i] += g.v[i]; return v; }, Z()));
+  const avg = { cpa: rp(A.cpa), roas: xx(A.roas), spend: rp(A.spend) + ' total', hook: pc(A.hook, 1), lpvr: pc(A.lpvRate, 0), cpc: rp(A.cpc), close: pc(closingOf(A).v) };
+  let html = head('Leaderboard', `${rangeLabel()} · 10 konten terbaik &amp; terburuk per metrik · klik untuk preview`, periodCtl(true) + accSeg());
+  html += accs.length ? patokanCard(accs) : '';
+  html += `<section class="lbgrid">${LB_CARDS.map(cd => {
+    const mode = lb[cd.k] || 'best', all = lbList(cd.k, mode, cd.camp ? null : rows, camps), top = all.slice(0, 10);
+    if (!cd.camp) ST._lbLists[cd.k] = top.map(g => g.key);
+    const nums = top.map(g => cd.camp ? (fin(g.d.roas) ? g.d.roas : 0) : cd.unit === 'cpa' && !g.d.purch ? g.d.spend : lbVal(cd.unit, g).n).filter(fin);
+    const mx = Math.max(1e-9, ...nums.map(Math.abs));
+    const li = top.map((g, i) => {
+      if (cd.camp) { const r = fin(g.d.roas) ? g.d.roas : 0;
+        return `<li><button type="button" class="lbr" data-camp="${g.id}" data-go="diag"><span class="bar" style="width:${Math.round(r / mx * 100)}%"></span><span class="rk">${i + 1}</span><span class="nm">${accChip(ST.main, g.a)}${shortCamp(g.c.n)}<small>${g.age} hari · ${rp(g.d.spend)} · ${nf(g.d.purch)} purchase · CPA ${rp(g.d.cpa)}</small></span><span class="val">${roasChip(g.d.roas, g.d.spend)}</span></button></li>`; }
+      const ad = topAd(ds, g), img = ad.img || ad.th, V = lbVal(cd.unit, g), n = cd.unit === 'cpa' && !g.d.purch ? g.d.spend : V.n;
+      return `<li><button type="button" class="lbr" data-concept="${esc(g.key)}" data-lbk="${cd.k}"><span class="bar" style="width:${fin(n) ? Math.round(Math.abs(n) / mx * 100) : 0}%"></span><span class="rk">${i + 1}</span><span class="th">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : ''}</span><span class="nm" title="${esc(g.name)}">${esc(g.name)}<small>${esc(ds.accounts[g.a].label)} · ${lbSub(cd.unit, g)}${g.active.length ? '' : ' · nonaktif'}</small></span><span class="val">${V.h}</span></button></li>`;
+    }).join('');
+    return `<div class="card lbc"><div class="lbh"><div style="min-width:0"><h3>${cd.t}</h3><div class="small muted">${cd.sub}</div></div>
+      <div class="seg soft" role="group" aria-label="${cd.t}"><button type="button" class="${mode === 'best' ? 'on' : ''}" data-lbm="${cd.k}:best">${cd.best}</button><button type="button" class="${mode === 'worst' ? 'on' : ''}" data-lbm="${cd.k}:worst">${cd.worst}</button></div></div>
+      ${!cd.camp && avg[cd.unit] ? `<div class="lbavg">Rata-rata akun: <b>${avg[cd.unit]}</b> · ${all.length} memenuhi syarat</div>` : `<div class="lbavg">${all.length} campaign baru</div>`}
+      <ol class="lbl">${li || `<li class="empty small muted" style="padding:14px 0">Belum ada ${cd.camp ? 'campaign' : 'konten'} yang memenuhi syarat</li>`}</ol></div>`;
+  }).join('')}</section>`;
+  return html;
+}
+
+/* ---------- penjelasan rule konten ---------- */
+function openRules() {
+  const ds = ST.main, C = Brain.cfg, K = C.content, lb = K.lookback;
+  const accs = ds ? ds.accounts.map((a, i) => ({ i, l: a.label, mc: maxCpa(i, ds) })).filter(a => ST.acc < 0 || a.i === ST.acc) : [];
+  const v = mult => accs.map(a => `<span style="white-space:nowrap">${esc(a.l)} <b>${rp(a.mc * mult)}</b></span>`).join(' · ');
+  const k = n => String(n).replace('.', ',') + '×';
+  const pcx = n => String(+(n * 100).toFixed(1)).replace('.', ',') + '%';
+  const rows = [
+    ['1', 'test', 'Jelek tapi masih testing', `Belum ada purchase dan spend &lt; 1× CPA maks (${v(1)}), atau umur &lt; ${K.minDays} hari. Antara 1× dan ${k(K.killMult)} = <i>batas akhir</i>.`, 'Lanjut. Iklan yang hampir tidak dapat budget di ASC/CBO belum benar-benar dites, bukan jelek.'],
+    ['2', 'kill', 'Jelek &amp; lewat hitungan', `• 0 purchase, spend ≥ ${k(K.killMult)} CPA maks (${v(K.killMult)})<br>• Laku tapi rugi: spend ≥ ${k(K.lossMult)} CPA maks (${v(K.lossMult)}) &amp; ROAS &lt; ${xx(C.cutoff)}<br>• Hook gagal: Link CTR &lt; ${pcx(K.ctrKill)} setelah ${K.earlyImpr.toLocaleString('id-ID')} impresi &amp; ${rp(K.earlySpend)}`, 'Matikan. Tidak ada "sehari lagi".'],
+    ['3', 'diag', 'Angka awal bagus, 0 purchase', `Link CTR ≥ ${pcx(K.ctrGood)} &amp; LPV/klik ≥ ${pcx(K.lpvGood)}, tapi belum ada purchase. Diberi sampai ${k(K.tofMult)} CPA maks (${v(K.tofMult)}).`, 'Ada initiate checkout → cek checkout / pembayaran / tracking. Tidak ada → copy tidak nyambung dengan landing page. Lewat batas → <b>Pindah ke top funnel</b> (juga untuk konten CTR bagus yang laku tapi rugi).'],
+    ['4', 'refresh', 'Pernah purchase, lalu kosong', `Terbukti = ≥ ${K.provenP} purchase &amp; ROAS ≥ ${xx(C.cutoff)} dalam ${lb} hari. Kosong masih wajar selama spend kosong &lt; ${k(K.streakMult)} CPA historis iklan itu.`, 'Di bawah batas → <b>Tahan</b>. Lewat batas atau ROAS 7D &lt; 1 → turunkan 20–30%; ada tanda jenuh (CTR −20%, ROAS −20%, CPA +30%, frequency ≥ 3,5) → buat hook 3 detik baru, body tetap.'],
+    ['5', 'revert', 'Winner gagal setelah scale', `Budget campaign/ad set naik dalam ${K.scaleLook} hari terakhir, sebelumnya ROAS ≥ ${xx(C.cutoff)}, sesudahnya 0 purchase atau ROAS &lt; ${xx(C.cutoff)}.`, `Tunggu ${K.waitScale} hari (kecuali spend sejak naik ≥ ${k(K.streakMult)} CPA sebelum scale) → kembalikan ke budget lama, jangan pause. Lalu scale ke samping dengan post ID yang sama.`],
+    ['', 'winner', 'Sehat', `Winner = ≥ ${K.winP} purchase &amp; ROAS ≥ ${xx(C.minRoas)}. Layak scale kalau ROAS ${lb}D &amp; 7D ≥ ${xx(C.target)}. <b>Pantau</b> = terbukti tapi ROAS di antara ${xx(C.cutoff)} dan ${xx(C.minRoas)}.`, 'Winner → kandidat bottom funnel, scale maks 20–30% tiap 3–4 hari. Pantau → jangan naikkan budget.']
+  ];
+  openModal(`<h2 style="font-size:18px">Aturan konten</h2>
+  <div class="muted small" style="margin:4px 0 12px">Dinilai per iklan dari ${lb} hari terakhir + hari ini. Batas spend = kelipatan CPA maks (AOV 30D ÷ ROAS minimum ${xx(C.minRoas)}${accs.length ? ' → ' + accs.map(a => esc(a.l) + ' ' + rp(a.mc)).join(', ') : ''}). Angka bisa diubah di Settings → Rule konten.</div>
+  <div class="tw"><table class="rtab" style="min-width:720px"><thead><tr><th>Kasus</th><th>Kondisi</th><th>Batas</th><th>Aksi</th></tr></thead><tbody>
+  ${rows.map(r => { const R = Brain.RULES[r[1]]; return `<tr><td>${r[0] ? r[0] + '. ' : ''}<span class="chip ${RTONE[R.tone]}">${R.label}</span></td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`; }).join('')}
+  </tbody></table></div>
+  <div class="small muted" style="margin-top:10px">Urutan cek: kasus 5 → laku tapi rugi → belum pernah purchase (hook gagal → konten bagus → batas matikan → testing) → 1 purchase belum terbukti → kasus 4 → sehat. Dashboard hanya memberi label — tidak mengubah apa pun di akun.</div>`, 'wide pad');
+}
+
 /* ---------- settings ---------- */
 function openSettings() {
   const ds = ST.main;
@@ -1896,6 +2200,17 @@ function openSettings() {
     <div><label>ROAS target (Winner, layak scale)</label><input class="inp" id="sTarget" type="number" step="0.1" value="${S.target}"></div>
     <div><label>Umur minimal sebelum evaluasi (hari)</label><input class="inp" id="sAge" type="number" value="${S.minAge}"></div>
     <div><label>Cost per contact maksimal (Rp)</label><input class="inp" id="sCpc" type="number" value="${S.maxCpc}"></div>
+    <div style="grid-column:1/-1;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><b style="font-size:14px">Rule konten</b> <span class="small muted">— batas spend dalam kelipatan CPA maks</span></div>
+    <div><label>Matikan: spend tanpa purchase ≥ … × CPA maks</label><input class="inp" id="sKill" type="number" step="0.1" value="${S.content.killMult}"></div>
+    <div><label>Matikan: laku tapi rugi, spend ≥ … × CPA maks</label><input class="inp" id="sLoss" type="number" step="0.5" value="${S.content.lossMult}"></div>
+    <div><label>Konten bagus tanpa purchase diberi sampai … × CPA maks</label><input class="inp" id="sTof" type="number" step="0.1" value="${S.content.tofMult}"></div>
+    <div><label>Winner kosong masih wajar sampai … × CPA historis</label><input class="inp" id="sStreak" type="number" step="0.1" value="${S.content.streakMult}"></div>
+    <div><label>Link CTR "bagus" ≥ (%)</label><input class="inp" id="sCtrG" type="number" step="0.1" value="${S.content.ctrGood}"></div>
+    <div><label>Link CTR "hook gagal" &lt; (%)</label><input class="inp" id="sCtrK" type="number" step="0.1" value="${S.content.ctrKill}"></div>
+    <div style="grid-column:1/-1;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><b style="font-size:14px">Patokan metrik</b> <span class="small muted">— CPA, cost per contact &amp; closing LP dihitung otomatis dari AOV dan ROAS di atas</span></div>
+    <div><label>Closing kontak WA (%) — dipakai kalau data kontak &lt; 30</label><input class="inp" id="mWa" type="number" step="0.5" value="${S.metric.waClose}"></div>
+    <div><label>Hook rate (%): minimum · sehat · scale</label><div style="display:flex;gap:6px"><input class="inp" id="mH1" type="number" step="0.1" value="${S.metric.hookMin}"><input class="inp" id="mH2" type="number" step="0.1" value="${S.metric.hookOk}"><input class="inp" id="mH3" type="number" step="0.1" value="${S.metric.hookScale}"></div></div>
+    <div><label>LPV rate (%): minimum · sehat · scale</label><div style="display:flex;gap:6px"><input class="inp" id="mL1" type="number" value="${S.metric.lpvMin}"><input class="inp" id="mL2" type="number" value="${S.metric.lpvOk}"><input class="inp" id="mL3" type="number" value="${S.metric.lpvScale}"></div></div>
     ${ds ? ds.accounts.map((a, i) => `<div><label>CPA maks ${esc(a.label)} (kosong = otomatis ${rp(maxCpaAuto(i))})</label><input class="inp" data-mc="${esc(a.label)}" type="number" value="${S.maxCpa[a.label] || ''}"></div>`).join('') : ''}
     <div style="grid-column:1/-1"><label>URL Web App</label><input class="inp" id="sApi" value="${esc(API)}"></div>
     <div style="grid-column:1/-1"><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="sAuto" ${S.auto ? 'checked' : ''}> Refresh otomatis setiap 10 menit</label></div>
@@ -1906,6 +2221,10 @@ function maxCpaAuto(i) { const save = S.maxCpa; S.maxCpa = {}; const v = maxCpa(
 function saveSettings() {
   S.cutoff = +$('sCut').value || DEF.cutoff; S.minRoas = +$('sMin').value || DEF.minRoas; S.target = +$('sTarget').value || DEF.target; S.minAge = +$('sAge').value || DEF.minAge;
   S.maxCpc = +$('sCpc').value || DEF.maxCpc; S.auto = $('sAuto').checked;
+  const cv = (id, k) => (+$(id).value > 0 ? +$(id).value : DEF.content[k]);
+  const mv = (id, k) => (+$(id).value > 0 ? +$(id).value : DEF.metric[k]);
+  S.metric = { waClose: mv('mWa', 'waClose'), hookMin: mv('mH1', 'hookMin'), hookOk: mv('mH2', 'hookOk'), hookScale: mv('mH3', 'hookScale'), lpvMin: mv('mL1', 'lpvMin'), lpvOk: mv('mL2', 'lpvOk'), lpvScale: mv('mL3', 'lpvScale') };
+  S.content = { killMult: cv('sKill', 'killMult'), lossMult: cv('sLoss', 'lossMult'), tofMult: cv('sTof', 'tofMult'), streakMult: cv('sStreak', 'streakMult'), ctrGood: cv('sCtrG', 'ctrGood'), ctrKill: cv('sCtrK', 'ctrKill') };
   S.maxCpa = {}; document.querySelectorAll('.mar-app [data-mc]').forEach(i => { if (+i.value) S.maxCpa[i.dataset.mc] = +i.value; });
   LS.set('settings', S); applyBrain();
   const na = $('sApi').value.trim(); if (na && na !== API) { API = na; LS.set('api', API); closeModal(); return logout(); }
