@@ -23,10 +23,32 @@
     leakMult: 1.5,     // spend ≥ 1,5× CPA maks tanpa purchase = pause candidate
     band: 0.15,        // ±15% di sekitar ROAS minimum = Watchlist
     decline: { roas: 0.20, cpa: 0.30, ctr: 0.20, freq: 3.5 },
-    scaleMin: 0.20, scaleMax: 0.30, scaleEvery: 3   // naik 20–30% maksimal tiap 3–4 hari
+    scaleMin: 0.20, scaleMax: 0.30, scaleEvery: 3,  // naik 20–30% maksimal tiap 3–4 hari
+    // Rule konten (level iklan) — semua batas spend = kelipatan CPA maks
+    content: {
+      lookback: 30,      // hari data yang dinilai (+ hari ini)
+      testMult: 1,       // < 1× CPA maks tanpa purchase = masih testing
+      killMult: 1.5,     // ≥ 1,5× CPA maks tanpa purchase = matikan
+      lossMult: 3,       // ≥ 3× CPA maks & ROAS < cutoff = matikan (laku tapi rugi)
+      tofMult: 2,        // konten "bagus" tanpa purchase diberi sampai 2× CPA maks
+      streakMult: 2,     // winner kosong: wajar selama spend kosong < 2× CPA historisnya
+      ctrGood: 0.012,    // Link CTR ≥ 1,2% = angka awal bagus
+      ctrKill: 0.005,    // Link CTR < 0,5% setelah cukup impresi = hook gagal
+      lpvGood: 0.6,      // LPV ÷ klik ≥ 60% (kalau LPV terlacak)
+      earlyImpr: 3000, earlySpend: 200000,   // syarat minimal untuk vonis hook gagal
+      minDays: 3,        // umur minimal sebelum boleh dimatikan karena "lanjut test"
+      provenP: 2,        // terbukti = ≥ 2 purchase & ROAS ≥ cutoff
+      winP: 3,           // winner = ≥ 3 purchase & ROAS ≥ minimum
+      waitScale: 3,      // hari menunggu setelah budget naik
+      scaleLook: 10      // kenaikan budget yang masih dianggap "baru" (hari)
+    }
   };
   Brain.cfg = clone(Brain.defaults);
-  Brain.setConfig = function (o) { Brain.cfg = Object.assign(clone(Brain.defaults), o || {}); return Brain.cfg; };
+  Brain.setConfig = function (o) {
+    o = o || {}; var c = Object.assign(clone(Brain.defaults), o);
+    c.content = Object.assign(clone(Brain.defaults.content), o.content || {});
+    Brain.cfg = c; return c;
+  };
 
   /* ---------- util ---------- */
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
@@ -223,6 +245,169 @@
     var s = {};
     results.forEach(function (r) { var k = r.cls; s[k] = s[k] || { n: 0, spend: 0 }; s[k].n++; s[k].spend += r.m.s7 || 0; });
     return s;
+  };
+
+  /* =====================================================================
+   * RULE KONTEN (level iklan) — 5 kasus:
+   *  1. jelek tapi masih testing      → test
+   *  2. jelek & lewat batas           → kill
+   *  3. angka awal bagus, 0 purchase  → diag (≤ 2× CPA maks) lalu tof (pindah ke top funnel)
+   *  4. pernah purchase lalu kosong   → hold (wajar) atau refresh (jenuh / lewat batas)
+   *  5. winner gagal setelah di-scale → hold (tunggu 3 hari) atau revert (kembalikan budget)
+   *  + winner / watch untuk yang sehat, off untuk yang tidak aktif
+   * ===================================================================== */
+  Brain.RULES = {
+    kill:    { label: 'Matikan',              tone: 'r', order: 0, kase: 2 },
+    revert:  { label: 'Kembalikan budget',    tone: 'r', order: 1, kase: 5 },
+    refresh: { label: 'Refresh / turunkan',   tone: 'y', order: 2, kase: 4 },
+    tof:     { label: 'Pindah ke top funnel', tone: 'y', order: 3, kase: 3 },
+    diag:    { label: 'Diagnosa funnel',      tone: 'b', order: 4, kase: 3 },
+    test:    { label: 'Lanjut test',          tone: 'b', order: 5, kase: 1 },
+    hold:    { label: 'Tahan',                tone: 'n', order: 6, kase: null },
+    watch:   { label: 'Pantau',               tone: 'y', order: 7, kase: null },
+    winner:  { label: 'Winner',               tone: 'g', order: 8, kase: null },
+    off:     { label: 'Nonaktif',             tone: 'n', order: 9, kase: null }
+  };
+
+  /**
+   * @param map  {'YYYY-MM-DD': vektor17} data harian iklan (minimal `lookback` hari + hari ini)
+   * @param ctx  { today, active, age, maxCpa, freq7, budgetEvents:[{date,old,nw}] (campaign/ad set induk) }
+   * @return { key, label, tone, kase, action, reasons[], limit:{used,max,text}|null, m }
+   */
+  Brain.contentRule = function (map, ctx) {
+    var C = Brain.cfg, K = C.content, t = ctx.today, mc = ctx.maxCpa || 650000;
+    var all = sum(map, [t].concat(days(t, K.lookback))), d7 = sum(map, days(t, 7));
+    var sp = all[0], p = all[8], R = roas(all), ct = ctr(all), lpvR = all[5] ? dv(all[5], all[4]) : NaN;
+    var hist = p ? sp / p : NaN, leak = leakStreak(map, t);
+    var m = { spend: sp, purch: p, value: all[9], roas: R, ctr: ct, lpvRate: lpvR, ic: all[7], impr: all[1], cpa: hist,
+      s7: d7[0], p7: d7[8], r7: roas(d7), streakN: leak.n, streakSpend: leak.spend, age: ctx.age, maxCpa: mc };
+    var goodLead = all[1] >= K.earlyImpr && ct >= K.ctrGood && (!all[5] || !(all[4] >= 30) || lpvR >= K.lpvGood);
+    var proven = p >= K.provenP && R >= C.cutoff, winner = p >= K.winP && R >= C.minRoas;
+    var young = ctx.age != null && ctx.age < K.minDays;
+    m.goodLead = goodLead; m.proven = proven; m.winner = winner;
+    var ctrTxt = 'Link CTR ' + (fin(ct) ? (ct * 100).toFixed(2).replace('.', ',') + '%' : '–');
+    if (!goodLead && ct >= K.ctrGood && fin(lpvR) && lpvR < K.lpvGood) ctrTxt += ' tapi LPV/klik cuma ' + pct(lpvR) + ' (banyak yang klik tidak sampai ke halaman)';
+    else if (!goodLead && all[1] < K.earlyImpr) ctrTxt += ' dari impresi yang masih sedikit';
+    var res = { key: 'watch', action: '', reasons: [], limit: null, m: m };
+    function out(key, action) { var r = Brain.RULES[key]; res.key = key; res.label = r.label; res.tone = r.tone; res.kase = r.kase; res.action = action || r.label; return res; }
+    function lim(used, max, text) { res.limit = { used: used, max: max, text: text }; }
+    var mult = function (k) { return String(k).replace('.', ',') + '×'; };
+
+    if (!ctx.active) { res.reasons.push('Iklan tidak sedang berjalan'); return out('off', '—'); }
+
+    // ---- Kasus 5: winner yang gagal setelah budget dinaikkan ----
+    var inc = (ctx.budgetEvents || []).filter(function (e) { return e.nw > e.old && e.old > 0 && diffD(e.date, t) >= 0 && diffD(e.date, t) <= K.scaleLook; })
+      .sort(function (a, b) { return a.date < b.date ? 1 : -1; })[0];
+    if (inc) {
+      var before = [], after = [], ago = diffD(inc.date, t);
+      for (var j = 1; j <= 7; j++) before.push(addD(inc.date, -j));
+      for (var i = 0; i <= ago; i++) after.push(addD(inc.date, i));
+      var vb = sum(map, before), va = sum(map, after), rb = roas(vb), ra = roas(va);
+      if (vb[8] >= 1 && rb >= C.cutoff && !(va[8] > 0 && ra >= C.cutoff)) {
+        var ref = vb[0] / vb[8], up = Math.round((inc.nw / inc.old - 1) * 100);
+        res.reasons.push('Budget naik ' + rp(inc.old) + ' → ' + rp(inc.nw) + ' (+' + up + '%) pada ' + fd(inc.date) + '. Sebelumnya ROAS ' + x(rb) + ' (' + vb[8] + ' purchase dalam 7 hari), sesudahnya ' + (va[8] ? 'ROAS ' + x(ra) : '0 purchase') + ' dari ' + rp(va[0]) + '.');
+        lim(va[0], K.streakMult * ref, 'Spend sejak naik vs ' + mult(K.streakMult) + ' CPA sebelum scale (' + rp(ref) + ')');
+        if (ago < K.waitScale && va[0] < K.streakMult * ref) {
+          res.reasons.push('Masih dalam masa belajar (' + ago + ' dari ' + K.waitScale + ' hari). Tahan dulu, cek lagi ' + fd(addD(inc.date, K.waitScale)) + '.');
+          if (up > 30) res.reasons.push('Kenaikan ' + up + '% lebih dari 30% — rawan reset learning.');
+          return out('hold', 'Tahan — tunggu sampai ' + fd(addD(inc.date, K.waitScale)));
+        }
+        res.reasons.push('Kembalikan ke ' + rp(inc.old) + ', jangan dipause. Kalau pulih, itu batas atas iklan ini di audiens tersebut — scale ke samping: duplikat dengan post ID yang sama ke ad set / audiens baru, atau naikkan bertahap maks 20% tiap 3–4 hari.');
+        return out('revert', 'Kembalikan budget ke ' + rp(inc.old));
+      }
+    }
+
+    // ---- Kasus 2: laku tapi rugi (ROAS di bawah cutoff dengan spend besar) ----
+    if (sp >= K.lossMult * mc && R < C.cutoff) {
+      res.reasons.push('Spend ' + rp(sp) + ' (≥ ' + mult(K.lossMult) + ' CPA maks ' + rp(mc) + ') dengan ' + p + ' purchase, ROAS ' + x(R) + ' di bawah cutoff ' + x(C.cutoff) + '.');
+      lim(sp, K.lossMult * mc, 'Spend vs batas rugi ' + mult(K.lossMult) + ' CPA maks');
+      if (goodLead) {
+        res.reasons.push(ctrTxt + ' kuat: perhatiannya dapat, niat belinya tidak. Matikan sebagai iklan konversi, pakai sebagai top funnel budget kecil untuk mengisi audiens retargeting.');
+        return out('tof');
+      }
+      return out('kill', 'Matikan — laku tapi rugi');
+    }
+
+    // ---- Belum pernah purchase ----
+    if (!p) {
+      if (all[1] >= K.earlyImpr && sp >= K.earlySpend && ct < K.ctrKill) {
+        res.reasons.push(ctrTxt + ' setelah ' + Math.round(all[1]).toLocaleString('id-ID') + ' impresi (< ' + (K.ctrKill * 100).toString().replace('.', ',') + '%). Hook tidak menghentikan scroll — menambah spend tidak akan mengubahnya.');
+        lim(sp, K.killMult * mc, 'Spend vs batas ' + mult(K.killMult) + ' CPA maks');
+        return out('kill', 'Matikan — hook gagal');
+      }
+      if (goodLead) {
+        lim(sp, K.tofMult * mc, 'Spend vs batas ' + mult(K.tofMult) + ' CPA maks (konten bagus)');
+        if (sp >= K.tofMult * mc) {
+          res.reasons.push(ctrTxt + ' bagus, tapi spend ' + rp(sp) + ' (≥ ' + mult(K.tofMult) + ' CPA maks) tanpa purchase.');
+          res.reasons.push('Jangan dibuang: pindahkan ke top funnel (budget kecil) untuk mengisi audiens retargeting; tugas closing diserahkan ke konten bottom funnel.');
+          return out('tof');
+        }
+        res.reasons.push(ctrTxt + ' bagus' + (fin(lpvR) ? ', LPV/klik ' + pct(lpvR) : '') + ', tapi belum ada purchase dari ' + rp(sp) + '. Sisa jatah sebelum dipindah: ' + rp(K.tofMult * mc - sp) + '.');
+        if (all[7] > 0) res.reasons.push('Sudah ada ' + all[7] + ' initiate checkout → cek proses checkout / pembayaran / tracking. Cocokkan dengan order di backend.');
+        else res.reasons.push('Belum ada initiate checkout → janji di iklan tidak nyambung dengan landing page, atau menarik orang yang cuma penasaran. Perbaiki copy supaya menyaring (sebut harga / siapa yang cocok).');
+        return out('diag');
+      }
+      lim(sp, K.killMult * mc, 'Spend vs batas ' + mult(K.killMult) + ' CPA maks');
+      if (sp >= K.killMult * mc) {
+        res.reasons.push('Spend ' + rp(sp) + ' tanpa purchase (≥ ' + mult(K.killMult) + ' CPA maks ' + rp(mc) + '), dan angka awalnya tidak menolong (' + ctrTxt + ').');
+        return out('kill');
+      }
+      if (sp >= K.testMult * mc && !young) {
+        res.reasons.push('Spend ' + rp(sp) + ' sudah lewat 1× CPA maks tanpa purchase. Sisa ' + rp(K.killMult * mc - sp) + ' sebelum batas matikan.');
+        return out('test', 'Lanjut test — batas akhir');
+      }
+      res.reasons.push('Spend ' + rp(sp) + (young ? ', umur ' + ctx.age + ' hari' : '') + ' — belum cukup untuk dinilai (batas 1× CPA maks ' + rp(mc) + ').');
+      if (sp < 50000 && ctx.age >= 3) res.reasons.push('Hampir tidak dapat budget — di ASC/CBO berarti belum benar-benar dites, bukan jelek.');
+      return out('test');
+    }
+
+    // ---- Ada purchase tapi belum terbukti ----
+    if (!proven) {
+      if (leak.n && leak.spend >= K.killMult * mc) {
+        res.reasons.push(p + ' purchase dalam ' + K.lookback + ' hari (ROAS ' + x(R) + '), lalu ' + rp(leak.spend) + ' selama ' + leak.n + ' hari tanpa purchase (≥ ' + mult(K.killMult) + ' CPA maks).');
+        lim(leak.spend, K.killMult * mc, 'Spend sejak purchase terakhir vs ' + mult(K.killMult) + ' CPA maks');
+        return out('kill');
+      }
+      res.reasons.push(p + ' purchase, ROAS ' + x(R) + ' dari ' + rp(sp) + ' — belum terbukti (perlu ≥ ' + K.provenP + ' purchase & ROAS ≥ ' + x(C.cutoff) + ').');
+      lim(sp, K.lossMult * mc, 'Spend vs batas rugi ' + mult(K.lossMult) + ' CPA maks');
+      return out('test');
+    }
+
+    // ---- Kasus 4: terbukti, tapi beberapa hari kosong / melemah ----
+    var sig = declineSignals(map, t, mc, 0);
+    if (fin(ctx.freq7) && ctx.freq7 >= C.decline.freq) sig.push({ k: 'freq', t: 'Frequency ' + ctx.freq7.toFixed(1).replace('.', ',') });
+    var sigTxt = sig.map(function (s) { return s.t; }).join(', ');
+    var cap = K.streakMult * hist;
+    var weak7 = d7[0] >= cap && roas(d7) < 1;
+    if ((leak.n && leak.spend > 0) || weak7) {
+      var exp = leak.spend / hist;
+      lim(weak7 && !(leak.spend >= cap) ? d7[0] : leak.spend, cap, (weak7 && !(leak.spend >= cap) ? 'Spend 7D' : 'Spend selama kosong') + ' vs ' + mult(K.streakMult) + ' CPA historis (' + rp(hist) + ')');
+      if (!weak7 && leak.spend < cap) {
+        res.reasons.push(p + ' purchase dalam ' + K.lookback + ' hari (CPA ' + rp(hist) + '). Kosong ' + leak.n + ' hari dengan spend ' + rp(leak.spend) + ' — secara hitungan baru "jatah" ' + exp.toFixed(1).replace('.', ',') + ' purchase, masih wajar.');
+        if (sig.length) res.reasons.push('Ada sinyal awal: ' + sigTxt + ' — cek lagi besok.');
+        return out('hold', 'Tahan — masih wajar');
+      }
+      res.reasons.push(weak7 ? 'ROAS 7D ' + x(roas(d7)) + ' dari ' + rp(d7[0]) + ' (' + d7[8] + ' purchase), padahal ' + K.lookback + ' hari ROAS ' + x(R) + '.'
+        : 'Kosong ' + leak.n + ' hari dengan spend ' + rp(leak.spend) + ' (≥ ' + mult(K.streakMult) + ' CPA historis ' + rp(hist) + ') — bukan kebetulan lagi.');
+      if (sig.length) {
+        res.reasons.push('Tanda jenuh: ' + sigTxt + '. Turunkan budget 20–30% dan buat versi baru dengan hook 3 detik pertama yang baru (body tetap) — jangan dihapus.');
+        return out('refresh', 'Refresh hook + turunkan 20–30%');
+      }
+      res.reasons.push('Tidak ada tanda jenuh yang jelas. Turunkan budget 20–30%, lalu cek faktor luar di Change Log: edit iklan, landing page, stok, promo kompetitor, tanggal gajian.');
+      return out('refresh', 'Turunkan 20–30% & cek faktor luar');
+    }
+
+    // ---- Sehat ----
+    if (winner) {
+      var scale = d7[8] >= 1 && roas(d7) >= C.target && R >= C.target;
+      res.reasons.push(p + ' purchase, ROAS ' + x(R) + ' (' + K.lookback + ' hari), 7D ' + x(roas(d7)) + '.');
+      if (scale) res.reasons.push('Layak scale: naikkan budget induknya maks 20–30% tiap 3–4 hari, atau duplikat dengan post ID yang sama ke audiens baru. Kandidat bagus untuk bottom funnel.');
+      else res.reasons.push('Pertahankan. Cocok dipakai ulang di campaign retargeting / bottom funnel dengan post ID yang sama.');
+      return out('winner', scale ? 'Winner — layak scale' : 'Winner — pertahankan');
+    }
+    res.reasons.push(p + ' purchase, ROAS ' + x(R) + ' — di antara cutoff ' + x(C.cutoff) + ' dan minimum ' + x(C.minRoas) + '. Jangan naikkan budget.');
+    if (sig.length) res.reasons.push('Sinyal awal: ' + sigTxt + '.');
+    return out('watch');
   };
 
   Brain.CLASS_ORDER = { Loser: 0, Watchlist: 1, Winner: 2, Tunggu: 3, Nonaktif: 4 };
