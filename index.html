@@ -850,16 +850,16 @@ async function pageDiag() {
       return `<td class="num">${rp(d.spend)}</td><td class="num">${d.impr ? rp(d.cpm) : '–'}</td><td class="num">${pc(d.ctr)}</td>
         <td class="num">${hook ? C('hook', d.hook, pc(d.hook, 1)) : '–'}</td><td class="num">${hook ? pc(d.r50, 0) : '–'}</td>
         <td class="num">${d.lpv ? C('lpvr', d.lpvRate, pc(d.lpvRate, 0)) : '–'}</td><td class="num">${d.lpv ? rp(d.cLpv) : '–'}</td>
-        <td class="num">${d.contact ? C('cpc', d.cpc, rp(d.cpc)) + `<div class="sub2">${nf(d.contact)} kontak</div>` : '–'}</td>
+        <td class="num">${d.contact ? C('cpc', d.cpc, rp(d.cpc)) : '–'}</td>
         <td class="num">${(d.lpv || d.contact) ? (has ? closeChip(d, a) : pc(cl.v) + ' ' + cl.src) : '–'}</td>
-        <td class="num">${nf(d.ic)}</td><td class="num">${nf(d.purch)}</td><td class="num">${d.val ? rp(d.val) : '–'}</td>
+        <td class="num">${nf(d.contact)}</td><td class="num">${nf(d.ic)}</td><td class="num">${nf(d.purch)}</td><td class="num">${d.val ? rp(d.val) : '–'}</td>
         <td class="num">${roasChip(d.roas, d.spend)}</td><td class="num">${d.purch ? (has ? cpaChip(d, a) : rp(d.cpa)) : (d.spend ? '<span class="small muted">0p</span>' : '–')}</td>`; };
     const totV = shown.filter(d => d !== t).reduce((v, d) => { const x = d30.get(d); if (x) for (let i = 0; i < NM; i++) v[i] += x[i]; return v; }, Z());
     const nFull = shown.filter(d => d !== t).length;
     html += `<div class="sec-h"><h2>Harian</h2><span class="muted small">${shown.length ? `${nFull} hari penuh${shown[0] === t ? ' + hari ini (berjalan)' : ''} · terbaru di atas · scroll untuk hari sebelumnya` : ''}${has ? ' · warna = patokan akun (lihat Leaderboard)' : ' · pilih satu akun / campaign untuk warna patokan'}</span></div>
-    <div class="tw scroll"><table style="min-width:1500px"><thead><tr><th>Tanggal</th><th class="num">Spend</th><th class="num">CPM</th><th class="num">Link CTR</th><th class="num">Hook</th><th class="num">Retensi 50%</th><th class="num">LPV rate</th><th class="num">Biaya/LPV</th><th class="num">Cost/contact</th><th class="num">Closing</th><th class="num">Checkout</th><th class="num">Purchase</th><th class="num">Purchase value</th><th class="num">ROAS</th><th class="num">CPA</th></tr></thead><tbody>
+    <div class="tw scroll"><table style="min-width:1600px"><thead><tr><th>Tanggal</th><th class="num">Spend</th><th class="num">CPM</th><th class="num">Link CTR</th><th class="num">Hook</th><th class="num">Retensi 50%</th><th class="num">LPV rate</th><th class="num">Biaya/LPV</th><th class="num">Cost/contact</th><th class="num">Closing</th><th class="num">Contacts</th><th class="num">Checkout</th><th class="num">Purchase</th><th class="num">Purchase value</th><th class="num">ROAS</th><th class="num">CPA</th></tr></thead><tbody>
     ${shown.map(d => { const wd = new Date(d + 'T12:00:00Z').getUTCDay(), v = d30.get(d) || Z();
-      return `<tr class="${wd === 0 || wd === 6 ? 'wkend' : ''}"><td style="white-space:nowrap"><b>${fd(d)}</b> <span class="small muted">${d === t ? 'hari ini' : ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'][wd]}</span></td>${cell(v)}</tr>`; }).join('') || '<tr><td colspan="15" class="empty">Belum ada data</td></tr>'}
+      return `<tr class="${wd === 0 || wd === 6 ? 'wkend' : ''}"><td style="white-space:nowrap"><b>${fd(d)}</b> <span class="small muted">${d === t ? 'hari ini' : ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'][wd]}</span></td>${cell(v)}</tr>`; }).join('') || '<tr><td colspan="16" class="empty">Belum ada data</td></tr>'}
     </tbody>${nFull > 1 ? `<tfoot><tr><td style="white-space:nowrap">Total ${nFull} hari</td>${cell(totV)}</tr></tfoot>` : ''}</table></div>`;
   }
   return html;
