@@ -486,7 +486,7 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&a
 const fin = v => typeof v === 'number' && isFinite(v);
 const rp = v => { if (!fin(v)) return '–'; const a = Math.abs(v);
   if (a >= 1e9) return 'Rp' + (v / 1e9).toFixed(2).replace('.', ',') + 'M';
-  if (a >= 1e6) return 'Rp' + (v / 1e6).toFixed(a >= 1e8 ? 0 : a >= 1e7 ? 1 : 2).replace('.', ',') + 'jt';
+  if (a >= 999500) return 'Rp' + (v / 1e6).toFixed(a >= 1e8 ? 0 : a >= 1e7 ? 1 : 2).replace('.', ',') + 'jt';
   if (a >= 1e3) return 'Rp' + Math.round(v / 1e3) + 'rb';
   return 'Rp' + Math.round(v); };
 const nf = v => fin(v) ? Math.round(v).toLocaleString('id-ID') : '–';
@@ -602,7 +602,30 @@ function hcls(kind, v, a, src) {
 }
 function mchip(kind, v, a, txt, src) { return fin(v) ? `<span class="chip ${hcls(kind, v, a, src)}">${txt}</span>` : '<span class="chip c-n">–</span>'; }
 function closeChip(d, a) { const c = closingOf(d); if (!d.purch && !(d.lpv || d.contact)) return '<span class="chip c-n">–</span>'; return mchip('close', c.v, a, pc(c.v) + `<small style="font-weight:500;opacity:.7"> ${c.src}</small>`, c.src); }
-function cpcChip(d, a) { return d.contact ? mchip('cpc', d.cpc, a, rp(d.cpc)) : '<span class="chip c-n">–</span>'; }
+function cpcChip(d, a) {
+  if (!d.contact) return '<span class="chip c-n">–</span>';
+  // campaign landing page: kontak bukan tujuan utama → tampil tanpa warna
+  if (closingOf(d).src === 'LP') return `<span class="small muted" title="Campaign landing page — kontak bukan tujuan utama, jadi tidak dinilai">${rp(d.cpc)}</span>`;
+  return mchip('cpc', d.cpc, a, rp(d.cpc));
+}
+/** keterangan warna ROAS yang tidak rusak walau minimum = cutoff */
+function roasLegend() {
+  return S.minRoas > S.cutoff ? `ROAS hijau ≥ ${xx(S.minRoas)} · kuning ${xx(S.cutoff)}–${xx(S.minRoas)} · merah &lt; ${xx(S.cutoff)}` : `ROAS hijau ≥ ${xx(S.minRoas)} · merah &lt; ${xx(S.cutoff)}`;
+}
+/** CPA & closing level campaign, diukur dengan AOV campaign itu sendiri (bukan AOV akun) supaya warnanya searah dengan ROAS */
+function campHealth(d, a, aov) {
+  const T = TH(a), base = fin(aov) && aov > 0 ? aov : (T ? T.base : NaN);
+  const lvl = (good, okv, cutv, low) => { if (!fin(good)) return 'c-n'; return low ? (good <= okv.s ? 'c-g hs' : good <= okv.o ? 'c-g' : good <= okv.c ? 'c-y' : 'c-r') : (good >= okv.s ? 'c-g hs' : good >= okv.o ? 'c-g' : good >= okv.c ? 'c-y' : 'c-r'); };
+  const cpaL = { s: base / S.target, o: base / S.minRoas, c: base / S.cutoff };
+  const cpa = !d.spend ? '<span class="chip c-n">–</span>' : d.purch ? `<span class="chip ${lvl(d.cpa, cpaL, 0, true)}" title="CPA sehat ≤ ${rp(cpaL.o)} · batas ${rp(cpaL.c)} (AOV ${rp(base)})">${rp(d.cpa)}</span>`
+    : `<span class="chip ${d.spend > cpaL.c ? 'c-r' : 'c-n'}" title="belum ada purchase · batas ${rp(cpaL.c)}">0p</span>`;
+  const c = closingOf(d), unit = c.src === 'WA' ? d.cpc : d.cLpv;
+  const need = r => unit / (base / r), nL = { s: need(S.target), o: need(S.minRoas), c: need(S.cutoff) };
+  const close = !(d.lpv || d.contact) ? '<span class="chip c-n">–</span>' : `<span class="chip ${fin(unit) ? lvl(c.v, nL, 0, false) : 'c-n'}" title="Butuh closing ≥ ${pc(nL.o)} untuk ROAS ${xx(S.minRoas)} (biaya per ${c.src === 'WA' ? 'kontak' : 'LPV'} ${rp(unit)})">${pc(c.v)}<small style="font-weight:500;opacity:.7"> ${c.src}</small></span>`;
+  return { cpa, close };
+}
+/** ROAS hari berjalan: 0 purchase belum tentu jelek → abu-abu */
+function roasTodayChip(v) { if (!v.spend) return '<span class="chip c-n">–</span>'; if (!v.purch) return `<span class="chip c-n" title="Hari masih berjalan — belum ada purchase">0,00×</span>`; return roasChip(v.roas, v.spend); }
 function cpaChip(d, a) { return d.purch ? mchip('cpa', d.cpa, a, rp(d.cpa)) : (d.spend ? `<span class="chip ${d.spend > TH(a).cpa.cut ? 'c-r' : 'c-n'}" title="belum ada purchase">0p</span>` : '<span class="chip c-n">–</span>'); }
 
 
@@ -1310,16 +1333,18 @@ async function pageToday() {
   const br = {}; brainRows('campaign').forEach(r => br[r.e.id] = r);
   const ids = ds.campIds.filter(id => { const c = ds.campaigns[id]; if (ST.acc >= 0 && c.a !== ST.acc) return false; return campActive(c) || (W[0].get(id) || Z())[0] > 0; })
     .sort((p, q) => ((W[0].get(q) || Z())[0] - (W[0].get(p) || Z())[0]) || ((W[2].get(q) || Z())[0] - (W[2].get(p) || Z())[0]));
-  html += `<section class="card" style="padding-bottom:18px"><div class="card-h"><h2>Campaign aktif hari ini</h2><span class="small muted">7D = 7 hari penuh s/d kemarin · warna CPA, cost/contact &amp; closing = patokan akun (lihat Leaderboard) · ROAS hijau ≥ ${xx(S.minRoas)} · kuning ${xx(S.cutoff)}–${xx(S.minRoas)} · merah &lt; ${xx(S.cutoff)} · klik untuk diagnosis</span></div>
-    <div class="tw"><table style="min-width:1420px"><thead>
-      <tr><th rowspan="2" style="vertical-align:bottom">Campaign</th><th colspan="2" style="text-align:center;padding-bottom:2px">Hari ini</th><th colspan="4" class="bl" style="text-align:center;padding-bottom:2px">7D</th><th colspan="7" class="bl" style="text-align:center;padding-bottom:2px">ROAS</th><th rowspan="2" class="bl" style="vertical-align:bottom">Status otak</th></tr>
-      <tr><th class="num">Spend</th><th class="num">Purch</th><th class="num bl">CPM</th><th class="num">CPA</th><th class="num">Cost/contact</th><th class="num">Closing</th>${P.map((p, i) => `<th class="num${i === 0 ? ' bl' : ''}">${p[0]}</th>`).join('')}</tr>
+  html += `<section class="card" style="padding-bottom:18px"><div class="card-h"><h2>Campaign aktif hari ini</h2><span class="small muted">7D = 7 hari penuh s/d kemarin · CPA &amp; closing dinilai dengan AOV campaign itu sendiri · cost/contact hanya dinilai untuk campaign WA · ${roasLegend()} · ROAS hari ini abu-abu kalau belum ada purchase · klik untuk diagnosis</span></div>
+    <div class="tw"><table style="min-width:1500px"><thead>
+      <tr><th rowspan="2" style="vertical-align:bottom">Campaign</th><th colspan="3" style="text-align:center;padding-bottom:2px">Hari ini</th><th colspan="4" class="bl" style="text-align:center;padding-bottom:2px">7D</th><th colspan="7" class="bl" style="text-align:center;padding-bottom:2px">ROAS</th><th rowspan="2" class="bl" style="vertical-align:bottom">Status otak</th></tr>
+      <tr><th class="num">Spend / budget</th><th class="num">Purch</th><th class="num">Value</th><th class="num bl">CPM</th><th class="num">CPA</th><th class="num">Cost/contact</th><th class="num">Closing</th>${P.map((p, i) => `<th class="num${i === 0 ? ' bl' : ''}">${p[0]}</th>`).join('')}</tr>
     </thead><tbody>
-    ${ids.map(id => { const c = ds.campaigns[id], v0 = der((W[0].get(id)) || Z()), r = br[id], v7 = der((W[2] && W[2].get(id)) || Z());
-      return `<tr class="click" data-camp="${id}" data-go="diag"><td class="nm" title="${esc(c.n)}">${accChip(ds, c.a)}${shortCamp(c.n)}</td><td class="num">${rp(v0.spend)}</td><td class="num">${nf(v0.purch)}</td>
-      <td class="num bl">${v7.impr ? rp(v7.cpm) : '–'}</td><td class="num">${cpaChip(v7, c.a)}</td><td class="num">${cpcChip(v7, c.a)}</td><td class="num">${closeChip(v7, c.a)}</td>
-      ${W.map((w, i) => { if (!w) return `<td class="num${i === 0 ? ' bl' : ''}"><span class="chip c-n">–</span></td>`; const v = der(w.get(id) || Z()); return `<td class="num${i === 0 ? ' bl' : ''}">${roasChip(v.roas, v.spend)}</td>`; }).join('')}
-      <td class="bl" style="white-space:nowrap">${r ? `<span class="chip ${CLS[r.res.cls]}">${r.res.cls}</span><div class="sub2">${esc(r.res.action)}</div>` : '–'}</td></tr>`; }).join('') || '<tr><td colspan="15" class="empty">Tidak ada campaign aktif</td></tr>'}
+    ${ids.map(id => { const c = ds.campaigns[id], v0 = der((W[0].get(id)) || Z()), r = br[id], v7 = der((W[2] && W[2].get(id)) || Z()), v30 = W[4] ? der(W[4].get(id) || Z()) : v7;
+      const bud = r && r.budget, h = campHealth(v7, c.a, v30.purch ? v30.aov : (v7.purch ? v7.aov : NaN));
+      return `<tr class="click" data-camp="${id}" data-go="diag"><td class="nm" title="${esc(c.n)}">${accChip(ds, c.a)}${shortCamp(c.n)}</td>
+      <td class="num" style="white-space:nowrap">${rp(v0.spend)}${bud ? `<div class="sub2">/ ${rp(bud)}${v0.spend > bud * 1.05 ? ' · lewat' : ''}</div>` : ''}</td><td class="num">${nf(v0.purch)}</td><td class="num">${v0.val ? rp(v0.val) : '–'}</td>
+      <td class="num bl">${v7.impr ? rp(v7.cpm) : '–'}</td><td class="num">${h.cpa}</td><td class="num">${cpcChip(v7, c.a)}</td><td class="num">${h.close}</td>
+      ${W.map((w, i) => { if (!w) return `<td class="num${i === 0 ? ' bl' : ''}"><span class="chip c-n">–</span></td>`; const v = der(w.get(id) || Z()); return `<td class="num${i === 0 ? ' bl' : ''}">${i === 0 ? roasTodayChip(v) : roasChip(v.roas, v.spend)}</td>`; }).join('')}
+      <td class="bl" style="white-space:nowrap">${r ? `<span class="chip ${CLS[r.res.cls]}">${r.res.cls}</span><div class="sub2">${esc(r.res.action)}</div>` : '–'}</td></tr>`; }).join('') || '<tr><td colspan="16" class="empty">Tidak ada campaign aktif</td></tr>'}
     </tbody></table></div></section>`;
   return html;
 }
@@ -1361,11 +1386,11 @@ async function pageDecide() {
   const lvName = LV.find(l => l[0] === lv)[1];
   html += `<section style="display:flex;flex-direction:column;gap:8px">
     <div class="tw"><table style="min-width:980px"><thead><tr><th>${lvName}</th><th>ROAS 3D · 7D · 14D</th><th class="num">Spend 7D</th><th class="num">CPM 7D</th><th class="num">CPA 7D</th><th class="num">Cost/contact 7D</th><th class="num">Closing 7D</th><th>Kelas &amp; aksi</th></tr></thead><tbody>
-    ${rows.map(r => { const m = r.res.m, mc = maxCpa(r.e.a, ds), d7 = der(Brain.util.sum(r.map, Brain.util.days(todayJkt(), 7)));
+    ${rows.map(r => { const m = r.res.m, mc = maxCpa(r.e.a, ds), d7 = der(Brain.util.sum(r.map, Brain.util.days(todayJkt(), 7))), dAll = der(Brain.util.sum(r.map, Object.keys(r.map))), h = campHealth(d7, r.e.a, dAll.purch ? dAll.aov : NaN);
       const meta = [r.age != null ? r.age + ' hari' : null, r.budget ? rp(r.budget) + '/hari' : (lv === 'campaign' ? 'budget di ad set' : null), r.res.tracking ? '⚠ tracking' : null, lv !== 'campaign' && r.e.sub ? shortCamp(r.e.sub, 34) : null].filter(Boolean).join(' · ');
       return `<tr class="click${sel && sel.e.id === r.e.id ? ' sel' : ''}" data-sel="${r.e.id}"><td><div class="nm" style="max-width:320px;font-weight:600" title="${esc(r.e.n)}">${accChip(ds, r.e.a)}${shortCamp(r.e.n)}</div><div class="sub2">${meta}</div></td>
       <td style="white-space:nowrap">${roasChip(m.r3, m.s3)} ${roasChip(m.r7, m.s7)} ${roasChip(m.r14, 1)}</td><td class="num">${rp(m.s7)}</td>
-      <td class="num">${d7.impr ? rp(d7.cpm) : '–'}</td><td class="num">${cpaChip(d7, r.e.a)}</td><td class="num">${cpcChip(d7, r.e.a)}</td><td class="num">${closeChip(d7, r.e.a)}</td>
+      <td class="num">${d7.impr ? rp(d7.cpm) : '–'}</td><td class="num">${h.cpa}</td><td class="num">${cpcChip(d7, r.e.a)}</td><td class="num">${h.close}</td>
       <td><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="chip ${CLS[r.res.cls]}">${r.res.cls}</span><b style="font-size:13px">${esc(r.res.action)}</b></div><div class="sub2">${r.res.signals.length ? esc(r.res.signals.map(s => s.t).join(' · ')) : sevLabel(r.res) || ''}</div></td></tr>`; }).join('') || `<tr><td colspan="8" class="empty">Tidak ada ${lvName.toLowerCase()} di kelas ini</td></tr>`}
     </tbody></table></div>
     <label class="small muted" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="inact" ${ST.showInactive ? 'checked' : ''}> tampilkan yang tidak aktif</label>
