@@ -2196,6 +2196,7 @@ function patokanCard(accs) {
     <div class="small muted" style="margin-top:14px;line-height:2">Warna di dashboard: <span class="chip c-r">di bawah minimum</span> <span class="chip c-y">minimum–sehat</span> <span class="chip c-g">sehat</span> <span class="chip c-g hs">layak scale</span> · hook, LPV rate &amp; closing kontak bisa diubah di Settings.</div></details>`;
 }
 const LB_CARDS = [
+  { k: 'upl', t: 'Konten baru &amp; potensial', unit: 'upl', best: 'Rising', worst: 'Loser', modes: [['best', 'Rising'], ['pot', 'Potensial'], ['worst', 'Loser']], sub: 'Rising &amp; Loser: diupload ≤ 14 hari lalu · Potensial: semua konten yang bagus di ≥ 2 campaign (ROAS ≥ minimum di tiap campaign)' },
   { k: 'cpa', t: 'CPA', unit: 'cpa', best: 'Termurah', worst: 'Termahal', sub: 'minimal 2 purchase · terburuk ikut menghitung spend ≥ CPA maks tanpa purchase' },
   { k: 'roas', t: 'ROAS', unit: 'roas', best: 'Tertinggi', worst: 'Terendah', sub: 'spend ≥ CPA maks atau ≥ 2 purchase' },
   { k: 'spend', t: 'Spender terbesar', unit: 'spend', best: 'Paling boros tapi bagus', worst: 'Paling boros tapi jelek', sub: 'bagus = ROAS ≥ minimum · jelek = ROAS di bawah cutoff' },
@@ -2203,7 +2204,6 @@ const LB_CARDS = [
   { k: 'lpvr', t: 'LPV rate', unit: 'lpvr', best: 'Terbaik', worst: 'Terburuk', sub: 'LPV ÷ klik link · minimal 50 klik, LPV terlacak' },
   { k: 'cpc', t: 'Cost per contact', unit: 'cpc', best: 'Termurah', worst: 'Termahal', sub: 'minimal 3 kontak' },
   { k: 'close', t: 'Closing rate', unit: 'close', best: 'Tertinggi', worst: 'Terendah', sub: 'purchase ÷ LPV (atau ÷ kontak untuk campaign WA) · minimal 100 LPV / 10 kontak' },
-  { k: 'upl', t: 'Konten baru &amp; potensial', unit: 'upl', best: 'Rising', worst: 'Loser', modes: [['best', 'Rising'], ['pot', 'Potensial'], ['worst', 'Loser']], sub: 'Rising &amp; Loser: diupload ≤ 14 hari lalu · Potensial: semua konten yang bagus di ≥ 2 campaign (ROAS ≥ minimum di tiap campaign)' },
   { k: 'newc', t: 'Campaign baru', unit: 'roas', best: 'Terbaik', worst: 'Terburuk', sub: 'campaign yang mulai dalam 14 hari terakhir · ROAS periode ini', camp: true }
 ];
 function lbList(key, mode, rows, camps) {
