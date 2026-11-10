@@ -582,7 +582,7 @@ function TH(a) {
   const cpa = { cut: base / S.cutoff, ok: base / S.minRoas, scale: base / S.target };
   const waClose = waC >= 30 ? waP / waC : M2.waClose / 100;
   const cLpv = lpV ? lpS / lpV : NaN;
-  const r = { base, cpa, waClose, waAuto: waC >= 30, cLpv,
+  const r = { base, cpa, waClose, waAuto: waC >= 30, cLpv, junkLpv: fin(cLpv) ? Brain.cfg.content.junkMult * (cpa.ok / cLpv) : NaN,
     cpc: { cut: cpa.cut * waClose, ok: cpa.ok * waClose, scale: cpa.scale * waClose },
     closeLp: { cut: cLpv / cpa.cut, ok: cLpv / cpa.ok, scale: cLpv / cpa.scale },
     closeWa: { cut: waClose * 0.6, ok: waClose, scale: waClose * 1.25 },
@@ -667,6 +667,8 @@ function alerts() {
     const td = der(tot(ds, t, t, null, i)), wk = der(tot(ds, addD(t, -7), y, null, i));
     if (td.impr > 3000 && wk.cpm && td.cpm > wk.cpm * 1.4) out.push({ lv: 'y', go: 'cpa', title: a.label + ' — CPM hari ini melonjak', why: `CPM ${rp(td.cpm)} vs rata-rata 7D ${rp(wk.cpm)} (+${Math.round((td.cpm / wk.cpm - 1) * 100)}%)` });
   });
+  const bh = blackholes();
+  if (bh.length) out.push({ lv: 'r', go: 'decide', title: `${bh.length} blackhole terdeteksi (${[...new Set(bh.map(x => x.code))].sort().join(', ')})`, why: esc(bh.slice(0, 2).map(x => x.code + ' ' + x.name).join(' · ')) + ` · spend ${rp(bh.reduce((s, x) => s + x.spend, 0))}` });
   const au = auditResult();
   if (au) au.acc.forEach((x, i) => { if ((ST.acc < 0 || i === ST.acc) && x.bad.length) out.push({ lv: 'r', go: 'audit', title: ds.accounts[i].label + ' — tracking bermasalah', why: esc(x.bad.slice(0, 2).join(' · ')) + (x.bad.length > 2 ? ` (+${x.bad.length - 2} lagi)` : '') }); });
   const rank = { r: 0, y: 1, b: 2 };
@@ -737,7 +739,7 @@ function brainRows(level, onlyId, allAcc) {
     const freq = (R7[e.id] || [])[1];
     const res = Brain.evaluate(map, { today: t, active: e.active, age, start: e.start, maxCpa: mcOf(e.a), budget, freq7: freq,
       budgetEvents: isAd ? [] : budgetEvents(level, e.id, ds), tracking: trackingOf(e.a) });
-    const rule = isAd ? Brain.contentRule(map, { today: t, active: e.active, age, maxCpa: mcOf(e.a), freq7: freq, budgetEvents: adBudgetEvents(e, ds) }) : null;
+    const rule = isAd ? Brain.contentRule(map, { today: t, active: e.active, age, maxCpa: mcOf(e.a), freq7: freq, budgetEvents: adBudgetEvents(e, ds), junkLpv: (TH(e.a) || {}).junkLpv }) : null;
     return { e, res, rule, map, age, budget, freq, spend14: Object.entries(map).reduce((s, [d, v]) => s + (d14.has(d) || d === t ? v[0] : 0), 0) };
   });
 }
@@ -1337,7 +1339,7 @@ function syncCheck(ds, accs) {
    2. DECISION BOARD
    ===================================================================== */
 async function pageDecide() {
-  await ensureSide(true);
+  await Promise.all([ensureSide(true), ensureSeg()]);
   const ds = ST.main, y = addD(todayJkt(), -1), lv = ST.decLevel;
   const all = brainRows(lv).filter(r => r.e.active || (ST.showInactive && r.spend14 > 0));
   if (lv === 'ad') return decideAds(all, y);
@@ -1347,10 +1349,12 @@ async function pageDecide() {
   const sel = rows.find(r => r.e.id === ST.decSel) || null;
   ST._decRows = rows; ST._decLv = lv;
   const LV = [['campaign', 'Campaign'], ['adset', 'Ad set'], ['ad', 'Iklan']];
-  let html = head('Decision Board', `Otak: skill Meta Performance · 3/7/14 hari penuh s/d kemarin (${fd(y)}) · cutoff ${xx(S.cutoff)} · minimum ${xx(S.minRoas)} · target ${xx(S.target)}`,
+  let html = '';
+  html = head('Decision Board', `Otak: skill Meta Performance · 3/7/14 hari penuh s/d kemarin (${fd(y)}) · cutoff ${xx(S.cutoff)} · minimum ${xx(S.minRoas)} · target ${xx(S.target)}`,
     `<div class="seg" role="group" aria-label="Level">${LV.map(l => `<button type="button" class="${lv === l[0] ? 'on' : ''}" data-declevel="${l[0]}">${l[1]}</button>`).join('')}</div>${accSeg()}`);
   const au = auditResult(), badAcc = au ? au.acc.map((x, i) => x.bad.length && (ST.acc < 0 || ST.acc === i) ? ds.accounts[i].label : null).filter(Boolean) : [];
   if (badAcc.length) html += `<div class="banner"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span style="flex:1;min-width:220px"><b>Tracking ${badAcc.map(esc).join(', ')} bermasalah</b> — rekomendasi ROAS di akun ini bisa tidak akurat.</span><a href="#" data-page="audit">Lihat Pixel Audit</a></div>`;
+  html += blackholeCard();
   const tabs = [['all', 'Semua', '#15171C', all.length, all.reduce((s, r) => s + r.res.m.s7, 0)]].concat(['Loser', 'Watchlist', 'Winner', 'Tunggu'].concat(ST.showInactive ? ['Nonaktif'] : []).map(k => [k, k, { Loser: '#C0352F', Watchlist: '#C98A1B', Winner: '#17804A', Tunggu: '#2F54EB', Nonaktif: '#9AA1AD' }[k], (sum[k] || {}).n || 0, (sum[k] || {}).spend || 0]));
   html += `<div class="ctabs" role="tablist" aria-label="Filter kelas">${tabs.map(tb => `<button type="button" role="tab" aria-selected="${cls === tb[0]}" class="ctab ${cls === tb[0] ? 'on' : ''}" data-dcls="${tb[0]}"><span class="t"><i style="background:${tb[2]}"></i>${tb[1]}<b>${tb[3]}</b></span><span class="s">spend 7D ${rp(tb[4])}</span></button>`).join('')}</div>`;
   const lvName = LV.find(l => l[0] === lv)[1];
@@ -1381,6 +1385,7 @@ function decideAds(all, y) {
   const lb = Brain.cfg.content.lookback;
   let html = head('Decision Board', `Rule konten per iklan · ${lb} hari terakhir + hari ini · batas = kelipatan CPA maks per akun`,
     `<button type="button" class="btn" data-rules="1">Lihat aturan</button><div class="seg" role="group" aria-label="Level">${LVTABS().map(l => `<button type="button" class="${l[0] === 'ad' ? 'on' : ''}" data-declevel="${l[0]}">${l[1]}</button>`).join('')}</div>${accSeg()}`);
+  html += blackholeCard();
   const keys = Object.keys(R).filter(k => cnt[k]).sort((a, b) => R[a].order - R[b].order);
   const tabs = [['all', 'Semua', '#15171C', all.length, all.reduce((s, r) => s + r.rule.m.spend, 0)]].concat(keys.map(k => [k, R[k].label, RCOL[R[k].tone], cnt[k].n, cnt[k].s]));
   html += `<div class="ctabs" role="tablist" aria-label="Filter rule">${tabs.map(tb => `<button type="button" role="tab" aria-selected="${cls === tb[0]}" class="ctab ${cls === tb[0] ? 'on' : ''}" data-dcls="${tb[0]}"><span class="t"><i style="background:${tb[2]}"></i>${esc(tb[1])}<b>${tb[3]}</b></span><span class="s">spend ${lb}D ${rp(tb[4])}</span></button>`).join('')}</div>`;
@@ -2194,6 +2199,62 @@ async function pageBoard() {
   return html;
 }
 
+/* ---------- BLACKHOLE (rulebook B1–B7) ---------- */
+const RULEBOOK_URL = 'https://claude.ai/artifact/CNpxcruZqazmcCimWFioQt';
+const BH_NAME = { B1: '0 purchase lewat 1,5× CPA maks', B2: 'Hook gagal', B3: 'Trafik sampah', B4: 'Campaign kosong beruntun', B5: 'Penempatan bocor', B6: 'Segmen bocor', B7: 'Kosong ≥ 7 hari' };
+const PLAT = { facebook: 'Facebook', instagram: 'Instagram', audience_network: 'Audience Network', messenger: 'Messenger', whatsapp: 'WhatsApp', threads: 'Threads', unknown: 'Lainnya' };
+async function ensureSeg() {
+  if (ST.seg && (Date.now() - ST.seg._at < 30 * 60 * 1000)) return;
+  try { ST.seg = await api('segments', { until: addD(todayJkt(), -1) }); } catch (e) { ST.seg = { err: e.message, place: {}, demo: [] }; }
+  ST.seg._at = Date.now();
+}
+/** semua blackhole yang terdeteksi (akun terpilih), urut spend terbesar */
+function blackholes() {
+  const ds = ST.main; if (!ds) return [];
+  const t = todayJkt(), out = [], inAcc = a => ST.acc < 0 || a === ST.acc, MC = {}, mc = a => (MC[a] != null ? MC[a] : (MC[a] = maxCpa(a, ds)));
+  // B4 / B7 — campaign
+  const maps = dailyMaps(ds, ad => ad.c, addD(t, -31), t, -1);
+  entitiesOf('campaign', ds).forEach(e => {
+    if (!e.active || !inAcc(e.a)) return;
+    const b = Brain.blackholeEntity(maps[e.id] || {}, { today: t, active: true, maxCpa: mc(e.a) });
+    if (b) out.push({ code: b.code, lv: 'Campaign', a: e.a, name: shortCamp(e.n), spend: b.spend, text: b.text, camp: e.id });
+  });
+  // B1–B3 — iklan
+  Object.values(adRules()).forEach(r => {
+    const ru = r.rule; if (!ru || ru.key !== 'kill' || !/^B[123]$/.test(ru.code || '') || !inAcc(r.e.a)) return;
+    out.push({ code: ru.code, lv: 'Iklan', a: r.e.a, name: r.e.n, sub: shortCamp(r.e.sub || '', 32), spend: ru.m.spend, text: ru.reasons[0] || '', camp: r.e.camp });
+  });
+  // B5 — penempatan (7 hari penuh), B6 — segmen usia × gender (30 hari penuh)
+  const sg = ST.seg;
+  if (sg && !sg.err) {
+    Object.entries(sg.place || {}).forEach(([cid, pl]) => {
+      const c = ds.campaigns[cid]; if (!c || !campActive(c) || !inAcc(c.a)) return;
+      Object.entries(pl).forEach(([p, v]) => { if (Brain.blackholePlacement(v, mc(c.a))) out.push({ code: 'B5', lv: 'Penempatan', a: c.a, name: (PLAT[p] || p) + ' di ' + shortCamp(c.n, 30), spend: v[0], camp: cid,
+        text: `${rp(v[0])} dalam 7 hari tanpa checkout dan purchase (batas ${rp(Brain.cfg.content.placeMult * mc(c.a))}). Buang penempatan ini dari campaign.` }); });
+    });
+    (sg.demo || []).forEach((d, a) => {
+      if (!inAcc(a)) return;
+      Object.entries(d || {}).forEach(([k, v]) => {
+        const [g, age] = k.split('|'); if (g === 'unknown' || age === 'Unknown') return;
+        if (Brain.blackholeSegment(v, mc(a))) out.push({ code: 'B6', lv: 'Segmen', a, name: (g === 'male' ? 'Pria' : g === 'female' ? 'Wanita' : g) + ' ' + age, spend: v[0],
+          text: `${rp(v[0])} dalam 30 hari, ${nf(v[3])} purchase (batas ${rp(Brain.cfg.content.segMult * mc(a))}, ≤ 1 purchase). Kecualikan segmen ini di ad set manual.` });
+      });
+    });
+  }
+  return out.sort((p, q) => q.spend - p.spend);
+}
+function blackholeCard() {
+  const ds = ST.main, list = blackholes(), sg = ST.seg, total = list.reduce((s, x) => s + x.spend, 0);
+  const note = sg && sg.err ? `<div class="small muted">B5/B6 belum bisa dicek: ${esc(sg.err)}. Pastikan Apps Script sudah di-deploy versi terbaru.</div>` : '';
+  if (!list.length) return `<div class="callout" style="margin-bottom:14px">Tidak ada blackhole terdeteksi (B1–B7). <a href="#" data-rules="1">Lihat aturan</a> · <a href="${RULEBOOK_URL}" target="_blank" rel="noopener">Rulebook</a>${note ? '<br>' + note : ''}</div>`;
+  return `<details class="card bhc" open style="margin-bottom:14px;border-color:#F3C9C6"><summary style="cursor:pointer;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap"><b style="font-size:15px">Blackhole terdeteksi</b> <span class="chip c-r">${list.length}</span> <span class="small muted">spend ${rp(total)} · matikan setelah cek pengecualian · <a href="#" data-rules="1">aturan</a> · <a href="${RULEBOOK_URL}" target="_blank" rel="noopener">rulebook</a></span></summary>
+    <div class="tw" style="margin-top:10px"><table style="min-width:820px"><thead><tr><th>Kode</th><th>Level</th><th>Nama</th><th class="num">Spend</th><th>Kenapa</th></tr></thead><tbody>
+    ${list.slice(0, 20).map(x => `<tr class="click" data-camp="${x.camp || ''}" data-go="diag"><td style="white-space:nowrap"><span class="chip c-r" title="${esc(BH_NAME[x.code])}">${x.code}</span></td><td class="small">${x.lv}</td>
+      <td><div class="nm" style="max-width:320px;font-weight:600" title="${esc(x.name)}">${accChip(ds, x.a)}${esc(x.name)}</div>${x.sub ? `<div class="sub2">${esc(x.sub)}</div>` : `<div class="sub2">${esc(BH_NAME[x.code])}</div>`}</td>
+      <td class="num">${rp(x.spend)}</td><td class="small" style="max-width:420px">${esc(x.text)}</td></tr>`).join('')}
+    </tbody></table></div>${list.length > 20 ? `<div class="small muted" style="margin-top:6px">+${list.length - 20} lainnya</div>` : ''}${note}</details>`;
+}
+
 /* ---------- penjelasan rule konten ---------- */
 function openRules() {
   const ds = ST.main, C = Brain.cfg, K = C.content, lb = K.lookback;
@@ -2207,14 +2268,25 @@ function openRules() {
     ['3', 'diag', 'Angka awal bagus, 0 purchase', `Link CTR ≥ ${pcx(K.ctrGood)} &amp; LPV/klik ≥ ${pcx(K.lpvGood)}, tapi belum ada purchase. Diberi sampai ${k(K.tofMult)} CPA maks (${v(K.tofMult)}).`, 'Ada initiate checkout → cek checkout / pembayaran / tracking. Tidak ada → copy tidak nyambung dengan landing page. Lewat batas → <b>Pindah ke top funnel</b> (juga untuk konten CTR bagus yang laku tapi rugi).'],
     ['4', 'refresh', 'Pernah purchase, lalu kosong', `Terbukti = ≥ ${K.provenP} purchase &amp; ROAS ≥ ${xx(C.cutoff)} dalam ${lb} hari. Kosong masih wajar selama spend kosong &lt; ${k(K.streakMult)} CPA historis iklan itu.`, 'Di bawah batas → <b>Tahan</b>. Lewat batas atau ROAS 7D &lt; 1 → turunkan 20–30%; ada tanda jenuh (CTR −20%, ROAS −20%, CPA +30%, frequency ≥ 3,5) → buat hook 3 detik baru, body tetap.'],
     ['5', 'revert', 'Winner gagal setelah scale', `Budget campaign/ad set naik dalam ${K.scaleLook} hari terakhir, sebelumnya ROAS ≥ ${xx(C.cutoff)}, sesudahnya 0 purchase atau ROAS &lt; ${xx(C.cutoff)}.`, `Tunggu ${K.waitScale} hari (kecuali spend sejak naik ≥ ${k(K.streakMult)} CPA sebelum scale) → kembalikan ke budget lama, jangan pause. Lalu scale ke samping dengan post ID yang sama.`],
-    ['', 'winner', 'Sehat', `Winner = ≥ ${K.winP} purchase &amp; ROAS ≥ ${xx(C.minRoas)}. Layak scale kalau ROAS ${lb}D &amp; 7D ≥ ${xx(C.target)}. <b>Pantau</b> = terbukti tapi ROAS di antara ${xx(C.cutoff)} dan ${xx(C.minRoas)}.`, 'Winner → kandidat bottom funnel, scale maks 20–30% tiap 3–4 hari. Pantau → jangan naikkan budget.']
+    ['', 'winner', 'Sehat', `Winner = ≥ ${K.winP} purchase di ≥ ${K.winDays} hari berbeda, ROAS ≥ ${xx(C.minRoas)}, spend ≥ ${k(K.winSpendMult)} CPA maks (${v(K.winSpendMult)}). Layak scale kalau ROAS ${lb}D &amp; 7D ≥ ${xx(C.target)}. <b>Pantau</b> = terbukti tapi ROAS di antara ${xx(C.cutoff)} dan ${xx(C.minRoas)}.`, 'Winner → kandidat bottom funnel, scale maks 20–30% tiap 3–4 hari. Pantau → jangan naikkan budget.']
   ];
   openModal(`<h2 style="font-size:18px">Aturan konten</h2>
   <div class="muted small" style="margin:4px 0 12px">Dinilai per iklan dari ${lb} hari terakhir + hari ini. Batas spend = kelipatan CPA maks (AOV 30D ÷ ROAS minimum ${xx(C.minRoas)}${accs.length ? ' → ' + accs.map(a => esc(a.l) + ' ' + rp(a.mc)).join(', ') : ''}). Angka bisa diubah di Settings → Rule konten.</div>
   <div class="tw"><table class="rtab" style="min-width:720px"><thead><tr><th>Kasus</th><th>Kondisi</th><th>Batas</th><th>Aksi</th></tr></thead><tbody>
   ${rows.map(r => { const R = Brain.RULES[r[1]]; return `<tr><td>${r[0] ? r[0] + '. ' : ''}<span class="chip ${RTONE[R.tone]}">${R.label}</span></td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`; }).join('')}
   </tbody></table></div>
-  <div class="small muted" style="margin-top:10px">Urutan cek: kasus 5 → laku tapi rugi → belum pernah purchase (hook gagal → konten bagus → batas matikan → testing) → 1 purchase belum terbukti → kasus 4 → sehat. Dashboard hanya memberi label — tidak mengubah apa pun di akun.</div>`, 'wide pad');
+  <h3 style="font-size:15px;margin:18px 0 6px">Blackhole B1–B7 <span class="small muted" style="font-weight:400">— cukup satu terpenuhi; tampil di Decision Board</span></h3>
+  <div class="tw"><table class="rtab" style="min-width:640px"><thead><tr><th>Kode</th><th>Kriteria</th><th>Batas</th></tr></thead><tbody>
+  <tr><td>B1</td><td>Iklan 0 purchase</td><td>Spend ≥ ${k(K.killMult)} CPA maks (${v(K.killMult)})</td></tr>
+  <tr><td>B2</td><td>Hook gagal</td><td>Link CTR &lt; ${pcx(K.ctrKill)} setelah ${K.earlyImpr.toLocaleString('id-ID')} impresi &amp; ${rp(K.earlySpend)}</td></tr>
+  <tr><td>B3</td><td>Trafik sampah: LPV banyak, 0 checkout (30 hari atau 7 hari terakhir)</td><td>LPV ≥ ${k(K.junkMult)} LPV per purchase di closing sehat (${accs.map(a => `<span style="white-space:nowrap">${esc(a.l)} <b>${fin((TH(a.i) || {}).junkLpv) ? Math.round(TH(a.i).junkLpv) : K.junkLpv} LPV</b></span>`).join(' · ')})</td></tr>
+  <tr><td>B4</td><td>Campaign kosong beruntun</td><td>≥ 2 hari 0 purchase, spend ≥ ${k(K.zeroMult)} CPA historis (maks ${k(K.zeroMult * 1.5)} CPA maks)</td></tr>
+  <tr><td>B5</td><td>Penempatan bocor (7 hari)</td><td>Spend ≥ ${k(K.placeMult)} CPA maks (${v(K.placeMult)}), 0 checkout &amp; 0 purchase</td></tr>
+  <tr><td>B6</td><td>Segmen usia × gender bocor (30 hari)</td><td>Spend ≥ ${k(K.segMult)} CPA maks (${v(K.segMult)}), ≤ 1 purchase</td></tr>
+  <tr><td>B7</td><td>Campaign lewat masanya</td><td>0 purchase ≥ ${K.zeroDays} hari berturut-turut</td></tr>
+  </tbody></table></div>
+  <div class="small muted" style="margin-top:6px">Sebelum mematikan, cek pengecualian di <a href="${RULEBOOK_URL}" target="_blank" rel="noopener">rulebook</a>: winner yang kosong &lt; 2× CPA historis, baru di-scale atau dipindah (&lt; 3 hari), hampir tidak dapat budget, campaign WA yang closing-nya belum terlacak.</div>
+  <div class="small muted" style="margin-top:10px">Urutan cek: kasus 5 → trafik sampah (B3) → laku tapi rugi → belum pernah purchase (hook gagal → konten bagus → batas matikan → testing) → 1 purchase belum terbukti → kasus 4 → sehat. Dashboard hanya memberi label — tidak mengubah apa pun di akun.</div>`, 'wide pad');
 }
 
 /* ---------- settings ---------- */
