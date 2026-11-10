@@ -2203,6 +2203,7 @@ const LB_CARDS = [
   { k: 'lpvr', t: 'LPV rate', unit: 'lpvr', best: 'Terbaik', worst: 'Terburuk', sub: 'LPV ÷ klik link · minimal 50 klik, LPV terlacak' },
   { k: 'cpc', t: 'Cost per contact', unit: 'cpc', best: 'Termurah', worst: 'Termahal', sub: 'minimal 3 kontak' },
   { k: 'close', t: 'Closing rate', unit: 'close', best: 'Tertinggi', worst: 'Terendah', sub: 'purchase ÷ LPV (atau ÷ kontak untuk campaign WA) · minimal 100 LPV / 10 kontak' },
+  { k: 'upl', t: 'Konten baru &amp; potensial', unit: 'upl', best: 'Rising', worst: 'Loser', modes: [['best', 'Rising'], ['pot', 'Potensial'], ['worst', 'Loser']], sub: 'Rising &amp; Loser: diupload ≤ 14 hari lalu · Potensial: semua konten yang bagus di ≥ 2 campaign (ROAS ≥ minimum di tiap campaign)' },
   { k: 'newc', t: 'Campaign baru', unit: 'roas', best: 'Terbaik', worst: 'Terburuk', sub: 'campaign yang mulai dalam 14 hari terakhir · ROAS periode ini', camp: true }
 ];
 function lbList(key, mode, rows, camps) {
@@ -2217,6 +2218,29 @@ function lbList(key, mode, rows, camps) {
     case 'lpvr': return rows.filter(g => g.d.link >= 50 && g.d.lpv > 0).sort(by(g => g.d.lpvRate, mode === 'best' ? -1 : 1));
     case 'cpc': return rows.filter(g => g.d.contact >= 3).sort(by(g => g.d.cpc, mode === 'best' ? 1 : -1));
     case 'close': return rows.filter(g => g.d.lpv >= 100 || g.d.contact >= 10).sort(by(g => fin(cl(g).v) ? cl(g).v : 0, mode === 'best' ? -1 : 1));
+    case 'upl': {
+      if (mode === 'pot') {
+        const out = rows.filter(g => { const by = {};
+          g.ads.forEach(x => { const c = ST.ds.ads[x.ai].c; const v = by[c] || (by[c] = Z()); for (let i = 0; i < NM; i++) v[i] += x.v[i]; });
+          const cs = Object.values(by).map(der).filter(d => d.spend > 0);
+          g._pc = cs.length; g._pg = cs.filter(d => d.purch >= 1 && d.roas >= S.minRoas).length; g._upn = g._pg;
+          return g._pc >= 2 && g._pg >= 2; });
+        return out.sort((p, q) => (q._pg - p._pg) || ((q._pg / q._pc) - (p._pg / p._pc)) || ((q.d.roas || 0) - (p.d.roas || 0)) || (q.d.spend - p.d.spend));
+      }
+      const nw = rows.filter(g => g.up != null && g.up <= 14);
+      if (mode === 'best') {
+        const out = nw.filter(g => { const T = TH(g.a);
+          if (g.d.purch >= 1) return g.d.roas >= S.cutoff;
+          return g.d.spend < mc(g.a) && ((g.d.impr >= 2000 && g.d.hook >= T.hook.ok) || (g.d.contact >= 3 && g.d.cpc <= T.cpc.ok)); });
+        out.forEach(g => { g._upn = g.d.purch ? g.d.roas : NaN; g._upk = g.d.purch ? 'p' : 's'; });
+        return out.sort((p, q) => (q._upk === 'p') - (p._upk === 'p') || (q._upk === 'p' ? (q.d.roas - p.d.roas) : ((q.d.hook || 0) - (p.d.hook || 0))) || (q.d.spend - p.d.spend));
+      }
+      const out = nw.filter(g => { const T = TH(g.a);
+        g._upw = !g.d.purch && g.d.spend >= mc(g.a) ? 'Spend ≥ CPA maks, 0 purchase' : g.d.purch && g.d.spend >= mc(g.a) && g.d.roas < S.cutoff ? 'ROAS di bawah cutoff' : g.d.impr >= 3000 && g.d.hook < T.hook.cut ? 'Hook gagal' : '';
+        return !!g._upw; });
+      out.forEach(g => { g._upn = g.d.spend; });
+      return out.sort((p, q) => q.d.spend - p.d.spend);
+    }
     case 'newc': return camps.slice().sort(mode === 'best' ? (p, q) => ((fin(q.d.roas) ? q.d.roas : 0) - (fin(p.d.roas) ? p.d.roas : 0)) || (q.d.spend - p.d.spend)
       : (p, q) => ((fin(p.d.roas) ? p.d.roas : 0) - (fin(q.d.roas) ? q.d.roas : 0)) || (q.d.spend - p.d.spend));
   }
@@ -2232,6 +2256,8 @@ function lbVal(unit, g) {
     case 'lpvr': return { n: d.lpvRate, h: mchip('lpvr', d.lpvRate, a, pc(d.lpvRate, 0)) };
     case 'cpc': return { n: d.cpc, h: mchip('cpc', d.cpc, a, rp(d.cpc)) };
     case 'close': return { n: closingOf(d).v, h: closeChip(d, a) };
+    case 'upl': if (g._pot) return { n: g._pg, h: `<span class="chip c-g">${g._pg}/${g._pc} campaign</span>` };
+      return { n: g._upn, h: d.purch ? roasChip(d.roas, d.spend) : (g._upw ? `<span class="chip c-r">${rp(d.spend)} · 0p</span>` : mchip('hook', d.hook, a, 'hook ' + pc(d.hook, 1))) };
   }
   return { n: NaN, h: '' };
 }
@@ -2243,11 +2269,14 @@ function lbSub(unit, g) {
   if (unit === 'lpvr') p.push(nf(d.lpv) + ' LPV');
   if (unit === 'cpc') p.push(nf(d.contact) + ' kontak');
   if (unit === 'close') p.push(nf(d.purch) + ' purchase');
+  if (unit === 'upl' && g._pot) { p.length = 0; p.push(`bagus di ${g._pg} dari ${g._pc} campaign`, 'ROAS ' + xx(d.roas), rp(d.spend), nf(d.purch) + ' purchase'); return p.join(' · '); }
+  if (unit === 'upl') { p.length = 0; if (g._upw) p.push(g._upw); p.push('upload ' + (g.up === 0 ? 'hari ini' : g.up + ' hari lalu'), rp(d.spend), nf(d.purch) + ' purchase'); if (!g._upw && !d.purch && d.contact) p.push(nf(d.contact) + ' kontak · ' + rp(d.cpc)); }
   return p.join(' · ');
 }
 async function pageBoard() {
   const ds = ST.ds, [s, u] = curRange(), { list } = buildConcepts(ds, s, u), t = todayJkt();
   const rows = list.filter(g => (ST.acc < 0 || g.a === ST.acc) && g.d.spend > 0);
+  rows.forEach(g => { const c0 = g.ads.map(x => ((ds.ads[x.ai].ct || '') + '').slice(0, 10)).filter(Boolean).sort()[0]; g.up = c0 ? diffD(c0, t) : null; g._upw = ''; g._pot = false; });
   ST._concepts = list; ST._lbLists = {};
   const lb = Object.assign({}, LS.get('lb', {}));
   // campaign baru (mulai ≤ 14 hari lalu) — ROAS periode ini
@@ -2256,11 +2285,12 @@ async function pageBoard() {
     .filter(x => x.c.n && (ST.acc < 0 || x.a === ST.acc) && x.age != null && x.age <= 14 && x.d.spend > 0);
   const accs = (ST.acc >= 0 ? [ST.acc] : ST.main.accounts.map((_, i) => i)).filter(a => ST.acc >= 0 || rows.some(g => g.a === a));
   const A = der(rows.reduce((v, g) => { for (let i = 0; i < NM; i++) v[i] += g.v[i]; return v; }, Z()));
-  const avg = { cpa: rp(A.cpa), roas: xx(A.roas), spend: rp(A.spend) + ' total', hook: pc(A.hook, 1), lpvr: pc(A.lpvRate, 0), cpc: rp(A.cpc), close: pc(closingOf(A).v) };
+  const avg = { upl: rows.filter(g => g.up != null && g.up <= 14).length + ' konten baru dalam 14 hari', cpa: rp(A.cpa), roas: xx(A.roas), spend: rp(A.spend) + ' total', hook: pc(A.hook, 1), lpvr: pc(A.lpvRate, 0), cpc: rp(A.cpc), close: pc(closingOf(A).v) };
   let html = head('Leaderboard', `${rangeLabel()} · 10 konten terbaik &amp; terburuk per metrik · klik untuk preview`, periodCtl(true) + accSeg());
   html += accs.length ? patokanCard(accs) : '';
   html += `<section class="lbgrid">${LB_CARDS.map(cd => {
-    const mode = lb[cd.k] || 'best', all = lbList(cd.k, mode, cd.camp ? null : rows, camps), top = all.slice(0, 10);
+    const mode = (cd.modes || [['best'], ['worst']]).some(m => m[0] === lb[cd.k]) ? lb[cd.k] : 'best', all = lbList(cd.k, mode, cd.camp ? null : rows, camps), top = all.slice(0, 10);
+    if (cd.k === 'upl') rows.forEach(g => { g._pot = mode === 'pot'; });
     if (!cd.camp) ST._lbLists[cd.k] = top.map(g => g.key);
     const nums = top.map(g => cd.camp ? (fin(g.d.roas) ? g.d.roas : 0) : cd.unit === 'cpa' && !g.d.purch ? g.d.spend : lbVal(cd.unit, g).n).filter(fin);
     const mx = Math.max(1e-9, ...nums.map(Math.abs));
@@ -2271,8 +2301,8 @@ async function pageBoard() {
       return `<li><button type="button" class="lbr" data-concept="${esc(g.key)}" data-lbk="${cd.k}"><span class="bar" style="width:${fin(n) ? Math.round(Math.abs(n) / mx * 100) : 0}%"></span><span class="rk">${i + 1}</span><span class="th">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : ''}</span><span class="nm" title="${esc(g.name)}">${esc(g.name)}<small>${esc(ds.accounts[g.a].label)} · ${lbSub(cd.unit, g)}${g.active.length ? '' : ' · nonaktif'}</small></span><span class="val">${V.h}</span></button></li>`;
     }).join('');
     return `<div class="card lbc"><div class="lbh"><div style="min-width:0"><h3>${cd.t}</h3><div class="small muted">${cd.sub}</div></div>
-      <div class="seg soft" role="group" aria-label="${cd.t}"><button type="button" class="${mode === 'best' ? 'on' : ''}" data-lbm="${cd.k}:best">${cd.best}</button><button type="button" class="${mode === 'worst' ? 'on' : ''}" data-lbm="${cd.k}:worst">${cd.worst}</button></div></div>
-      ${!cd.camp && avg[cd.unit] ? `<div class="lbavg">Rata-rata akun: <b>${avg[cd.unit]}</b> · ${all.length} memenuhi syarat</div>` : `<div class="lbavg">${all.length} campaign baru</div>`}
+      <div class="seg soft" role="group" aria-label="${cd.t}">${(cd.modes || [['best', cd.best], ['worst', cd.worst]]).map(m => `<button type="button" class="${mode === m[0] ? 'on' : ''}" data-lbm="${cd.k}:${m[0]}">${m[1]}</button>`).join('')}</div></div>
+      ${cd.k === 'upl' ? (mode === 'pot' ? `<div class="lbavg"><b>${all.length} konten</b> bagus di ≥ 2 campaign · periode ini</div>` : `<div class="lbavg"><b>${avg.upl}</b> · ${all.length} ${mode === 'best' ? 'rising' : 'loser'}</div>`) : !cd.camp && avg[cd.unit] ? `<div class="lbavg">Rata-rata akun: <b>${avg[cd.unit]}</b> · ${all.length} memenuhi syarat</div>` : `<div class="lbavg">${all.length} campaign baru</div>`}
       <ol class="lbl">${li || `<li class="empty small muted" style="padding:14px 0">Belum ada ${cd.camp ? 'campaign' : 'konten'} yang memenuhi syarat</li>`}</ol></div>`;
   }).join('')}</section>`;
   return html;
