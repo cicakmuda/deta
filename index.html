@@ -115,6 +115,7 @@
 /* table */
 .mar-app .tw{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
 .mar-app .card .tw{border:0;border-radius:0;margin:0 -20px -18px}
+.mar-app .bhc .tw,.mar-app .lbpat .tw{margin-bottom:0}
 .mar-app table{border-collapse:collapse;width:100%;font-size:13px}
 .mar-app th{background:#FAFBFC;text-align:left;font-weight:600;font-size:12px;color:var(--ink2);padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
 .mar-app th[data-sort]{cursor:pointer;user-select:none}
@@ -2245,7 +2246,7 @@ function blackholes() {
 }
 function blackholeCard() {
   const ds = ST.main, list = blackholes(), sg = ST.seg, total = list.reduce((s, x) => s + x.spend, 0);
-  const note = sg && sg.err ? `<div class="small muted">B5/B6 belum bisa dicek: ${esc(sg.err)}. Pastikan Apps Script sudah di-deploy versi terbaru.</div>` : '';
+  const note = sg && sg.err ? `<div class="small muted" style="margin-top:10px">B5/B6 belum bisa dicek${/tidak dikenal|unknown/i.test(sg.err) ? ': Apps Script yang aktif masih versi lama. Tempel Code.gs terbaru, lalu Deploy → Manage deployments → Edit → Version: New version → Deploy' : ': ' + esc(sg.err)}.</div>` : '';
   if (!list.length) return `<div class="callout" style="margin-bottom:14px">Tidak ada blackhole terdeteksi (B1–B7). <a href="#" data-rules="1">Lihat aturan</a> · <a href="${RULEBOOK_URL}" target="_blank" rel="noopener">Rulebook</a>${note ? '<br>' + note : ''}</div>`;
   return `<details class="card bhc" open style="margin-bottom:14px;border-color:#F3C9C6"><summary style="cursor:pointer;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap"><b style="font-size:15px">Blackhole terdeteksi</b> <span class="chip c-r">${list.length}</span> <span class="small muted">spend ${rp(total)} · matikan setelah cek pengecualian · <a href="#" data-rules="1">aturan</a> · <a href="${RULEBOOK_URL}" target="_blank" rel="noopener">rulebook</a></span></summary>
     <div class="tw" style="margin-top:10px"><table style="min-width:820px"><thead><tr><th>Kode</th><th>Level</th><th>Nama</th><th class="num">Spend</th><th>Kenapa</th></tr></thead><tbody>
