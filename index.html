@@ -520,8 +520,8 @@ const ST = { main: null, ds: null, life: null, hourly: {}, reach: {}, pixels: nu
   tr: Object.assign({ level: 'campaign', mode: 'multi', ids: [], metrics: ['roas', 'cpa', 'ctr', 'cpm'], metric: 'roas', smooth: 3, gran: 'day', days: 30 }, LS.get('tr', {})),
   cf: LS.get('cf', { minCtr: 0, cheap: false, minPurch: 0, roasOk: false, scored: false, q: '' }),
   sort: {}, busy: false };
-const M = { spend: 0, impr: 1, reach: 2, clicks: 3, link: 4, lpv: 5, atc: 6, ic: 7, purch: 8, val: 9, contact: 10, plays: 11, p25: 12, p50: 13, p75: 14, p100: 15, thru: 16 };
-const NM = 17;
+const M = { spend: 0, impr: 1, reach: 2, clicks: 3, link: 4, lpv: 5, atc: 6, ic: 7, purch: 8, val: 9, contact: 10, plays: 11, p25: 12, p50: 13, p75: 14, p100: 15, thru: 16, lead: 17 };
+const NM = 18;
 
 /* ---------- utils ---------- */
 const $ = id => document.getElementById(id);
@@ -592,14 +592,14 @@ function agg(ds, since, until, keyFn, acc = ST.acc) {
     if (acc >= 0 && ad.a !== acc) continue;
     const k = keyFn(ad, r); if (k == null) continue;
     let v = out.get(k); if (!v) { v = new Array(NM).fill(0); out.set(k, v); }
-    for (let i = 0; i < NM; i++) v[i] += r[i + 2];
+    for (let i = 0; i < NM; i++) v[i] += r[i + 2] || 0;
   }
   return out;
 }
 const Z = () => new Array(NM).fill(0);
 function tot(ds, since, until, filt, acc) { return agg(ds, since, until, (ad, r) => (!filt || filt(ad, r)) ? 't' : null, acc).get('t') || Z(); }
 function der(v) {
-  return { spend: v[M.spend], impr: v[M.impr], purch: v[M.purch], val: v[M.val], link: v[M.link], lpv: v[M.lpv], ic: v[M.ic], contact: v[M.contact],
+  return { spend: v[M.spend], impr: v[M.impr], purch: v[M.purch], val: v[M.val], link: v[M.link], lpv: v[M.lpv], ic: v[M.ic], contact: v[M.contact], lead: v[M.lead],
     roas: dv(v[M.val], v[M.spend]), cpa: dv(v[M.spend], v[M.purch]), cpm: dv(v[M.spend], v[M.impr]) * 1000,
     ctr: dv(v[M.link], v[M.impr]), ctrAll: dv(v[M.clicks], v[M.impr]), cLpv: dv(v[M.spend], v[M.lpv]),
     lpvRate: dv(v[M.lpv], v[M.link]), icRate: dv(v[M.ic], v[M.lpv]), close: dv(v[M.purch], v[M.ic]), aov: dv(v[M.val], v[M.purch]),
@@ -767,7 +767,7 @@ function dailyMaps(ds, keyFn, since, until, acc = ST.acc) {
     const k = keyFn(ad); if (k == null) continue;
     const d = ds.dates[r[0]], e = out[k] || (out[k] = {});
     let v = e[d]; if (!v) v = e[d] = new Array(NM).fill(0);
-    for (let i = 0; i < NM; i++) v[i] += r[i + 2];
+    for (let i = 0; i < NM; i++) v[i] += r[i + 2] || 0;
   }
   return out;
 }
@@ -918,14 +918,14 @@ async function pageDiag() {
         <td class="num">${d.lpv ? C('lpvr', d.lpvRate, pc(d.lpvRate, 0)) : '–'}</td><td class="num">${d.lpv ? rp(d.cLpv) : '–'}</td>
         <td class="num">${d.contact ? C('cpc', d.cpc, rp(d.cpc)) : '–'}</td>
         <td class="num">${(d.lpv || d.contact) ? (has ? closeChip(d, a) : pc(cl.v) + ' ' + cl.src) : '–'}</td>
-        <td class="num">${nf(d.contact)}</td><td class="num">${nf(d.ic)}</td><td class="num">${nf(d.purch)}</td><td class="num">${d.val ? rp(d.val) : '–'}</td>
+        <td class="num">${nf(d.lpv)}</td><td class="num">${nf(d.lead)}</td><td class="num">${nf(d.contact)}</td><td class="num">${nf(d.ic)}</td><td class="num">${nf(d.purch)}</td><td class="num">${d.val ? rp(d.val) : '–'}</td>
         <td class="num">${roasChip(d.roas, d.spend)}</td><td class="num">${d.purch ? (has ? cpaChip(d, a) : rp(d.cpa)) : (d.spend ? '<span class="small muted">0p</span>' : '–')}</td>`; };
     const totV = shown.filter(d => d !== t).reduce((v, d) => { const x = d30.get(d); if (x) for (let i = 0; i < NM; i++) v[i] += x[i]; return v; }, Z());
     const nFull = shown.filter(d => d !== t).length;
     html += `<div class="sec-h"><h2>Harian</h2><span class="muted small">${shown.length ? `${nFull} hari penuh${shown[0] === t ? ' + hari ini (berjalan)' : ''} · terbaru di atas · scroll untuk hari sebelumnya` : ''}${has ? ' · warna = patokan akun (lihat Leaderboard)' : ' · pilih satu akun / campaign untuk warna patokan'}</span></div>
-    <div class="tw scroll"><table style="min-width:1600px"><thead><tr><th>Tanggal</th><th class="num">Spend</th><th class="num">CPM</th><th class="num">Link CTR</th><th class="num">Hook</th><th class="num">Retensi 50%</th><th class="num">LPV rate</th><th class="num">Biaya/LPV</th><th class="num">Cost/contact</th><th class="num">Closing</th><th class="num">Contacts</th><th class="num">Checkout</th><th class="num">Purchase</th><th class="num">Purchase value</th><th class="num">ROAS</th><th class="num">CPA</th></tr></thead><tbody>
+    <div class="tw scroll"><table style="min-width:1800px"><thead><tr><th>Tanggal</th><th class="num">Spend</th><th class="num">CPM</th><th class="num">Link CTR</th><th class="num">Hook</th><th class="num">Retensi 50%</th><th class="num">LPV rate</th><th class="num">Biaya/LPV</th><th class="num">Cost/contact</th><th class="num">Closing</th><th class="num">Landing page view</th><th class="num">Leads</th><th class="num">Contacts</th><th class="num">Checkout</th><th class="num">Purchase</th><th class="num">Purchase value</th><th class="num">ROAS</th><th class="num">CPA</th></tr></thead><tbody>
     ${shown.map(d => { const wd = new Date(d + 'T12:00:00Z').getUTCDay(), v = d30.get(d) || Z();
-      return `<tr class="${wd === 0 || wd === 6 ? 'wkend' : ''}"><td style="white-space:nowrap"><b>${fd(d)}</b> <span class="small muted">${d === t ? 'hari ini' : ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'][wd]}</span></td>${cell(v)}</tr>`; }).join('') || '<tr><td colspan="16" class="empty">Belum ada data</td></tr>'}
+      return `<tr class="${wd === 0 || wd === 6 ? 'wkend' : ''}"><td style="white-space:nowrap"><b>${fd(d)}</b> <span class="small muted">${d === t ? 'hari ini' : ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'][wd]}</span></td>${cell(v)}</tr>`; }).join('') || '<tr><td colspan="18" class="empty">Belum ada data</td></tr>'}
     </tbody>${nFull > 1 ? `<tfoot><tr><td style="white-space:nowrap">Total ${nFull} hari</td>${cell(totV)}</tr></tfoot>` : ''}</table></div>`;
   }
   return html;
