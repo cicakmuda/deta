@@ -885,7 +885,7 @@ async function pageDiag() {
   if (cid && ds.campaigns[cid]) { await ensureSide(true); const br = brainRows('campaign', cid)[0];
     if (br) html += `<div class="callout ${br.res.cls === 'Loser' ? 'r' : br.res.cls === 'Winner' ? 'g' : ''}" style="margin-bottom:10px"><b>Otak: ${br.res.cls} — ${esc(br.res.action)}.</b> ${br.res.reasons.map(esc).join(' ')}${br.res.tracking ? ' <b>⚠ Tracking bermasalah: ' + esc(br.res.tracking) + ' — angka ROAS bisa tidak akurat.</b>' : ''} <a href="#" data-ent="${cid}" data-entlevel="campaign">Lihat trend →</a></div>`; }
   if (dtab === 'funnel') {
-  html += `<div class="grid kpis">${kk('Spend', A.spend, B.spend, rp)}${kk('Purchase', A.purch, B.purch, nf)}${kk('ROAS', A.roas, B.roas, xx)}${kk('CPA', A.cpa, B.cpa, rp, false)}${kk('CPM', A.cpm, B.cpm, rp, false)}${kk('Link CTR', A.ctr, B.ctr, v => pc(v))}</div>`;
+  html += `<div class="grid kpis">${kk('Spend', A.spend, B.spend, rp)}${kk('Purchase', A.purch, B.purch, nf)}${kk('ROAS', A.roas, B.roas, xx)}${kk('CPA', A.cpa, B.cpa, rp, false)}${kk('CPM', A.cpm, B.cpm, rp, false)}${kk('Purchase value', A.val, B.val, rp)}</div>`;
   html += diagJourney(A, B, !!pr, ds, cid);
   if (pr) {
     const useIc = A.ic > 0 && B.ic > 0;
