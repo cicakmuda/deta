@@ -209,6 +209,7 @@
 .mar-app .rmeter .lbl span{white-space:nowrap}
 .mar-app .rmeter .lbl{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 8px;font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums}
 .mar-app .rbox{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.mar-app .cpc-legend{font-size:12px;color:var(--ink2);margin:-4px 0 10px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .mar-app .sop2-strip{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 14px;margin-bottom:14px}
 .mar-app .sop2-slot{font-size:12px;padding:4px 10px;border-radius:999px;background:#F1F2F5;color:#3A3F49}
 .mar-app .sop2-slot.past{color:#9AA1AD;text-decoration:line-through}
@@ -1139,17 +1140,23 @@ async function pageDiag() {
     const shown = first < 0 ? [] : all.slice(first).reverse();
     const a = accI, has = a != null;
     const C = (kind, val, txt, src) => has ? mchip(kind, val, a, txt, src) : (fin(val) ? txt : '–');
+    // patokan cost/contact dari ROAS: nilai purchase per contact (30 hari, scope yang sama) ÷ ROAS minimum / cutoff
+    const b30 = shown.filter(d => d !== t).reduce((v, d) => { const x = d30.get(d); if (x) for (let i = 0; i < NM; i++) v[i] += x[i]; return v; }, Z());
+    const vpc = b30[M.contact] >= 10 && b30[M.val] > 0 ? b30[M.val] / b30[M.contact] : NaN, cpcOk = vpc / S.minRoas, cpcCut = vpc / S.cutoff;
+    const cpcCell = d => { if (!d.contact) return '–'; if (!fin(vpc)) return rp(d.cpc);
+      const k = d.cpc <= cpcOk ? 'c-g' : d.cpc <= cpcCut ? 'c-y' : 'c-r';
+      return `<span class="chip ${k}" title="Patokan: ≤ ${rp(cpcOk)} = ROAS ≥ ${xx(S.minRoas)} · > ${rp(cpcCut)} = ROAS di bawah cutoff ${xx(S.cutoff)}">${rp(d.cpc)}</span>`; };
     const cell = v => { const d = der(v), cl = closingOf(d), hook = v[M.p25] > 0;
       return `<td class="num">${rp(d.spend)}</td><td class="num">${d.impr ? rp(d.cpm) : '–'}</td><td class="num">${pc(d.ctr)}</td>
         <td class="num">${hook ? C('hook', d.hook, pc(d.hook, 1)) : '–'}</td><td class="num">${hook ? pc(d.r50, 0) : '–'}</td>
         <td class="num">${d.lpv ? C('lpvr', d.lpvRate, pc(d.lpvRate, 0)) : '–'}</td><td class="num">${d.lpv ? rp(d.cLpv) : '–'}</td>
-        <td class="num">${d.contact ? C('cpc', d.cpc, rp(d.cpc)) : '–'}</td>
+        <td class="num">${cpcCell(d)}</td>
         <td class="num">${(d.lpv || d.contact) ? (has ? closeChip(d, a) : pc(cl.v) + ' ' + cl.src) : '–'}</td>
         <td class="num">${nf(d.lpv)}</td><td class="num">${nf(d.lead)}</td><td class="num">${nf(d.contact)}</td><td class="num">${nf(d.ic)}</td><td class="num">${nf(d.purch)}</td><td class="num">${d.val ? rp(d.val) : '–'}</td>
         <td class="num">${roasChip(d.roas, d.spend)}</td><td class="num">${d.purch ? (has ? cpaChip(d, a) : rp(d.cpa)) : (d.spend ? '<span class="small muted">0p</span>' : '–')}</td>`; };
     const totV = shown.filter(d => d !== t).reduce((v, d) => { const x = d30.get(d); if (x) for (let i = 0; i < NM; i++) v[i] += x[i]; return v; }, Z());
     const nFull = shown.filter(d => d !== t).length;
-    html += `<div class="sec-h"><h2>Harian</h2><span class="muted small">${shown.length ? `${nFull} hari penuh${shown[0] === t ? ' + hari ini (berjalan)' : ''} · terbaru di atas · scroll untuk hari sebelumnya` : ''}${has ? ' · warna = patokan akun (lihat Leaderboard)' : ' · pilih satu akun / campaign untuk warna patokan'}</span></div>
+    html += `<div class="sec-h"><h2>Harian</h2><span class="muted small">${shown.length ? `${nFull} hari penuh${shown[0] === t ? ' + hari ini (berjalan)' : ''} · terbaru di atas · scroll untuk hari sebelumnya` : ''}${has ? ' · warna = patokan akun (lihat Leaderboard)' : ' · pilih satu akun / campaign untuk warna patokan'}</span></div>${fin(vpc) ? `<div class="cpc-legend"><b>Cost/contact</b> dari ROAS — nilai purchase per contact 30 hari ${rp(vpc)}: <span class="chip c-g">≤ ${rp(cpcOk)}</span> ROAS ≥ ${xx(S.minRoas)} · <span class="chip c-y">${rp(cpcOk)}–${rp(cpcCut)}</span> di antara · <span class="chip c-r">&gt; ${rp(cpcCut)}</span> ROAS di bawah ${xx(S.cutoff)}</div>` : ''}
     <div class="tw scroll"><table style="min-width:1800px"><thead><tr><th>Tanggal</th><th class="num">Spend</th><th class="num">CPM</th><th class="num">Link CTR</th><th class="num">Hook</th><th class="num">Retensi 50%</th><th class="num">LPV rate</th><th class="num">Biaya/LPV</th><th class="num">Cost/contact</th><th class="num">Closing</th><th class="num">Landing page view</th><th class="num">Leads</th><th class="num">Contacts</th><th class="num">Checkout</th><th class="num">Purchase</th><th class="num">Purchase value</th><th class="num">ROAS</th><th class="num">CPA</th></tr></thead><tbody>
     ${shown.map(d => { const wd = new Date(d + 'T12:00:00Z').getUTCDay(), v = d30.get(d) || Z();
       return `<tr class="${wd === 0 || wd === 6 ? 'wkend' : ''}"><td style="white-space:nowrap"><b>${fd(d)}</b> <span class="small muted">${d === t ? 'hari ini' : ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'][wd]}</span></td>${cell(v)}</tr>`; }).join('') || '<tr><td colspan="18" class="empty">Belum ada data</td></tr>'}
