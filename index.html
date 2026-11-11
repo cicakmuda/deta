@@ -1142,9 +1142,10 @@ async function pageDiag() {
     // patokan cost/contact dari ROAS: nilai purchase per contact (30 hari, scope yang sama) ÷ ROAS minimum / cutoff
     const b30 = shown.filter(d => d !== t).reduce((v, d) => { const x = d30.get(d); if (x) for (let i = 0; i < NM; i++) v[i] += x[i]; return v; }, Z());
     const vpc = b30[M.contact] >= 10 && b30[M.val] > 0 ? b30[M.val] / b30[M.contact] : NaN, cpcOk = vpc / S.minRoas, cpcCut = vpc / S.cutoff;
-    const cpcCell = d => { if (!d.contact) return '–'; if (!fin(vpc)) return rp(d.cpc);
-      const ok = d.cpc <= cpcOk;
-      return `<span class="chip ${ok ? 'c-g' : 'c-r'}" title="${ok ? 'Masih aman' : 'Lewat batas'}: patokan ${rp(cpcOk)} (nilai purchase per contact 30 hari ÷ ROAS ${xx(S.minRoas)})">${rp(d.cpc)}</span>`; };
+    const cpcMax = S.maxCpc || DEF.maxCpc;
+    const cpcCell = d => { if (!d.contact) return '–';
+      const ok = d.cpc <= cpcMax;
+      return `<span class="chip ${ok ? 'c-g' : 'c-r'}" title="${ok ? 'Di bawah' : 'Di atas'} batas rule cost per contact ${rp(cpcMax)} (Settings)">${rp(d.cpc)}</span>`; };
     // CPA: rulebook v2 — hijau ≤ CPA maks (AOV 30 hari ÷ ROAS minimum), kuning sampai batas B1b, merah di atasnya
     const cpaOk = accI != null ? maxCpa(accI, md) : (b30[M.purch] > 0 ? b30[M.val] / b30[M.purch] / S.minRoas : NaN), cpaKill = Brain.cfg.content.cpaKill;
     const cpaCell = d => { if (!d.purch) return d.spend ? '<span class="small muted">0p</span>' : '–';
