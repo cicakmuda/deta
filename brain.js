@@ -23,7 +23,7 @@
     leakMult: 1.5,     // spend ≥ 1,5× CPA maks tanpa purchase = pause candidate
     band: 0.15,        // ±15% di sekitar ROAS minimum = Watchlist
     decline: { roas: 0.20, cpa: 0.30, ctr: 0.20, freq: 3.5 },
-    scaleMin: 0.20, scaleMax: 0.30, scaleEvery: 3,  // naik 20–30% maksimal tiap 3–4 hari
+    scaleMin: 0.10, scaleMax: 0.10, scaleEvery: 3,  // rulebook v2: naik 10% tiap 3 hari
     // Rule konten (level iklan) — semua batas spend = kelipatan CPA maks
     content: {
       lookback: 30,      // hari data yang dinilai (+ hari ini)
@@ -48,7 +48,16 @@
       zeroMult: 2,       // B4: campaign kosong beruntun dengan spend ≥ 2× CPA historis
       zeroDays: 7,       // B7: campaign 0 purchase ≥ 7 hari berturut-turut
       placeMult: 1.5,    // B5: penempatan spend ≥ 1,5× CPA maks, 0 checkout
-      segMult: 3         // B6: segmen usia/gender spend ≥ 3× CPA maks, ≤ 1 purchase
+      segMult: 3,        // B6: segmen usia/gender spend ≥ 3× CPA maks, ≤ 1 purchase
+      // ---- Rulebook v2 (SOP testing & ASC) ----
+      cplKill: 250000,   // B1: spend ≥ ini & biaya per lead (pixel Lead) > ini → matikan
+      cpaKill: 1500000,  // B1b: spend ≥ ini & CPA > ini → matikan; konten bagus = CPA ≤ ini
+      sopWin: [3, 7, 14],// jendela hari untuk B1/B1b
+      goodP: 1,          // konten bagus: minimal purchase
+      stepUp: 0.10,      // naik budget 10%
+      stepDown: 0.10,    // turun budget 10%
+      zeroCut: 3,        // 3 hari tanpa purchase → turun; 3 hari lagi → matikan
+      evalDays: [3, 5, 7], evalEvery: 3, killDay: 7
     }
   };
   Brain.cfg = clone(Brain.defaults);
@@ -64,8 +73,9 @@
   function diffD(a, b) { return Math.round((Date.parse(b + 'T12:00:00Z') - Date.parse(a + 'T12:00:00Z')) / 864e5); }
   function fin(v) { return typeof v === 'number' && isFinite(v); }
   function dv(a, b) { return b ? a / b : NaN; }
-  function zero() { var v = []; for (var i = 0; i < 17; i++) v.push(0); return v; }
-  function sum(map, dates) { var v = zero(); dates.forEach(function (d) { var x = map[d]; if (x) for (var i = 0; i < 17; i++) v[i] += x[i]; }); return v; }
+  var NV = 18;
+  function zero() { var v = []; for (var i = 0; i < NV; i++) v.push(0); return v; }
+  function sum(map, dates) { var v = zero(); dates.forEach(function (d) { var x = map[d]; if (x) for (var i = 0; i < NV; i++) v[i] += x[i] || 0; }); return v; }
   /** n hari penuh berakhir kemarin, digeser `skip` hari ke belakang */
   function days(today, n, skip) { var out = []; for (var i = 1 + (skip || 0); i <= n + (skip || 0); i++) out.push(addD(today, -i)); return out; }
   var roas = function (v) { return dv(v[9], v[0]); };
@@ -189,14 +199,14 @@
     // 6) Loser: ROAS di bawah cutoff ≥ 3 hari dengan data cukup
     if (R(m.r3) < C.cutoff && R(m.r7) < C.cutoff) {
       res.cls = 'Loser';
-      res.action = R(m.r14) < C.cutoff ? 'Pause' : 'Turunkan budget 20–30%';
+      res.action = R(m.r14) < C.cutoff ? 'Pause' : 'Turunkan budget 10%';
       res.reasons.push('ROAS 3D ' + x(m.r3) + ' & 7D ' + x(m.r7) + ' di bawah cutoff ' + x(C.cutoff) + (R(m.r14) < C.cutoff ? ', 14D juga ' + x(m.r14) : ''));
       return done(res);
     }
     // 7) penurunan terkonfirmasi
     if (res.sev === 'confirmed') {
       res.cls = R(m.r7) >= C.minRoas ? 'Watchlist' : 'Loser';
-      res.action = 'Turunkan budget 20–30%';
+      res.action = 'Turunkan budget 10%';
       res.reasons.push('Penurunan terkonfirmasi: ' + sigTxt + (persist > 1 ? ' (bertahan ' + persist + ' hari)' : ''));
       return done(res);
     }
@@ -212,9 +222,9 @@
         res.action = 'Pertahankan — baru naik ' + lastIncAgo + ' hari lalu';
         res.reasons.push('Layak scale, tapi budget baru dinaikkan ' + fd(inc.date) + '. Tunggu sampai ' + fd(addD(inc.date, C.scaleEvery)) + ' supaya learning tidak ter-reset.');
       } else if (canScale) {
-        res.action = 'Naikkan budget 20–30%';
+        res.action = 'Naikkan budget 10%';
         var b = ctx.budget;
-        res.reasons.push('ROAS 3D ' + x(m.r3) + ' & 7D ' + x(m.r7) + ' ≥ target ' + x(C.target) + ', tren ' + (R(m.r3) > R(m.r7) * 1.05 ? 'naik' : 'stabil') + (b ? '. Budget ' + rp(b) + ' → ' + rp(b * (1 + C.scaleMin)) + '–' + rp(b * (1 + C.scaleMax)) : ''));
+        res.reasons.push('ROAS 3D ' + x(m.r3) + ' & 7D ' + x(m.r7) + ' ≥ target ' + x(C.target) + ', tren ' + (R(m.r3) > R(m.r7) * 1.05 ? 'naik' : 'stabil') + (b ? '. Budget ' + rp(b) + ' → ' + rp(b * (1 + C.scaleMin)) + (C.scaleMax > C.scaleMin ? '–' + rp(b * (1 + C.scaleMax)) : '') : ''));
       } else {
         res.action = 'Pertahankan';
         res.reasons.push('ROAS 3D ' + x(m.r3) + ' & 7D ' + x(m.r7) + ' ≥ minimum ' + x(C.minRoas) + ', belum mencapai target ' + x(C.target) + ' untuk scale');
@@ -273,8 +283,9 @@
     test:    { label: 'Lanjut test',          tone: 'b', order: 5, kase: 1 },
     hold:    { label: 'Tahan',                tone: 'n', order: 6, kase: null },
     watch:   { label: 'Pantau',               tone: 'y', order: 7, kase: null },
-    winner:  { label: 'Winner',               tone: 'g', order: 8, kase: null },
-    off:     { label: 'Nonaktif',             tone: 'n', order: 9, kase: null }
+    good:    { label: 'Konten bagus',         tone: 'g', order: 8, kase: null },
+    winner:  { label: 'Winner',               tone: 'g', order: 9, kase: null },
+    off:     { label: 'Nonaktif',             tone: 'n', order: 10, kase: null }
   };
 
   /**
@@ -288,7 +299,9 @@
     var sp = all[0], p = all[8], R = roas(all), ct = ctr(all), lpvR = all[5] ? dv(all[5], all[4]) : NaN;
     var hist = p ? sp / p : NaN, leak = leakStreak(map, t);
     var m = { spend: sp, purch: p, value: all[9], roas: R, ctr: ct, lpvRate: lpvR, ic: all[7], impr: all[1], cpa: hist,
-      s7: d7[0], p7: d7[8], r7: roas(d7), streakN: leak.n, streakSpend: leak.spend, age: ctx.age, maxCpa: mc };
+      s7: d7[0], p7: d7[8], r7: roas(d7), streakN: leak.n, streakSpend: leak.spend, age: ctx.age, maxCpa: mc,
+      leads: all[17] || 0, cpl: all[17] ? sp / all[17] : NaN, cpaKill: K.cpaKill, cplKill: K.cplKill };
+    var leadOn = ctx.leadOn !== false;
     var goodLead = all[1] >= K.earlyImpr && ct >= K.ctrGood && (!all[5] || !(all[4] >= 30) || lpvR >= K.lpvGood);
     var pDays = 0; [t].concat(days(t, K.lookback)).forEach(function (d) { if (map[d] && map[d][8] > 0) pDays++; });
     var proven = p >= K.provenP && R >= C.cutoff,
@@ -338,15 +351,25 @@
       return out('kill', 'Matikan — trafik sampah', 'B3');
     }
 
-    // ---- Kasus 2: laku tapi rugi (ROAS di bawah cutoff dengan spend besar) ----
-    if (sp >= K.lossMult * mc && R < C.cutoff) {
-      res.reasons.push('Spend ' + rp(sp) + ' (≥ ' + mult(K.lossMult) + ' CPA maks ' + rp(mc) + ') dengan ' + p + ' purchase, ROAS ' + x(R) + ' di bawah cutoff ' + x(C.cutoff) + '.');
-      lim(sp, K.lossMult * mc, 'Spend vs batas rugi ' + mult(K.lossMult) + ' CPA maks');
-      if (goodLead) {
-        res.reasons.push(ctrTxt + ' kuat: perhatiannya dapat, niat belinya tidak. Matikan sebagai iklan konversi, pakai sebagai top funnel budget kecil untuk mengisi audiens retargeting.');
-        return out('tof');
+    // ---- Rulebook v2 · B1 biaya per lead & B1b CPA batas, jendela 3D/7D/14D (termasuk hari ini) ----
+    var W = K.sopWin.map(function (n) { var v = sum(map, [t].concat(days(t, n - 1))); return { n: n, sp: v[0], ld: v[17] || 0, p: v[8] }; });
+    m.win = W;
+    for (var wi = 0; wi < W.length; wi++) {
+      var w = W[wi];
+      if (w.sp >= K.cpaKill && (!w.p || w.sp / w.p > K.cpaKill)) {
+        res.reasons.push('Dalam ' + w.n + ' hari: spend ' + rp(w.sp) + ', ' + (w.p ? w.p + ' purchase (CPA ' + rp(w.sp / w.p) + ')' : '0 purchase') + ' — lewat batas CPA ' + rp(K.cpaKill) + '.');
+        lim(w.p ? w.sp / w.p : w.sp, K.cpaKill, 'CPA ' + w.n + 'D vs batas ' + rp(K.cpaKill));
+        return out('kill', 'Matikan — CPA lewat batas', 'B1b');
       }
-      return out('kill', 'Matikan — laku tapi rugi', 'Rugi');
+    }
+    if (leadOn) for (var wj = 0; wj < W.length; wj++) {
+      var u = W[wj];
+      if (u.p && u.sp / u.p <= K.cpaKill) continue;            // sudah laku dengan CPA wajar → lead tidak jadi patokan
+      if (u.sp >= K.cplKill && (!u.ld || u.sp / u.ld > K.cplKill)) {
+        res.reasons.push('Dalam ' + u.n + ' hari: spend ' + rp(u.sp) + ', ' + (u.ld ? u.ld + ' lead (biaya per lead ' + rp(u.sp / u.ld) + ')' : '0 lead') + ' — lewat batas ' + rp(K.cplKill) + ' per lead.');
+        lim(u.ld ? u.sp / u.ld : u.sp, K.cplKill, 'Biaya per lead ' + u.n + 'D vs batas ' + rp(K.cplKill));
+        return out('kill', 'Matikan — biaya per lead lewat batas', 'B1');
+      }
     }
 
     // ---- Belum pernah purchase ----
@@ -356,38 +379,31 @@
         lim(sp, K.killMult * mc, 'Spend vs batas ' + mult(K.killMult) + ' CPA maks');
         return out('kill', 'Matikan — hook gagal', 'B2');
       }
+      lim(sp, K.cpaKill, 'Spend vs batas ' + rp(K.cpaKill) + ' tanpa purchase');
+      var cplTxt = leadOn ? (m.leads ? m.leads + ' lead, biaya per lead ' + rp(m.cpl) : '0 lead') : 'lead tidak terlacak di akun ini';
       if (goodLead) {
-        lim(sp, K.tofMult * mc, 'Spend vs batas ' + mult(K.tofMult) + ' CPA maks (konten bagus)');
-        if (sp >= K.tofMult * mc) {
-          res.reasons.push(ctrTxt + ' bagus, tapi spend ' + rp(sp) + ' (≥ ' + mult(K.tofMult) + ' CPA maks) tanpa purchase.');
-          res.reasons.push('Jangan dibuang: pindahkan ke top funnel (budget kecil) untuk mengisi audiens retargeting; tugas closing diserahkan ke konten bottom funnel.');
-          return out('tof');
-        }
-        res.reasons.push(ctrTxt + ' bagus' + (fin(lpvR) ? ', LPV/klik ' + pct(lpvR) : '') + ', tapi belum ada purchase dari ' + rp(sp) + '. Sisa jatah sebelum dipindah: ' + rp(K.tofMult * mc - sp) + '.');
+        res.reasons.push(ctrTxt + ' bagus' + (fin(lpvR) ? ', LPV/klik ' + pct(lpvR) : '') + ', ' + cplTxt + ', tapi belum ada purchase dari ' + rp(sp) + '. Batas matikan: ' + rp(K.cpaKill) + ' tanpa purchase.');
         if (all[7] > 0) res.reasons.push('Sudah ada ' + all[7] + ' initiate checkout → cek proses checkout / pembayaran / tracking. Cocokkan dengan order di backend.');
-        else res.reasons.push('Belum ada initiate checkout → janji di iklan tidak nyambung dengan landing page, atau menarik orang yang cuma penasaran. Perbaiki copy supaya menyaring (sebut harga / siapa yang cocok).');
+        else res.reasons.push('Belum ada initiate checkout → janji di iklan tidak nyambung dengan landing page, atau menarik orang yang cuma penasaran.');
         return out('diag');
       }
-      lim(sp, K.killMult * mc, 'Spend vs batas ' + mult(K.killMult) + ' CPA maks');
-      if (sp >= K.killMult * mc) {
-        res.reasons.push('Spend ' + rp(sp) + ' tanpa purchase (≥ ' + mult(K.killMult) + ' CPA maks ' + rp(mc) + '), dan angka awalnya tidak menolong (' + ctrTxt + ').');
-        return out('kill', null, 'B1');
-      }
-      if (sp >= K.testMult * mc && !young) {
-        res.reasons.push('Spend ' + rp(sp) + ' sudah lewat 1× CPA maks tanpa purchase. Sisa ' + rp(K.killMult * mc - sp) + ' sebelum batas matikan.');
-        return out('test', 'Lanjut test — batas akhir');
-      }
-      res.reasons.push('Spend ' + rp(sp) + (young ? ', umur ' + ctx.age + ' hari' : '') + ' — belum cukup untuk dinilai (batas 1× CPA maks ' + rp(mc) + ').');
+      res.reasons.push('Spend ' + rp(sp) + (young ? ', umur ' + ctx.age + ' hari' : '') + ', ' + cplTxt + ' — masih dites. Matikan kalau biaya per lead > ' + rp(K.cplKill) + ' (setelah spend ' + rp(K.cplKill) + ') atau spend ' + rp(K.cpaKill) + ' tanpa purchase.');
       if (sp < 50000 && ctx.age >= 3) res.reasons.push('Hampir tidak dapat budget — di ASC/CBO berarti belum benar-benar dites, bukan jelek.');
       return out('test');
     }
 
     // ---- Ada purchase tapi belum terbukti ----
     if (!proven) {
-      if (leak.n && leak.spend >= K.killMult * mc) {
-        res.reasons.push(p + ' purchase dalam ' + K.lookback + ' hari (ROAS ' + x(R) + '), lalu ' + rp(leak.spend) + ' selama ' + leak.n + ' hari tanpa purchase (≥ ' + mult(K.killMult) + ' CPA maks).');
-        lim(leak.spend, K.killMult * mc, 'Spend sejak purchase terakhir vs ' + mult(K.killMult) + ' CPA maks');
-        return out('kill', null, 'B1');
+      if (leak.n && leak.spend >= K.cpaKill) {
+        res.reasons.push(p + ' purchase dalam ' + K.lookback + ' hari (ROAS ' + x(R) + '), lalu ' + rp(leak.spend) + ' selama ' + leak.n + ' hari tanpa purchase (≥ batas ' + rp(K.cpaKill) + ').');
+        lim(leak.spend, K.cpaKill, 'Spend sejak purchase terakhir vs ' + rp(K.cpaKill));
+        return out('kill', 'Matikan — CPA lewat batas', 'B1b');
+      }
+      if (p >= K.goodP && hist <= K.cpaKill && (!leadOn || !(m.cpl > K.cplKill))) {
+        res.reasons.push(p + ' purchase, CPA ' + rp(hist) + ' (≤ ' + rp(K.cpaKill) + ')' + (leadOn && m.leads ? ', biaya per lead ' + rp(m.cpl) : '') + ' — konten bagus. Kandidat dipindah ke campaign ASC.');
+        res.reasons.push('Belum winner: perlu ≥ ' + K.winP + ' purchase di ≥ ' + K.winDays + ' hari berbeda dengan ROAS ≥ ' + x(C.minRoas) + '.');
+        lim(sp, K.cpaKill * Math.max(1, p), 'Spend vs batas CPA ' + rp(K.cpaKill) + ' × purchase');
+        return out('good', 'Konten bagus — kandidat ASC');
       }
       res.reasons.push(p + ' purchase, ROAS ' + x(R) + ' dari ' + rp(sp) + ' — belum terbukti (perlu ≥ ' + K.provenP + ' purchase & ROAS ≥ ' + x(C.cutoff) + ').');
       lim(sp, K.lossMult * mc, 'Spend vs batas rugi ' + mult(K.lossMult) + ' CPA maks');
@@ -411,24 +427,25 @@
       res.reasons.push(weak7 ? 'ROAS 7D ' + x(roas(d7)) + ' dari ' + rp(d7[0]) + ' (' + d7[8] + ' purchase), padahal ' + K.lookback + ' hari ROAS ' + x(R) + '.'
         : 'Kosong ' + leak.n + ' hari dengan spend ' + rp(leak.spend) + ' (≥ ' + mult(K.streakMult) + ' CPA historis ' + rp(hist) + ') — bukan kebetulan lagi.');
       if (sig.length) {
-        res.reasons.push('Tanda jenuh: ' + sigTxt + '. Turunkan budget 20–30% dan buat versi baru dengan hook 3 detik pertama yang baru (body tetap) — jangan dihapus.');
-        return out('refresh', 'Refresh hook + turunkan 20–30%');
+        res.reasons.push('Tanda jenuh: ' + sigTxt + '. Turunkan budget 10% dan buat versi baru dengan hook 3 detik pertama yang baru (body tetap) — jangan dihapus.');
+        return out('refresh', 'Refresh hook + turunkan 10%');
       }
-      res.reasons.push('Tidak ada tanda jenuh yang jelas. Turunkan budget 20–30%, lalu cek faktor luar di Change Log: edit iklan, landing page, stok, promo kompetitor, tanggal gajian.');
-      return out('refresh', 'Turunkan 20–30% & cek faktor luar');
+      res.reasons.push('Tidak ada tanda jenuh yang jelas. Turunkan budget 10%, lalu cek faktor luar di Change Log: edit iklan, landing page, stok, promo kompetitor, tanggal gajian.');
+      return out('refresh', 'Turunkan 10% & cek faktor luar');
     }
 
     // ---- Sehat ----
     if (winner) {
       var scale = d7[8] >= 1 && roas(d7) >= C.target && R >= C.target;
       res.reasons.push(p + ' purchase, ROAS ' + x(R) + ' (' + K.lookback + ' hari), 7D ' + x(roas(d7)) + '.');
-      if (scale) res.reasons.push('Layak scale: naikkan budget induknya maks 20–30% tiap 3–4 hari, atau duplikat dengan post ID yang sama ke audiens baru. Kandidat bagus untuk bottom funnel.');
+      if (scale) res.reasons.push('Layak scale: naikkan budget induknya 10% saat ROAS 3D & 7D ≥ ' + x(C.minRoas) + ' (evaluasi tiap 3 hari), atau pindahkan ke campaign ASC dengan post ID yang sama.');
       else res.reasons.push('Pertahankan. Cocok dipakai ulang di campaign retargeting / bottom funnel dengan post ID yang sama.');
       return out('winner', scale ? 'Winner — layak scale' : 'Winner — pertahankan');
     }
     if (R >= C.minRoas) res.reasons.push(p + ' purchase, ROAS ' + x(R) + ' — bagus, tapi belum memenuhi syarat winner (≥ ' + K.winP + ' purchase di ≥ ' + K.winDays + ' hari berbeda, spend ≥ ' + mult(K.winSpendMult) + ' CPA maks = ' + rp(K.winSpendMult * mc) + '). Sekarang ' + p + ' purchase di ' + pDays + ' hari, spend ' + rp(sp) + '. Lanjutkan, jangan dipindah dulu.');
     else res.reasons.push(p + ' purchase, ROAS ' + x(R) + ' — di antara cutoff ' + x(C.cutoff) + ' dan minimum ' + x(C.minRoas) + '. Jangan naikkan budget.');
     if (sig.length) res.reasons.push('Sinyal awal: ' + sigTxt + '.');
+    if (hist <= K.cpaKill && (!leadOn || !(m.cpl > K.cplKill))) { res.reasons.push('CPA ' + rp(hist) + ' ≤ ' + rp(K.cpaKill) + ' — konten bagus, kandidat ASC.'); return out('good', 'Konten bagus — kandidat ASC'); }
     return out('watch');
   };
 
@@ -452,6 +469,74 @@
   /** B5 penempatan & B6 segmen. v = [spend, impresi, checkout, purchase, nilai] */
   Brain.blackholePlacement = function (v, mc) { var K = Brain.cfg.content; return v && v[0] >= K.placeMult * mc && !v[2] && !v[3]; };
   Brain.blackholeSegment = function (v, mc) { var K = Brain.cfg.content; return v && v[0] >= K.segMult * mc && v[3] <= 1; };
+
+  /* =====================================================================
+   * Rulebook v2 · SOP budget campaign Testing & ASC
+   * ===================================================================== */
+  var MON = { jan: 1, feb: 2, mar: 3, apr: 4, mei: 5, may: 5, jun: 6, jul: 7, agu: 8, agt: 8, aug: 8, sep: 9, okt: 10, oct: 10, nov: 11, des: 12, dec: 12 };
+  Brain.sopType = function (name) { var n = String(name || ''); if (/testing/i.test(n)) return 'testing'; if (/\basc\b/i.test(n)) return 'asc'; return null; };
+  /** tanggal di awal nama campaign: "11Nov26 Testing …", "9 Oct testing 27", "18Aug26 ASC 3" */
+  Brain.nameDate = function (name, today) {
+    var m = String(name || '').match(/^\s*(\d{1,2})\s*([A-Za-z]{3,})\s*'?(\d{2,4})?/); if (!m) return null;
+    var mo = MON[m[2].slice(0, 3).toLowerCase()]; if (!mo) return null;
+    var dd = +m[1], ty = +String(today).slice(0, 4), y = m[3] ? +m[3] : ty; if (y < 100) y += 2000;
+    var s = y + '-' + ('0' + mo).slice(-2) + '-' + ('0' + dd).slice(-2);
+    if (!m[3] && s > today) s = (y - 1) + s.slice(4);
+    return dd >= 1 && dd <= 31 ? s : null;
+  };
+  /**
+   * @param map {'YYYY-MM-DD': vektor} data harian campaign
+   * @param ctx { today, name, start, active, budget, budgetEvents:[{date,old,nw}] }
+   * @return null (bukan campaign SOP) | { type, day, start, act, label, tone, newBudget, reasons[], next, m }
+   */
+  Brain.campaignSop = function (map, ctx) {
+    var type = Brain.sopType(ctx.name); if (!type) return null;
+    var C = Brain.cfg, K = C.content, t = ctx.today, y = addD(t, -1);
+    var start = Brain.nameDate(ctx.name, t) || ctx.start || null, day = start ? diffD(start, t) + 1 : null;
+    var v3 = sum(map, days(t, 3)), v7 = sum(map, days(t, 7)), r3 = roas(v3), r7 = roas(v7);
+    var z = 0; for (var i = 1; i <= 60; i++) { var v = map[addD(t, -i)]; if (!v || v[0] <= 0 || v[8] > 0) break; z++; }
+    var ev = (ctx.budgetEvents || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+    var lastUp = ev.filter(function (e) { return e.nw > e.old; })[0], lastDown = ev.filter(function (e) { return e.nw < e.old; })[0];
+    var bud = ctx.budget, m = { r3: r3, r7: r7, s3: v3[0], s7: v7[0], p3: v3[8], p7: v7[8], z: z, lastUp: lastUp && lastUp.date, lastDown: lastDown && lastDown.date };
+    if (type === 'asc') day = null;
+    var res = { type: type, day: day, start: start, act: 'hold', reasons: [], m: m, next: null, newBudget: null };
+    var L = { wait: ['Tunggu', 'b'], up: ['Naik ' + Math.round(K.stepUp * 100) + '%', 'g'], down: ['Turun ' + Math.round(K.stepDown * 100) + '%', 'y'], kill: ['Matikan', 'r'], hold: ['Tahan', 'n'], off: ['Nonaktif', 'n'] };
+    function out(a) { res.act = a; res.label = L[a][0]; res.tone = L[a][1]; return res; }
+    var rTxt = 'ROAS 3D ' + x(r3) + ' (' + v3[8] + ' purchase) · 7D ' + x(r7) + ' (' + v7[8] + ' purchase)';
+    if (!ctx.active) { res.reasons.push('Campaign tidak berjalan.'); return out('off'); }
+    var isEval = type === 'testing' ? (day != null && (K.evalDays.indexOf(day) >= 0 || (day > K.killDay && (day - K.killDay) % K.evalEvery === 0)))
+      : (!ev[0] || diffD(ev[0].date, t) >= K.evalEvery);
+    if (type === 'testing' && day != null) {
+      var nx = K.evalDays.filter(function (d) { return d > day; })[0]; if (nx == null) nx = day + (K.evalEvery - (day - K.killDay) % K.evalEvery);
+      res.next = addD(start, nx - 1);
+    } else res.next = ev[0] ? addD(ev[0].date, K.evalEvery) : null;
+    // matikan: 3 hari tanpa purchase setelah dipotong, atau 6 hari kosong beruntun
+    var sinceCut = lastDown ? diffD(lastDown.date, y) + 1 : 0;
+    if ((lastDown && sinceCut >= K.zeroCut && z >= sinceCut) || z >= 2 * K.zeroCut) {
+      res.reasons.push(z + ' hari berturut-turut tanpa purchase' + (lastDown ? ', termasuk ' + sinceCut + ' hari setelah budget dipotong (' + fd(lastDown.date) + ')' : '') + '. Campaign jelek — matikan.');
+      res.reasons.push('Pindahkan konten bagus di campaign ini ke ASC sebelum dimatikan.');
+      return out('kill');
+    }
+    if (z >= K.zeroCut && !(lastDown && diffD(lastDown.date, t) <= K.zeroCut)) {
+      res.newBudget = bud ? Math.round(bud * (1 - K.stepDown) / 1000) * 1000 : null;
+      res.reasons.push(z + ' hari berturut-turut tanpa purchase. Turunkan budget ' + Math.round(K.stepDown * 100) + '%' + (bud ? ' (' + rp(bud) + ' → ' + rp(res.newBudget) + ')' : '') + '. Kalau ' + K.zeroCut + ' hari lagi tetap kosong → matikan.');
+      return out('down');
+    }
+    if (type === 'testing' && day != null && day < K.evalDays[0]) {
+      res.reasons.push('Hari ke-' + day + '. Biarkan dulu — evaluasi budget pertama hari ke-' + K.evalDays[0] + ' (' + fd(addD(start, K.evalDays[0] - 1)) + '). Aturan per video tetap jalan.');
+      return out('wait');
+    }
+    var good = v3[8] >= 1 && r3 >= C.minRoas && r7 >= C.minRoas;
+    if (good && isEval && !(lastUp && diffD(lastUp.date, t) < 2)) {
+      res.newBudget = bud ? Math.round(bud * (1 + K.stepUp) / 1000) * 1000 : null;
+      res.reasons.push(rTxt + ' — keduanya ≥ ' + x(C.minRoas) + '. Naikkan budget ' + Math.round(K.stepUp * 100) + '%' + (bud ? ' (' + rp(bud) + ' → ' + rp(res.newBudget) + ')' : '') + '.');
+      return out('up');
+    }
+    if (good) res.reasons.push(rTxt + ' — bagus, tapi hari ini bukan jadwal evaluasi' + (res.next ? ' (berikutnya ' + fd(res.next) + ')' : '') + '. Tahan.');
+    else if (type === 'testing' && day != null && day >= K.killDay) res.reasons.push(rTxt + '. Hari ke-' + day + ' — campaign belum memenuhi syarat naik. Tahan selama masih ada purchase; konten bagus bisa mulai dipindah ke ASC.');
+    else res.reasons.push(rTxt + '. Belum memenuhi syarat naik (ROAS 3D & 7D ≥ ' + x(C.minRoas) + ')' + (z ? ', ' + z + ' hari terakhir tanpa purchase' : '') + '. Tahan.');
+    return out('hold');
+  };
 
   Brain.CLASS_ORDER = { Loser: 0, Watchlist: 1, Winner: 2, Tunggu: 3, Nonaktif: 4 };
   Brain.SEV_ORDER = { severe: 0, confirmed: 1, early: 2, none: 3 };
