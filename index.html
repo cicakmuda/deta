@@ -209,6 +209,32 @@
 .mar-app .rmeter .lbl span{white-space:nowrap}
 .mar-app .rmeter .lbl{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 8px;font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums}
 .mar-app .rbox{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.mar-app .fj{margin-bottom:16px;padding:18px 20px}
+.mar-app .fj-top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:baseline;margin-bottom:14px}
+.mar-app .fj-scroll{overflow-x:auto}
+.mar-app .fj-g{display:grid;grid-template-columns:repeat(6,minmax(130px,1fr));min-width:820px;border:1px solid var(--line2);border-radius:10px;overflow:hidden}
+.mar-app .fj-c{display:flex;flex-direction:column;background:#fff}
+.mar-app .fj-c+.fj-c{border-left:1px solid var(--line2)}
+.mar-app .fj-c.leak{background:#FFF8F7}
+.mar-app .fj-h{padding:14px 14px 0;display:flex;flex-direction:column;gap:2px;min-height:92px}
+.mar-app .fj-n{font-size:12px;font-weight:600;color:var(--ink2);text-transform:uppercase;letter-spacing:.03em}
+.mar-app .fj-v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.mar-app .fj-b{height:150px;display:flex;align-items:flex-end;gap:6px;padding:0 14px}
+.mar-app .fj-b i{flex:1;border-radius:6px 6px 0 0;display:block}
+.mar-app .fj-b i.p{background:#C9D3F9}.mar-app .fj-b i.n{background:var(--acc)}
+.mar-app .fj-f{border-top:1px solid var(--line2);padding:10px 14px 12px;display:flex;flex-direction:column;gap:3px;font-size:12px;min-height:66px}
+.mar-app .fj-f b.dn{color:var(--r)}
+.mar-app .fj-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;align-items:start;margin-bottom:20px}
+.mar-app .fj-t{display:flex;flex-direction:column;gap:8px;padding:16px 18px}
+.mar-app .fj-th{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.mar-app .fj-th a{font-size:13px}
+.mar-app .fj-tv{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+.mar-app .fj-cap{font-size:12px;color:var(--ink2);text-transform:uppercase;letter-spacing:.03em;font-weight:600}
+.mar-app .fj-ax{display:flex;justify-content:space-between;font-size:11px;color:var(--ink3)}
+.mar-app .fj-kv{border-top:1px solid var(--line2);padding-top:8px;display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:13px}
+.mar-app .fj-cr{display:grid;grid-template-columns:1fr auto 56px;gap:10px;align-items:center;font-size:13px;border-bottom:1px solid #F1F2F5;padding-bottom:8px}
+.mar-app .fj-cr>span:last-child{text-align:right;font-size:12px}
+.mar-app .fj-cr b{font-variant-numeric:tabular-nums}
 .mar-app .aud{display:grid;grid-template-columns:minmax(240px,300px) minmax(0,1fr);gap:16px;align-items:start}
 @media (max-width:960px){.mar-app .aud{grid-template-columns:minmax(0,1fr)}.mar-app .aud-rail{position:static}}
 .mar-app .aud-rail{display:flex;flex-direction:column;gap:12px;position:sticky;top:12px;padding:16px}
@@ -854,9 +880,13 @@ async function pageDiag() {
     <div class="filters"><select class="inp" id="diagSel" style="max-width:100%;min-width:280px" aria-label="Pilih campaign"><option value="">Semua campaign${ST.acc >= 0 ? ' (' + esc(ds.accounts[ST.acc].label) + ')' : ''}</option>
     ${ids.map(id => `<option value="${id}" ${id === cid ? 'selected' : ''}>${esc(ds.accounts[ds.campaigns[id].a].label)} · ${shortCamp(ds.campaigns[id].n)}</option>`).join('')}</select></div>`;
   const kk = (l, a, b, f, hb = true) => `<div class="card kpi"><div class="lab">${l}</div><div class="val">${f(a)}</div><div class="sub">${delta(a, b, hb)} · sebelumnya ${f(b)}</div></div>`;
+  const dtab = ST.diagTab || (ST.diagTab = LS.get('diagTab', 'funnel'));
+  html += `<div class="aud-tabs" role="tablist" aria-label="Tampilan diagnosis" style="margin-bottom:14px">${[['funnel', 'Funnel'], ['harian', 'Harian (30 hari)']].map(x => `<button type="button" role="tab" aria-selected="${dtab === x[0]}" class="${dtab === x[0] ? 'on' : ''}" data-dtab="${x[0]}">${x[1]}</button>`).join('')}</div>`;
   if (cid && ds.campaigns[cid]) { await ensureSide(true); const br = brainRows('campaign', cid)[0];
     if (br) html += `<div class="callout ${br.res.cls === 'Loser' ? 'r' : br.res.cls === 'Winner' ? 'g' : ''}" style="margin-bottom:10px"><b>Otak: ${br.res.cls} — ${esc(br.res.action)}.</b> ${br.res.reasons.map(esc).join(' ')}${br.res.tracking ? ' <b>⚠ Tracking bermasalah: ' + esc(br.res.tracking) + ' — angka ROAS bisa tidak akurat.</b>' : ''} <a href="#" data-ent="${cid}" data-entlevel="campaign">Lihat trend →</a></div>`; }
+  if (dtab === 'funnel') {
   html += `<div class="grid kpis">${kk('Spend', A.spend, B.spend, rp)}${kk('Purchase', A.purch, B.purch, nf)}${kk('ROAS', A.roas, B.roas, xx)}${kk('CPA', A.cpa, B.cpa, rp, false)}${kk('CPM', A.cpm, B.cpm, rp, false)}${kk('Link CTR', A.ctr, B.ctr, v => pc(v))}</div>`;
+  html += diagJourney(A, B, !!pr, ds, cid);
   if (pr) {
     const useIc = A.ic > 0 && B.ic > 0;
     const F = [['Biaya tayang (CPM)', 1 / A.cpm, 1 / B.cpm, A.cpm, B.cpm, rp, 'CPM naik = iklan makin mahal ditayangkan (kompetisi/lelang, audiens sempit)'],
@@ -909,8 +939,10 @@ async function pageDiag() {
     </div></div></div>
     ${verdict ? `<div class="callout" style="margin-top:10px">${verdict}</div>` : ''}`;
   if (cid) { const n = noise(md, cid); if (n.n) html += `<div class="callout ${n.p > 0.1 ? '' : 'r'}" style="margin-top:8px"><b>Noise atau masalah?</b> ${n.text}</div>`; }
+  }
   // tabel harian — sampai 30 hari terakhir (+ hari ini), mulai dari hari pertama ada spend
-  {
+  if (dtab === 'harian') {
+    const t = todayJkt(), md = ST.main, accI = cid ? ds.campaigns[cid].a : (ST.acc >= 0 ? ST.acc : null);
     const since30 = addD(t, -30) < md.since ? md.since : addD(t, -30);
     const d30 = agg(md, since30, t, (ad, r) => (!cid || ad.c === cid) ? md.dates[r[0]] : null);
     const all = []; for (let d = since30; d <= t; d = addD(d, 1)) all.push(d);
@@ -937,6 +969,60 @@ async function pageDiag() {
   return html;
 }
 
+
+/* ---------- Diagnosis: perjalanan pembeli (funnel) ---------- */
+function diagJourney(A, B, hasPrev, ds, cid) {
+  const st = [
+    { n: 'Tayangan', a: A.impr, b: B.impr, f: v => nf(v), cv: d => dv(d.spend, d.impr) * 1000, cvF: v => 'CPM ' + rp(v), cvL: 'biaya per 1.000 tayang', cost: null, lowGood: true },
+    { n: 'Landing page view', a: A.lpv, b: B.lpv, cv: d => dv(d.lpv, d.impr), cvL: 'dari tayangan', cost: d => dv(d.spend, d.lpv), costL: 'per LPV' },
+    { n: 'Leads', a: A.lead, b: B.lead, cv: d => dv(d.lead, d.lpv), cvL: 'dari LPV', cost: d => dv(d.spend, d.lead), costL: 'per lead' },
+    { n: 'Contacts', a: A.contact, b: B.contact, cv: d => dv(d.contact, d.lpv), cvL: 'dari LPV', cost: d => dv(d.spend, d.contact), costL: 'per contact' },
+    { n: 'Checkout', a: A.ic, b: B.ic, cv: d => dv(d.ic, d.lpv), cvL: 'dari LPV', cost: d => dv(d.spend, d.ic), costL: 'per checkout' },
+    { n: 'Purchase', a: A.purch, b: B.purch, cv: d => d.ic > 0 ? dv(d.purch, d.ic) : dv(d.purch, d.lpv), cvL: A.ic > 0 ? 'dari checkout' : 'dari LPV', cost: d => dv(d.spend, d.purch), costL: 'CPA' }
+  ];
+  // kebocoran: rasio konversi yang paling turun (butuh volume minimal)
+  let leak = null;
+  if (hasPrev) st.forEach((x, i) => { if (!i) return; const ca = x.cv(A), cb = x.cv(B);
+    const base = i === 5 && A.ic > 0 ? Math.min(A.ic, B.ic) : Math.min(A.lpv, B.lpv);
+    if (!(ca > 0 && cb > 0) || base < 5 || Math.max(x.a, x.b) < 2) return;
+    const lr = Math.log(ca / cb); if (lr < -0.1 && (!leak || lr < leak.lr)) leak = { i, lr, ca, cb }; });
+  const mx = Math.log10(Math.max(10, A.impr, B.impr) + 1), h = v => Math.max(3, Math.round(Math.log10(Math.max(0, v) + 1) / mx * 100));
+  const cols = st.map((x, i) => { const ca = x.cv(A), cb = x.cv(B), isLeak = leak && leak.i === i;
+    const cvTxt = i === 0 ? x.cvF(ca) : `${pc(ca, ca < 0.01 ? 2 : 1)} ${x.cvL}`;
+    const cvSub = i === 0 ? (hasPrev ? 'sebelumnya ' + rp(cb) : x.cvL) : (hasPrev ? `sebelumnya ${pc(cb, cb < 0.01 ? 2 : 1)} ${delta(ca, cb)}` : '');
+    const cost = x.cost ? (fin(x.cost(A)) ? rp(x.cost(A)) + ' ' + x.costL : '–') : '';
+    return `<div class="fj-c${isLeak ? ' leak' : ''}"><div class="fj-h"><span class="fj-n">${x.n}</span><span class="fj-v">${nf(x.a)}</span><span class="small">${hasPrev ? delta(x.a, x.b) + ' <span class="muted">vs ' + nf(x.b) + '</span>' : ''}</span></div>
+      <div class="fj-b">${hasPrev ? `<i class="p" style="height:${h(x.b)}%"></i>` : ''}<i class="n" style="height:${h(x.a)}%"></i></div>
+      <div class="fj-f"><b class="${isLeak ? 'dn' : ''}">${cvTxt}</b><span class="muted">${cvSub}</span><span>${cost}</span></div></div>`; }).join('');
+  let msg = '';
+  if (leak) { const x = st[leak.i];
+    const why = { 1: 'Orang melihat iklan tapi tidak sampai ke landing page — cek hook/CTR dan kecepatan halaman.', 2: 'Pengunjung landing page makin jarang meninggalkan lead — cek penawaran dan tombol WA/form.', 3: 'Makin sedikit yang benar-benar menghubungi — cek tombol WhatsApp dan respons CS.', 4: 'Landing page / penawaran kurang meyakinkan untuk lanjut checkout.', 5: 'Orang sudah sampai checkout tapi tidak membayar — cek ongkir, metode bayar, atau follow-up CS.' }[leak.i];
+    msg = `<div class="callout r" style="margin-top:12px"><b>Kebocoran terbesar: ${x.n}</b> — konversi ${x.cvL} turun dari ${pc(leak.cb, leak.cb < 0.01 ? 2 : 1)} ke ${pc(leak.ca, leak.ca < 0.01 ? 2 : 1)} (▼${Math.round((1 - leak.ca / leak.cb) * 100)}%). ${why}</div>`; }
+  else if (hasPrev) msg = '<div class="callout g" style="margin-top:12px">Tidak ada tahap yang turun signifikan dibanding periode sebelumnya.</div>';
+  // tren 12 hari s/d kemarin
+  const md = ST.main, t = todayJkt(), y = addD(t, -1), d0 = addD(t, -12);
+  const daily = agg(md, d0, y, (ad, r) => (!cid || ad.c === cid) ? md.dates[r[0]] : null);
+  const days = []; for (let d = d0; d <= y; d = addD(d, 1)) days.push(d);
+  const ser = k => days.map(d => (daily.get(d) || Z())[M[k]] || 0);
+  const lpvS = ser('lpv'), ldS = ser('lead'), icS = ser('ic'), puS = ser('purch'), spS = ser('spend');
+  const avg = a => a.reduce((p, q) => p + q, 0) / (a.length || 1), sum = a => a.reduce((p, q) => p + q, 0);
+  const line = arr => { const mxv = Math.max(...arr), mn = Math.min(...arr), r = mxv - mn || 1;
+    const pts = arr.map((v, i) => `${(i * 300 / Math.max(1, arr.length - 1)).toFixed(1)},${(80 - (v - mn) / r * 70).toFixed(1)}`), l = pts[pts.length - 1].split(',');
+    return `<svg viewBox="0 0 300 90" width="100%" height="90" role="img" aria-hidden="true" style="display:block"><line x1="0" y1="80" x2="300" y2="80" stroke="#EEF0F3"/><line x1="0" y1="45" x2="300" y2="45" stroke="#F4F5F7"/><line x1="0" y1="10" x2="300" y2="10" stroke="#F4F5F7"/><polyline points="${pts.join(' ')}" fill="none" stroke="#2F54EB" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${l[0]}" cy="${l[1]}" r="4" fill="#2F54EB"/></svg>`; };
+  const card = (n, arr, r1, v1, r2, v2) => { const last = arr[arr.length - 1], prev = arr[arr.length - 2];
+    return `<div class="card fj-t"><div class="fj-th"><b>${n}</b><a href="#" data-dtab="harian">Lihat harian</a></div><div class="fj-th"><span class="fj-tv">${nf(last)}</span>${delta(last, prev)}</div><span class="fj-cap">12 hari s/d kemarin</span>${line(arr)}<div class="fj-ax"><span>${fd(days[0])}</span><span>${fd(days[6])}</span><span>${fd(y)}</span></div>
+      <div class="fj-kv"><span class="muted">${r1}</span><b>${v1}</b><span class="muted">${r2}</span><b>${v2}</b></div></div>`; };
+  const trends = card('Landing page view', lpvS, 'Rata-rata/hari', nf(Math.round(avg(lpvS))), 'Biaya per LPV', rp(dv(sum(spS), sum(lpvS))))
+    + card('Leads', ldS, 'Rata-rata/hari', nf(Math.round(avg(ldS))), 'Lead per LPV', pc(dv(sum(ldS), sum(lpvS))))
+    + card('Checkout', icS, 'Rata-rata/hari', nf(Math.round(avg(icS))), 'Checkout per LPV', pc(dv(sum(icS), sum(lpvS))))
+    + card('Purchase', puS, 'Rata-rata/hari', (avg(puS)).toFixed(1).replace('.', ','), 'Purchase per checkout', pc(dv(sum(puS), sum(icS)), 0));
+  const cr = (n, a, b) => `<div class="fj-cr"><span>${n}</span><b>${fin(a) ? rp(a) : '–'}</b><span>${hasPrev ? delta(a, b, false) : ''}</span></div>`;
+  const costs = `<div class="card fj-t"><b style="font-size:15px">Biaya per tahap</b>${cr('CPM (per 1.000 tayang)', A.cpm, B.cpm)}${cr('Biaya per LPV', dv(A.spend, A.lpv), dv(B.spend, B.lpv))}${cr('Biaya per lead', dv(A.spend, A.lead), dv(B.spend, B.lead))}${cr('Biaya per contact', dv(A.spend, A.contact), dv(B.spend, B.contact))}${cr('Biaya per checkout', dv(A.spend, A.ic), dv(B.spend, B.ic))}${cr('CPA', A.cpa, B.cpa)}<span class="small muted">Merah = lebih mahal dari periode sebelumnya.</span></div>`;
+  return `<div class="card fj"><div class="fj-top"><div><b style="font-size:17px">Perjalanan pembeli</b> <span class="small muted">· dari tayang sampai purchase</span></div><div class="legend"><span><i style="background:#2F54EB;height:10px;width:10px"></i>Sekarang</span>${hasPrev ? '<span><i style="background:#C9D3F9;height:10px;width:10px"></i>Sebelumnya</span>' : ''}</div></div>
+    <div class="fj-scroll"><div class="fj-g">${cols}</div></div>
+    <div class="small muted" style="margin-top:8px">Tinggi batang memakai skala log supaya tayangan dan purchase muat dalam satu grafik. Leads &amp; Contacts = jalur WhatsApp, Checkout = jalur website, jadi persennya dihitung dari LPV.</div>${msg}</div>
+    <div class="fj-grid">${trends}${costs}</div>`;
+}
 
 /* ---------- 4. CREATIVE LAB ---------- */
 function conceptKey(name) {
@@ -2061,13 +2147,14 @@ function setSidebar(c) {
 /* =====================================================================
    EVENTS
    ===================================================================== */
-const SEL = '[data-audtab],[data-audrun],[data-audall],[data-audheat],[data-lbm],[data-rules],[data-logrow],[data-lact],[data-lcat],[data-decnav],[data-page],[data-acc],[data-camp],[data-concept],[data-copy],[data-sort],[data-del],[data-declevel],[data-dcls],[data-sel],[data-addnote],[data-tmode],[data-tdays],[data-tgran],[data-tmetric],[data-tm1],[data-trm],[data-ent],[data-cmp],[data-cview],[data-pace],[data-pix],[data-atab],[data-pvnav],[data-pvad],[data-pfmt],[data-close],#noteAdd,#audRef,#mclose,#refBtn,#setBtn,#dApply,#trApply,#loginBtn,#saveSet,#logoutBtn,#sbToggle';
+const SEL = '[data-dtab],[data-audtab],[data-audrun],[data-audall],[data-audheat],[data-lbm],[data-rules],[data-logrow],[data-lact],[data-lcat],[data-decnav],[data-page],[data-acc],[data-camp],[data-concept],[data-copy],[data-sort],[data-del],[data-declevel],[data-dcls],[data-sel],[data-addnote],[data-tmode],[data-tdays],[data-tgran],[data-tmetric],[data-tm1],[data-trm],[data-ent],[data-cmp],[data-cview],[data-pace],[data-pix],[data-atab],[data-pvnav],[data-pvad],[data-pfmt],[data-close],#noteAdd,#audRef,#mclose,#refBtn,#setBtn,#dApply,#trApply,#loginBtn,#saveSet,#logoutBtn,#sbToggle';
 document.addEventListener('click', async e => {
   const el = e.target.closest(SEL);
   if (!el || !el.closest('.mar-app')) return;
   const D = el.dataset;
   if (el.tagName === 'A') e.preventDefault();
   if (D.copy) { e.stopPropagation(); return copy(D.copy); }
+  if (D.dtab) { e.preventDefault(); ST.diagTab = D.dtab; LS.set('diagTab', D.dtab); return render(); }
   if (D.audtab) { audS().tab = D.audtab; audSave(); return render(); }
   if (D.audrun !== undefined) { audS().run = D.audrun === '1'; audSave(); return render(); }
   if (D.audheat) { audS().heat = D.audheat; audSave(); return render(); }
