@@ -209,6 +209,28 @@
 .mar-app .rmeter .lbl span{white-space:nowrap}
 .mar-app .rmeter .lbl{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 8px;font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums}
 .mar-app .rbox{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.mar-app .sop-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.mar-app .sop-sum .card{display:flex;align-items:baseline;gap:8px;padding:12px 14px;flex-wrap:wrap}
+.mar-app .sop-sum b{font-size:22px}
+.mar-app .sop-asc{margin-bottom:14px;border-color:#BFD0FF}
+.mar-app .sop-mv{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line2);flex-wrap:wrap}
+.mar-app .sop-mv ul{margin:6px 0 0;padding-left:18px;font-size:13px}
+.mar-app .sop-c{margin-bottom:10px;padding:14px 16px}
+.mar-app .sop-c>summary{cursor:pointer;list-style:none}
+.mar-app .sop-c>summary::-webkit-details-marker{display:none}
+.mar-app .sop-h{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.mar-app .sop-k{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.mar-app .sop-k>span:not(.chip){display:flex;flex-direction:column;font-size:13px}
+.mar-app .sop-k small{font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.03em}
+.mar-app .sop-act{font-size:13px;padding:5px 12px}
+.mar-app .sop-ck{margin-bottom:14px}
+.mar-app .sop-sl{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.mar-app .sop-sl>div{border:1px solid var(--line2);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;font-size:13px;position:relative}
+.mar-app .sop-sl>div b{font-size:16px}
+.mar-app .sop-sl>div.past{opacity:.55}
+.mar-app .sop-sl>div.now{border-color:var(--acc);background:#F2F5FF}
+.mar-app .sop-sl i{position:absolute;top:8px;right:10px;font-style:normal;font-size:11px;font-weight:700;color:var(--acc)}
+.mar-app .sop-n{font-weight:600;color:var(--ink)}
 .mar-app .fj{margin-bottom:16px;padding:18px 20px}
 .mar-app .fj-top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:baseline;margin-bottom:14px}
 .mar-app .fj-scroll{overflow-x:auto}
@@ -520,9 +542,10 @@ const LS = {
   del(k) { try { localStorage.removeItem('mad_' + k); } catch (e) {} }
 };
 const DEF = { cutoff: 1.1, minRoas: 2, target: 2.5, minAge: 7, maxCpc: 250000, maxCpa: {}, auto: true,
-  content: { killMult: 1.5, tofMult: 2, lossMult: 3, streakMult: 2, ctrGood: 1.2, ctrKill: 0.5 },
+  content: { killMult: 1.5, tofMult: 2, lossMult: 3, streakMult: 2, ctrGood: 1.2, ctrKill: 0.5, cplKill: 250000, cpaKill: 1500000, stepUp: 10, zeroCut: 3 },
   metric: { waClose: 14, hookMin: 3, hookOk: 4.5, hookScale: 6, lpvMin: 60, lpvOk: 70, lpvScale: 80 } };
 let S = Object.assign({}, DEF, LS.get('settings', {}));
+S.content = Object.assign({}, DEF.content, S.content || {}); S.metric = Object.assign({}, DEF.metric, S.metric || {});
 if (S.bep && !LS.get('settings', {}).minRoas) S.minRoas = S.bep; delete S.bep;
 S.content = Object.assign({}, DEF.content, S.content || {});
 S.metric = Object.assign({}, DEF.metric, S.metric || {});
@@ -530,7 +553,8 @@ let ST_RULES = null;   // cache rule konten per iklan
 function applyBrain() {
   const c = S.content;
   Brain.setConfig({ cutoff: S.cutoff, minRoas: S.minRoas, target: S.target, minAge: S.minAge,
-    content: { killMult: c.killMult, tofMult: c.tofMult, lossMult: c.lossMult, streakMult: c.streakMult, ctrGood: c.ctrGood / 100, ctrKill: c.ctrKill / 100 } });
+    content: { killMult: c.killMult, tofMult: c.tofMult, lossMult: c.lossMult, streakMult: c.streakMult, ctrGood: c.ctrGood / 100, ctrKill: c.ctrKill / 100,
+      cplKill: c.cplKill, cpaKill: c.cpaKill, stepUp: c.stepUp / 100, stepDown: c.stepUp / 100, zeroCut: c.zeroCut } });
   ST_RULES = null;
 }
 applyBrain();
@@ -838,17 +862,82 @@ function brainRows(level, onlyId, allAcc) {
     const freq = (R7[e.id] || [])[1];
     const res = Brain.evaluate(map, { today: t, active: e.active, age, start: e.start, maxCpa: mcOf(e.a), budget, freq7: freq,
       budgetEvents: isAd ? [] : budgetEvents(level, e.id, ds), tracking: trackingOf(e.a) });
-    const rule = isAd ? Brain.contentRule(map, { today: t, active: e.active, age, maxCpa: mcOf(e.a), freq7: freq, budgetEvents: adBudgetEvents(e, ds), junkLpv: (TH(e.a) || {}).junkLpv }) : null;
+    const rule = isAd ? Brain.contentRule(map, { today: t, active: e.active, age, maxCpa: mcOf(e.a), freq7: freq, budgetEvents: adBudgetEvents(e, ds), junkLpv: (TH(e.a) || {}).junkLpv, leadOn: leadOn(e.a) }) : null;
     return { e, res, rule, map, age, budget, freq, spend14: Object.entries(map).reduce((s, [d, v]) => s + (d14.has(d) || d === t ? v[0] : 0), 0) };
   });
 }
 /** kenaikan/penurunan budget di campaign & ad set induk sebuah iklan */
+function leadOn(a) {
+  const ds = ST.main; if (!ds) return true;
+  if (!ST._leadOn || ST._leadOn.gen !== ds.gen) { const t = todayJkt(), m = {}; agg(ds, addD(t, -30), t, ad => ad.a, -1).forEach((v, k) => { m[k] = v[M.lead] > 0; }); ST._leadOn = { gen: ds.gen, m }; }
+  return ST._leadOn.m[a] !== false;
+}
 function adBudgetEvents(e, ds) {
   if (!ST.acts || !ST.acts.list) return [];
   const ids = new Set([e.camp, e.as].filter(Boolean));
   return ST.acts.list.filter(x => /budget/.test(x.type) && ids.has(x.oid) && typeof x.old === 'number' && typeof x.nw === 'number')
     .map(x => ({ date: dateJkt(x.t), old: budgetOf(x.old, x.a, ds), nw: budgetOf(x.nw, x.a, ds) }));
 }
+/* ---------- Rulebook v2 · SOP budget campaign Testing & ASC ---------- */
+function sopRows() {
+  const ds = ST.main, t = todayJkt();
+  const key = ds.gen + '|' + (ST.acts ? ST.acts.list.length : 0) + '|' + ST.acc + '|' + !!ST.showInactive + '|' + JSON.stringify(Brain.cfg.content);
+  if (ST._sop && ST._sop.key === key) return ST._sop.rows;
+  const maps = dailyMaps(ds, ad => ad.c, addD(t, -31), t, -1), RM = adRules();
+  const ads = {}; Object.values(RM).forEach(r => { (ads[r.e.camp] = ads[r.e.camp] || []).push(r); });
+  const rows = entitiesOf('campaign', ds).filter(e => (ST.acc < 0 || e.a === ST.acc) && Brain.sopType(e.n) && (e.active || ST.showInactive)).map(e => {
+    const budget = campBudget(ds, e.id);
+    const sop = Brain.campaignSop(maps[e.id] || {}, { today: t, name: e.n, start: e.start, active: e.active, budget, budgetEvents: budgetEvents('campaign', e.id, ds) });
+    const list = (ads[e.id] || []).filter(r => r.e.active || r.rule.m.spend > 0);
+    const good = list.filter(r => r.rule.key === 'good' || r.rule.key === 'winner');
+    return { e, sop, list, good, budget };
+  }).filter(r => r.sop);
+  const ord = { kill: 0, down: 1, up: 2, hold: 3, wait: 4, off: 5 };
+  rows.sort((a, b) => (ord[a.sop.act] - ord[b.sop.act]) || (b.sop.m.s7 - a.sop.m.s7));
+  ST._sop = { key, rows }; return rows;
+}
+function asCopy(r) {
+  const ds = ST.main;
+  return `Pindah ke ASC (${ds.accounts[r.e.a].label}) — dari ${String(r.e.n).replace(/\s*-\s*\d{4}$/, '')}:\n` + r.good.map(g => `- ${g.e.n} (ID iklan ${g.e.id}) — ${nf(g.rule.m.purch)} purchase, CPA ${rp(g.rule.m.cpa)}${g.rule.m.leads ? ', biaya/lead ' + rp(g.rule.m.cpl) : ''}`).join('\n');
+}
+const SOPT = { kill: 'c-r', down: 'c-y', up: 'c-g', hold: 'c-n', wait: 'c-b', off: 'c-n' };
+function decideSop() {
+  const ds = ST.main, y = addD(todayJkt(), -1), K = Brain.cfg.content, rows = sopRows(), st = Math.round(K.stepUp * 100);
+  const cnt = {}; rows.forEach(r => { cnt[r.sop.act] = (cnt[r.sop.act] || 0) + 1; });
+  let html = head('Decision Board', `SOP budget · campaign Testing &amp; ASC · keputusan di cek jam 10:00 memakai data s/d kemarin (${fd(y)})`,
+    `<button type="button" class="btn" data-rules="1">Lihat aturan</button><div class="seg" role="group" aria-label="Level">${LVTABS().map(l => `<button type="button" class="${l[0] === 'sop' ? 'on' : ''}" data-declevel="${l[0]}">${l[1]}</button>`).join('')}</div>${accSeg()}`);
+  if (hourJkt() < 10) html += `<div class="callout" style="margin-bottom:12px">Belum jam 10:00. Saran di bawah sudah memakai data kemarin yang lengkap — eksekusi di cek jam 10 sesuai SOP.</div>`;
+  html += `<div class="sop-sum">${[['kill', 'Matikan'], ['down', 'Turun ' + st + '%'], ['up', 'Naik ' + st + '%'], ['hold', 'Tahan'], ['wait', 'Tunggu hari ke-' + K.evalDays[0]]].map(x => `<div class="card"><span class="chip ${SOPT[x[0]]}">${x[1]}</span><b>${cnt[x[0]] || 0}</b><span class="small muted">campaign</span></div>`).join('')}</div>`;
+  const mv = rows.filter(r => r.e.active && r.sop.type === 'testing' && r.good.length && (r.sop.act === 'kill' || (r.sop.day || 0) >= K.killDay));
+  if (mv.length) html += `<div class="card sop-asc"><div class="card-h"><h2>Pindah ke ASC</h2><span class="small muted">konten bagus = ada purchase, CPA ≤ ${rp(K.cpaKill)}, biaya per lead ≤ ${rp(K.cplKill)}</span></div>
+    ${mv.map(r => `<div class="sop-mv"><div style="min-width:0;flex:1"><b>${shortCamp(r.e.n)}</b> ${r.sop.act === 'kill' ? '<span class="chip c-r">campaign dimatikan → wajib pindah</span>' : '<span class="chip c-b">hari ke-' + r.sop.day + ' · kandidat</span>'}
+      <ul>${r.good.map(g => `<li>${esc(g.e.n)} <span class="small muted">· ${nf(g.rule.m.purch)} purchase · CPA ${rp(g.rule.m.cpa)}${g.rule.m.leads ? ' · biaya/lead ' + rp(g.rule.m.cpl) : ''}</span> ${ruleChip(g.rule)}</li>`).join('')}</ul></div>
+      <button type="button" class="btn sm" data-copy="${esc(asCopy(r))}">Salin daftar</button></div>`).join('')}</div>`;
+  if (!rows.length) return html + `<div class="card">Tidak ada campaign Testing / ASC yang berjalan${ST.acc >= 0 ? ' di akun ini' : ''}. Campaign dikenali dari nama: <b>…Testing…</b> (tanggal di awal nama = hari ke-1, mis. <i>11Nov26 Testing …</i>) dan <b>ASC</b>.</div>`;
+  const VK = [['kill', 'matikan'], ['good', 'bagus'], ['winner', 'winner'], ['test', 'dites'], ['diag', 'diagnosa'], ['watch', 'pantau'], ['refresh', 'refresh'], ['revert', 'kembalikan'], ['hold', 'tahan']];
+  html += rows.map(r => { const s = r.sop, m = s.m, kc = {}; r.list.filter(x => x.e.active).forEach(x => { kc[x.rule.key] = (kc[x.rule.key] || 0) + 1; });
+    const vid = VK.filter(x => kc[x[0]]).map(x => `<span class="chip ${RTONE[Brain.RULES[x[0]].tone]}">${kc[x[0]]} ${x[1]}</span>`).join(' ');
+    const vl = r.list.filter(x => x.e.active).sort((a, b) => (Brain.RULES[a.rule.key].order - Brain.RULES[b.rule.key].order) || (b.rule.m.spend - a.rule.m.spend));
+    return `<details class="card sop-c" ${s.act === 'kill' || s.act === 'down' || s.act === 'up' ? 'open' : ''}><summary>
+      <div class="sop-h"><div style="min-width:0">${accChip(ds, r.e.a)}<b>${shortCamp(r.e.n, 60)}</b><div class="small muted">${s.type === 'testing' ? 'Testing' : 'ASC'}${s.day ? ' · hari ke-' + s.day : ''}${s.next ? ' · evaluasi berikutnya ' + fd(s.next) : ''}</div></div>
+        <div class="sop-k"><span><small>Budget/hari</small><b>${r.budget ? rp(r.budget) : '–'}${s.newBudget ? ' → ' + rp(s.newBudget) : ''}</b></span><span><small>ROAS 3D · 7D</small><b>${roasChip(m.r3, m.s3)} ${roasChip(m.r7, m.s7)}</b></span><span><small>Tanpa purchase</small><b>${m.z ? m.z + ' hari' : '–'}</b></span><span class="chip ${SOPT[s.act]} sop-act">${esc(s.label)}</span></div></div>
+      <div class="small" style="margin-top:6px;color:#3A3F49">${esc(s.reasons[0] || '')}${s.reasons[1] ? ' ' + esc(s.reasons[1]) : ''}</div>
+      <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">${vid || '<span class="small muted">belum ada iklan berjalan</span>'}</div></summary>
+      ${vl.length ? `<div class="tw" style="margin-top:10px"><table style="min-width:860px"><thead><tr><th>Video / iklan</th><th class="num">Spend 30D</th><th class="num">Lead · biaya/lead</th><th class="num">Purchase · CPA</th><th>Rule</th></tr></thead><tbody>
+      ${vl.map(x => { const q = x.rule.m; return `<tr><td><div class="nm" style="max-width:320px" title="${esc(x.e.n)}">${esc(x.e.n)}</div></td><td class="num">${rp(q.spend)}</td><td class="num">${nf(q.leads)} · <span class="${q.cpl > K.cplKill ? 'dn' : ''}">${q.leads ? rp(q.cpl) : '–'}</span></td><td class="num">${nf(q.purch)} · <span class="${q.purch && q.cpa > K.cpaKill ? 'dn' : ''}">${q.purch ? rp(q.cpa) : '–'}</span></td><td style="white-space:normal;min-width:260px">${ruleChip(x.rule, true)} <div class="sub2">${esc(x.rule.reasons[0] || '')}</div></td></tr>`; }).join('')}
+      </tbody></table></div>` : ''}</details>`; }).join('');
+  html += `<label class="small muted" style="display:flex;gap:6px;align-items:center;margin-top:8px"><input type="checkbox" id="inact" ${ST.showInactive ? 'checked' : ''}> tampilkan yang tidak aktif</label>
+    <div class="small muted" style="margin-top:6px">Dashboard tidak mengubah apa pun di akun. Naik/turun dihitung dari budget harian campaign (atau jumlah budget ad set aktif). Lead = event Lead pixel.</div>`;
+  return html;
+}
+function sopChecklist() {
+  if (!ST.main) return '';
+  const h = hourJkt(), slots = [10, 15, 17, 21], cur = [...slots].reverse().find(x => h >= x), K = Brain.cfg.content;
+  let n = {}; try { sopRows().forEach(r => { n[r.sop.act] = (n[r.sop.act] || 0) + 1; }); } catch (e) { n = {}; }
+  const job = { 10: 'Keputusan budget SOP (data kemarin)', 15: 'Pantau spend, iklan ditolak, tracking', 17: 'Pantau pacing &amp; biaya per lead', 21: 'Tutup hari, catat anomali' };
+  return `<section class="card sop-ck"><div class="card-h"><h2>Rutinitas cek</h2><a href="#" data-gosop="1">SOP budget →</a></div><div class="sop-sl">${slots.map(x => `<div class="${x === cur ? 'now' : h > x ? 'past' : ''}"><b>${x}:00</b><span>${job[x]}</span>${x === 10 ? `<span class="sop-n">${n.kill || 0} matikan · ${n.down || 0} turun · ${n.up || 0} naik ${Math.round(K.stepUp * 100)}%</span>` : ''}${x === cur ? '<i>sekarang</i>' : ''}</div>`).join('')}</div></section>`;
+}
+
 /** rule konten untuk semua iklan (semua akun), di-cache per dataset */
 function adRules() {
   const key = (ST.main && ST.main.gen) + '|' + (ST.acts ? ST.acts.list.length : 0);
@@ -1434,6 +1523,7 @@ async function pageToday() {
   const HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
   const dow = HARI[new Date(t + 'T12:00:00Z').getUTCDay()];
   let html = head('Today', `${dow}, ${fd(t)} · s/d pukul ${String(h).padStart(2, '0')}:59 WIB · dibandingkan kemarin di jam yang sama`, accSeg());
+  html += sopChecklist();
   html += `<section class="grid kpis" aria-label="Ringkasan">
     ${kcard('Spend', a[0], b[0], rp, true, 'kemarin')}
     ${kcard('Purchase', a[3], b[3], nf, true, 'kemarin')}
@@ -1502,6 +1592,7 @@ function syncCheck(ds, accs) {
 async function pageDecide() {
   await Promise.all([ensureSide(true), ensureSeg()]);
   const ds = ST.main, y = addD(todayJkt(), -1), lv = ST.decLevel;
+  if (lv === 'sop') return decideSop();
   const all = brainRows(lv).filter(r => r.e.active || (ST.showInactive && r.spend14 > 0));
   if (lv === 'ad') return decideAds(all, y);
   all.sort((a, b) => (Brain.CLASS_ORDER[a.res.cls] - Brain.CLASS_ORDER[b.res.cls]) || (Brain.SEV_ORDER[a.res.sev] - Brain.SEV_ORDER[b.res.sev]) || (b.res.m.s7 - a.res.m.s7));
@@ -1509,7 +1600,7 @@ async function pageDecide() {
   const rows = cls === 'all' ? all : all.filter(r => r.res.cls === cls);
   const sel = rows.find(r => r.e.id === ST.decSel) || null;
   ST._decRows = rows; ST._decLv = lv;
-  const LV = [['campaign', 'Campaign'], ['adset', 'Ad set'], ['ad', 'Iklan']];
+  const LV = LVTABS();
   let html = '';
   html = head('Decision Board', `Otak: skill Meta Performance · 3/7/14 hari penuh s/d kemarin (${fd(y)}) · cutoff ${xx(S.cutoff)} · minimum ${xx(S.minRoas)} · target ${xx(S.target)}`,
     `<div class="seg" role="group" aria-label="Level">${LV.map(l => `<button type="button" class="${lv === l[0] ? 'on' : ''}" data-declevel="${l[0]}">${l[1]}</button>`).join('')}</div>${accSeg()}`);
@@ -1529,13 +1620,13 @@ async function pageDecide() {
       <td><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="chip ${CLS[r.res.cls]}">${r.res.cls}</span><b style="font-size:13px">${esc(r.res.action)}</b></div><div class="sub2">${r.res.signals.length ? esc(r.res.signals.map(s => s.t).join(' · ')) : sevLabel(r.res) || ''}</div></td></tr>`; }).join('') || `<tr><td colspan="8" class="empty">Tidak ada ${lvName.toLowerCase()} di kelas ini</td></tr>`}
     </tbody></table></div>
     <label class="small muted" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="inact" ${ST.showInactive ? 'checked' : ''}> tampilkan yang tidak aktif</label>
-    <div class="small muted">Aturan: Winner = ROAS 3D &amp; 7D ≥ minimum &amp; stabil (scale kalau ≥ target, maks 20–30% tiap 3–4 hari) · Loser = ROAS 3D &amp; 7D &lt; cutoff, atau spend ≥ 1,5× CPA maks tanpa purchase · sinyal penurunan vs 14 hari sebelumnya: ROAS −20%, CPA +30%, CTR −20%, frequency ≥ 3,5 · dashboard tidak mengubah apa pun di akun.</div>
+    <div class="small muted">Aturan: Winner = ROAS 3D &amp; 7D ≥ minimum &amp; stabil (scale kalau ≥ target, naik 10% tiap 3 hari) · Loser = ROAS 3D &amp; 7D &lt; cutoff, atau spend ≥ 1,5× CPA maks tanpa purchase · sinyal penurunan vs 14 hari sebelumnya: ROAS −20%, CPA +30%, CTR −20%, frequency ≥ 3,5 · dashboard tidak mengubah apa pun di akun.</div>
   </section>
   ${notesCard()}`;
   return html;
 }
 /* ---------- Decision Board level Iklan = Rule konten ---------- */
-const LVTABS = () => [['campaign', 'Campaign'], ['adset', 'Ad set'], ['ad', 'Iklan']];
+const LVTABS = () => [['campaign', 'Campaign'], ['adset', 'Ad set'], ['ad', 'Iklan'], ['sop', 'SOP budget']];
 function decideAds(all, y) {
   const ds = ST.main, R = Brain.RULES;
   all.sort((a, b) => (R[a.rule.key].order - R[b.rule.key].order) || (b.rule.m.spend - a.rule.m.spend));
@@ -2147,13 +2238,14 @@ function setSidebar(c) {
 /* =====================================================================
    EVENTS
    ===================================================================== */
-const SEL = '[data-dtab],[data-audtab],[data-audrun],[data-audall],[data-audheat],[data-lbm],[data-rules],[data-logrow],[data-lact],[data-lcat],[data-decnav],[data-page],[data-acc],[data-camp],[data-concept],[data-copy],[data-sort],[data-del],[data-declevel],[data-dcls],[data-sel],[data-addnote],[data-tmode],[data-tdays],[data-tgran],[data-tmetric],[data-tm1],[data-trm],[data-ent],[data-cmp],[data-cview],[data-pace],[data-pix],[data-atab],[data-pvnav],[data-pvad],[data-pfmt],[data-close],#noteAdd,#audRef,#mclose,#refBtn,#setBtn,#dApply,#trApply,#loginBtn,#saveSet,#logoutBtn,#sbToggle';
+const SEL = '[data-gosop],[data-dtab],[data-audtab],[data-audrun],[data-audall],[data-audheat],[data-lbm],[data-rules],[data-logrow],[data-lact],[data-lcat],[data-decnav],[data-page],[data-acc],[data-camp],[data-concept],[data-copy],[data-sort],[data-del],[data-declevel],[data-dcls],[data-sel],[data-addnote],[data-tmode],[data-tdays],[data-tgran],[data-tmetric],[data-tm1],[data-trm],[data-ent],[data-cmp],[data-cview],[data-pace],[data-pix],[data-atab],[data-pvnav],[data-pvad],[data-pfmt],[data-close],#noteAdd,#audRef,#mclose,#refBtn,#setBtn,#dApply,#trApply,#loginBtn,#saveSet,#logoutBtn,#sbToggle';
 document.addEventListener('click', async e => {
   const el = e.target.closest(SEL);
   if (!el || !el.closest('.mar-app')) return;
   const D = el.dataset;
   if (el.tagName === 'A') e.preventDefault();
   if (D.copy) { e.stopPropagation(); return copy(D.copy); }
+  if (D.gosop) { e.preventDefault(); ST.decLevel = 'sop'; LS.set('decLevel', 'sop'); ST.page = 'decide'; LS.set('page', 'decide'); loadingView(); window.scrollTo(0, 0); return render(); }
   if (D.dtab) { e.preventDefault(); ST.diagTab = D.dtab; LS.set('diagTab', D.dtab); return render(); }
   if (D.audtab) { audS().tab = D.audtab; audSave(); return render(); }
   if (D.audrun !== undefined) { audS().run = D.audrun === '1'; audSave(); return render(); }
@@ -2403,7 +2495,7 @@ async function pageBoard() {
 
 /* ---------- BLACKHOLE (rulebook B1–B7) ---------- */
 const RULEBOOK_URL = 'https://claude.ai/artifact/CNpxcruZqazmcCimWFioQt';
-const BH_NAME = { B1: '0 purchase lewat 1,5× CPA maks', B2: 'Hook gagal', B3: 'Trafik sampah', B4: 'Campaign kosong beruntun', B5: 'Penempatan bocor', B6: 'Segmen bocor', B7: 'Kosong ≥ 7 hari' };
+const BH_NAME = { B1: 'Biaya per lead lewat batas', B1b: 'CPA lewat batas', B2: 'Hook gagal', B3: 'Trafik sampah', B4: 'Kosong 3 hari → turun budget', B5: 'Penempatan bocor', B6: 'Segmen bocor', B7: 'Campaign jelek → matikan' };
 const PLAT = { facebook: 'Facebook', instagram: 'Instagram', audience_network: 'Audience Network', messenger: 'Messenger', whatsapp: 'WhatsApp', threads: 'Threads', unknown: 'Lainnya' };
 /* =====================================================================
    AUDIENCE INSIGHTS — demografi, platform, perilaku, perangkat
@@ -2672,12 +2764,17 @@ function blackholes() {
   const maps = dailyMaps(ds, ad => ad.c, addD(t, -31), t, -1);
   entitiesOf('campaign', ds).forEach(e => {
     if (!e.active || !inAcc(e.a)) return;
+    if (Brain.sopType(e.n)) {
+      const s = Brain.campaignSop(maps[e.id] || {}, { today: t, name: e.n, start: e.start, active: true, budget: campBudget(ds, e.id), budgetEvents: budgetEvents('campaign', e.id, ds) });
+      if (s && (s.act === 'kill' || s.act === 'down')) out.push({ code: s.act === 'kill' ? 'B7' : 'B4', lv: 'Campaign', a: e.a, name: shortCamp(e.n), spend: s.m.s7, text: s.reasons[0], camp: e.id });
+      return;
+    }
     const b = Brain.blackholeEntity(maps[e.id] || {}, { today: t, active: true, maxCpa: mc(e.a) });
     if (b) out.push({ code: b.code, lv: 'Campaign', a: e.a, name: shortCamp(e.n), spend: b.spend, text: b.text, camp: e.id });
   });
   // B1–B3 — iklan
   Object.values(adRules()).forEach(r => {
-    const ru = r.rule; if (!ru || ru.key !== 'kill' || !/^B[123]$/.test(ru.code || '') || !inAcc(r.e.a)) return;
+    const ru = r.rule; if (!ru || ru.key !== 'kill' || !/^B(1b?|2|3)$/.test(ru.code || '') || !inAcc(r.e.a)) return;
     out.push({ code: ru.code, lv: 'Iklan', a: r.e.a, name: r.e.n, sub: shortCamp(r.e.sub || '', 32), spend: ru.m.spend, text: ru.reasons[0] || '', camp: r.e.camp });
   });
   // B5 — penempatan (7 hari penuh), B6 — segmen usia × gender (30 hari penuh)
@@ -2718,31 +2815,42 @@ function openRules() {
   const v = mult => accs.map(a => `<span style="white-space:nowrap">${esc(a.l)} <b>${rp(a.mc * mult)}</b></span>`).join(' · ');
   const k = n => String(n).replace('.', ',') + '×';
   const pcx = n => String(+(n * 100).toFixed(1)).replace('.', ',') + '%';
+  const st = Math.round(K.stepUp * 100) + '%';
   const rows = [
-    ['1', 'test', 'Jelek tapi masih testing', `Belum ada purchase dan spend &lt; 1× CPA maks (${v(1)}), atau umur &lt; ${K.minDays} hari. Antara 1× dan ${k(K.killMult)} = <i>batas akhir</i>.`, 'Lanjut. Iklan yang hampir tidak dapat budget di ASC/CBO belum benar-benar dites, bukan jelek.'],
-    ['2', 'kill', 'Jelek &amp; lewat hitungan', `• 0 purchase, spend ≥ ${k(K.killMult)} CPA maks (${v(K.killMult)})<br>• Laku tapi rugi: spend ≥ ${k(K.lossMult)} CPA maks (${v(K.lossMult)}) &amp; ROAS &lt; ${xx(C.cutoff)}<br>• Hook gagal: Link CTR &lt; ${pcx(K.ctrKill)} setelah ${K.earlyImpr.toLocaleString('id-ID')} impresi &amp; ${rp(K.earlySpend)}`, 'Matikan. Tidak ada "sehari lagi".'],
-    ['3', 'diag', 'Angka awal bagus, 0 purchase', `Link CTR ≥ ${pcx(K.ctrGood)} &amp; LPV/klik ≥ ${pcx(K.lpvGood)}, tapi belum ada purchase. Diberi sampai ${k(K.tofMult)} CPA maks (${v(K.tofMult)}).`, 'Ada initiate checkout → cek checkout / pembayaran / tracking. Tidak ada → copy tidak nyambung dengan landing page. Lewat batas → <b>Pindah ke top funnel</b> (juga untuk konten CTR bagus yang laku tapi rugi).'],
-    ['4', 'refresh', 'Pernah purchase, lalu kosong', `Terbukti = ≥ ${K.provenP} purchase &amp; ROAS ≥ ${xx(C.cutoff)} dalam ${lb} hari. Kosong masih wajar selama spend kosong &lt; ${k(K.streakMult)} CPA historis iklan itu.`, 'Di bawah batas → <b>Tahan</b>. Lewat batas atau ROAS 7D &lt; 1 → turunkan 20–30%; ada tanda jenuh (CTR −20%, ROAS −20%, CPA +30%, frequency ≥ 3,5) → buat hook 3 detik baru, body tetap.'],
-    ['5', 'revert', 'Winner gagal setelah scale', `Budget campaign/ad set naik dalam ${K.scaleLook} hari terakhir, sebelumnya ROAS ≥ ${xx(C.cutoff)}, sesudahnya 0 purchase atau ROAS &lt; ${xx(C.cutoff)}.`, `Tunggu ${K.waitScale} hari (kecuali spend sejak naik ≥ ${k(K.streakMult)} CPA sebelum scale) → kembalikan ke budget lama, jangan pause. Lalu scale ke samping dengan post ID yang sama.`],
-    ['', 'winner', 'Sehat', `Winner = ≥ ${K.winP} purchase di ≥ ${K.winDays} hari berbeda, ROAS ≥ ${xx(C.minRoas)}, spend ≥ ${k(K.winSpendMult)} CPA maks (${v(K.winSpendMult)}). Layak scale kalau ROAS ${lb}D &amp; 7D ≥ ${xx(C.target)}. <b>Pantau</b> = terbukti tapi ROAS di antara ${xx(C.cutoff)} dan ${xx(C.minRoas)}.`, 'Winner → kandidat bottom funnel, scale maks 20–30% tiap 3–4 hari. Pantau → jangan naikkan budget.']
+    ['1', 'test', 'Masih testing', `Belum ada purchase, biaya per lead ≤ ${rp(K.cplKill)} (atau spend &lt; ${rp(K.cplKill)}), spend &lt; ${rp(K.cpaKill)}.`, 'Lanjut. Iklan yang hampir tidak dapat budget di ASC/CBO belum benar-benar dites, bukan jelek.'],
+    ['2', 'kill', 'Matikan', `• <b>B1</b> spend ≥ ${rp(K.cplKill)} &amp; biaya per lead &gt; ${rp(K.cplKill)} (0 lead termasuk) di jendela 3D/7D/14D — kecuali sudah laku dengan CPA ≤ ${rp(K.cpaKill)}<br>• <b>B1b</b> spend ≥ ${rp(K.cpaKill)} &amp; CPA &gt; ${rp(K.cpaKill)} (0 purchase termasuk) di jendela 3D/7D/14D<br>• <b>B2</b> hook gagal: Link CTR &lt; ${pcx(K.ctrKill)} setelah ${K.earlyImpr.toLocaleString('id-ID')} impresi<br>• <b>B3</b> trafik sampah`, 'Matikan. Tidak ada "sehari lagi".'],
+    ['3', 'diag', 'Angka awal bagus, 0 purchase', `Link CTR ≥ ${pcx(K.ctrGood)} &amp; LPV/klik ≥ ${pcx(K.lpvGood)}, lead sehat, belum ada purchase. Batas akhir ${rp(K.cpaKill)} tanpa purchase (B1b).`, 'Ada initiate checkout → cek checkout / pembayaran / tracking. Tidak ada → copy tidak nyambung dengan landing page.'],
+    ['', 'good', 'Konten bagus', `≥ ${K.goodP} purchase, CPA ≤ ${rp(K.cpaKill)}, biaya per lead ≤ ${rp(K.cplKill)}.`, 'Kandidat dipindah ke campaign ASC (wajib kalau campaign testing-nya dimatikan).'],
+    ['4', 'refresh', 'Pernah purchase, lalu kosong', `Terbukti = ≥ ${K.provenP} purchase &amp; ROAS ≥ ${xx(C.cutoff)} dalam ${lb} hari. Kosong masih wajar selama spend kosong &lt; ${k(K.streakMult)} CPA historis iklan itu.`, `Di bawah batas → <b>Tahan</b>. Lewat batas → turunkan ${st}; ada tanda jenuh → buat hook 3 detik baru, body tetap.`],
+    ['5', 'revert', 'Winner gagal setelah scale', `Budget naik dalam ${K.scaleLook} hari terakhir, sebelumnya ROAS ≥ ${xx(C.cutoff)}, sesudahnya 0 purchase atau ROAS &lt; ${xx(C.cutoff)}.`, `Tunggu ${K.waitScale} hari → kembalikan ke budget lama, jangan pause.`],
+    ['', 'winner', 'Winner', `≥ ${K.winP} purchase di ≥ ${K.winDays} hari berbeda, ROAS ≥ ${xx(C.minRoas)}, spend ≥ ${k(K.winSpendMult)} CPA maks (${v(K.winSpendMult)}).`, `Siap scale: naik ${st} saat ROAS 3D &amp; 7D ≥ ${xx(C.minRoas)}, atau pindahkan ke ASC dengan post ID yang sama.`]
   ];
-  openModal(`<h2 style="font-size:18px">Aturan konten</h2>
+  openModal(`<h2 style="font-size:18px">Aturan konten · rulebook v2</h2>
   <div class="muted small" style="margin:4px 0 12px">Dinilai per iklan dari ${lb} hari terakhir + hari ini. Batas spend = kelipatan CPA maks (AOV 30D ÷ ROAS minimum ${xx(C.minRoas)}${accs.length ? ' → ' + accs.map(a => esc(a.l) + ' ' + rp(a.mc)).join(', ') : ''}). Angka bisa diubah di Settings → Rule konten.</div>
   <div class="tw"><table class="rtab" style="min-width:720px"><thead><tr><th>Kasus</th><th>Kondisi</th><th>Batas</th><th>Aksi</th></tr></thead><tbody>
   ${rows.map(r => { const R = Brain.RULES[r[1]]; return `<tr><td>${r[0] ? r[0] + '. ' : ''}<span class="chip ${RTONE[R.tone]}">${R.label}</span></td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`; }).join('')}
   </tbody></table></div>
   <h3 style="font-size:15px;margin:18px 0 6px">Blackhole B1–B7 <span class="small muted" style="font-weight:400">— cukup satu terpenuhi; tampil di Decision Board</span></h3>
   <div class="tw"><table class="rtab" style="min-width:640px"><thead><tr><th>Kode</th><th>Kriteria</th><th>Batas</th></tr></thead><tbody>
-  <tr><td>B1</td><td>Iklan 0 purchase</td><td>Spend ≥ ${k(K.killMult)} CPA maks (${v(K.killMult)})</td></tr>
+  <tr><td>B1</td><td>Biaya per lead lewat batas (3D/7D/14D)</td><td>Spend ≥ ${rp(K.cplKill)} &amp; biaya per lead &gt; ${rp(K.cplKill)}</td></tr>
+  <tr><td>B1b</td><td>CPA lewat batas (3D/7D/14D)</td><td>Spend ≥ ${rp(K.cpaKill)} &amp; CPA &gt; ${rp(K.cpaKill)}</td></tr>
   <tr><td>B2</td><td>Hook gagal</td><td>Link CTR &lt; ${pcx(K.ctrKill)} setelah ${K.earlyImpr.toLocaleString('id-ID')} impresi &amp; ${rp(K.earlySpend)}</td></tr>
   <tr><td>B3</td><td>Trafik sampah: LPV banyak, 0 checkout (30 hari atau 7 hari terakhir)</td><td>LPV ≥ ${k(K.junkMult)} LPV per purchase di closing sehat (${accs.map(a => `<span style="white-space:nowrap">${esc(a.l)} <b>${fin((TH(a.i) || {}).junkLpv) ? Math.round(TH(a.i).junkLpv) : K.junkLpv} LPV</b></span>`).join(' · ')})</td></tr>
-  <tr><td>B4</td><td>Campaign kosong beruntun</td><td>≥ 2 hari 0 purchase, spend ≥ ${k(K.zeroMult)} CPA historis (maks ${k(K.zeroMult * 1.5)} CPA maks)</td></tr>
+  <tr><td>B4</td><td>Campaign kosong beruntun</td><td>Testing/ASC: ${K.zeroCut} hari tanpa purchase → turun ${st}. Lainnya: ≥ 2 hari 0 purchase, spend ≥ ${k(K.zeroMult)} CPA historis</td></tr>
   <tr><td>B5</td><td>Penempatan bocor (7 hari)</td><td>Spend ≥ ${k(K.placeMult)} CPA maks (${v(K.placeMult)}), 0 checkout &amp; 0 purchase</td></tr>
   <tr><td>B6</td><td>Segmen usia × gender bocor (30 hari)</td><td>Spend ≥ ${k(K.segMult)} CPA maks (${v(K.segMult)}), ≤ 1 purchase</td></tr>
-  <tr><td>B7</td><td>Campaign lewat masanya</td><td>0 purchase ≥ ${K.zeroDays} hari berturut-turut</td></tr>
+  <tr><td>B7</td><td>Campaign jelek</td><td>Testing/ASC: ${K.zeroCut} hari lagi tanpa purchase setelah dipotong (atau ${2 * K.zeroCut} hari kosong beruntun) → matikan, pindah konten bagus ke ASC. Lainnya: 0 purchase ≥ ${K.zeroDays} hari</td></tr>
+  </tbody></table></div>
+  <h3 style="font-size:15px;margin:18px 0 6px">SOP budget campaign Testing &amp; ASC <span class="small muted" style="font-weight:400">— diputuskan di cek jam 10:00 dengan data s/d kemarin</span></h3>
+  <div class="tw"><table class="rtab" style="min-width:640px"><thead><tr><th>Kapan</th><th>Kondisi</th><th>Aksi</th></tr></thead><tbody>
+  <tr><td>Hari 1–${K.evalDays[0] - 1}</td><td>Campaign Testing baru (hari ke-1 = tanggal di awal nama, mis. 11Nov26 Testing …)</td><td>Biarkan; aturan per video tetap jalan</td></tr>
+  <tr><td>Hari ${K.evalDays.join(', ')}, lalu tiap ${K.evalEvery} hari (ASC: tiap ${K.evalEvery} hari sejak perubahan terakhir)</td><td>ROAS 3D ≥ ${xx(C.minRoas)} &amp; ROAS 7D ≥ ${xx(C.minRoas)}</td><td><b>Naik ${st}</b></td></tr>
+  <tr><td>Kapan saja</td><td>${K.zeroCut} hari berturut-turut tanpa purchase</td><td><b>Turun ${st}</b></td></tr>
+  <tr><td>Setelah dipotong</td><td>${K.zeroCut} hari lagi tanpa purchase</td><td><b>Matikan</b> + pindah konten bagus ke ASC</td></tr>
+  <tr><td>Selain itu</td><td>—</td><td>Tahan</td></tr>
   </tbody></table></div>
   <div class="small muted" style="margin-top:6px">Sebelum mematikan, cek pengecualian di <a href="${RULEBOOK_URL}" target="_blank" rel="noopener">rulebook</a>: winner yang kosong &lt; 2× CPA historis, baru di-scale atau dipindah (&lt; 3 hari), hampir tidak dapat budget, campaign WA yang closing-nya belum terlacak.</div>
-  <div class="small muted" style="margin-top:10px">Urutan cek: kasus 5 → trafik sampah (B3) → laku tapi rugi → belum pernah purchase (hook gagal → konten bagus → batas matikan → testing) → 1 purchase belum terbukti → kasus 4 → sehat. Dashboard hanya memberi label — tidak mengubah apa pun di akun.</div>`, 'wide pad');
+  <div class="small muted" style="margin-top:10px">Urutan cek (rulebook v2): kasus 5 → trafik sampah (B3) → CPA lewat batas (B1b) → biaya per lead lewat batas (B1) → belum pernah purchase (hook gagal → diagnosa → testing) → konten bagus → kasus 4 → winner. Dashboard hanya memberi label — tidak mengubah apa pun di akun.</div>`, 'wide pad');
 }
 
 /* ---------- settings ---------- */
@@ -2755,10 +2863,11 @@ function openSettings() {
     <div><label>ROAS target (Winner, layak scale)</label><input class="inp" id="sTarget" type="number" step="0.1" value="${S.target}"></div>
     <div><label>Umur minimal sebelum evaluasi (hari)</label><input class="inp" id="sAge" type="number" value="${S.minAge}"></div>
     <div><label>Cost per contact maksimal (Rp)</label><input class="inp" id="sCpc" type="number" value="${S.maxCpc}"></div>
-    <div style="grid-column:1/-1;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><b style="font-size:14px">Rule konten</b> <span class="small muted">— batas spend dalam kelipatan CPA maks</span></div>
-    <div><label>Matikan: spend tanpa purchase ≥ … × CPA maks</label><input class="inp" id="sKill" type="number" step="0.1" value="${S.content.killMult}"></div>
-    <div><label>Matikan: laku tapi rugi, spend ≥ … × CPA maks</label><input class="inp" id="sLoss" type="number" step="0.5" value="${S.content.lossMult}"></div>
-    <div><label>Konten bagus tanpa purchase diberi sampai … × CPA maks</label><input class="inp" id="sTof" type="number" step="0.1" value="${S.content.tofMult}"></div>
+    <div style="grid-column:1/-1;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><b style="font-size:14px">Rule konten &amp; SOP (rulebook v2)</b> <span class="small muted">— berlaku untuk semua iklan; SOP budget untuk campaign Testing &amp; ASC</span></div>
+    <div><label>B1 · Matikan kalau biaya per lead &gt; (Rp)</label><input class="inp" id="sCpl" type="number" step="10000" value="${S.content.cplKill}"></div>
+    <div><label>B1b · Matikan kalau CPA &gt; (Rp) · juga batas konten bagus</label><input class="inp" id="sCpaK" type="number" step="50000" value="${S.content.cpaKill}"></div>
+    <div><label>SOP · naik / turun budget (%)</label><input class="inp" id="sStep" type="number" step="1" value="${S.content.stepUp}"></div>
+    <div><label>SOP · hari tanpa purchase sebelum turun budget</label><input class="inp" id="sZero" type="number" step="1" value="${S.content.zeroCut}"></div>
     <div><label>Winner kosong masih wajar sampai … × CPA historis</label><input class="inp" id="sStreak" type="number" step="0.1" value="${S.content.streakMult}"></div>
     <div><label>Link CTR "bagus" ≥ (%)</label><input class="inp" id="sCtrG" type="number" step="0.1" value="${S.content.ctrGood}"></div>
     <div><label>Link CTR "hook gagal" &lt; (%)</label><input class="inp" id="sCtrK" type="number" step="0.1" value="${S.content.ctrKill}"></div>
@@ -2779,7 +2888,7 @@ function saveSettings() {
   const cv = (id, k) => (+$(id).value > 0 ? +$(id).value : DEF.content[k]);
   const mv = (id, k) => (+$(id).value > 0 ? +$(id).value : DEF.metric[k]);
   S.metric = { waClose: mv('mWa', 'waClose'), hookMin: mv('mH1', 'hookMin'), hookOk: mv('mH2', 'hookOk'), hookScale: mv('mH3', 'hookScale'), lpvMin: mv('mL1', 'lpvMin'), lpvOk: mv('mL2', 'lpvOk'), lpvScale: mv('mL3', 'lpvScale') };
-  S.content = { killMult: cv('sKill', 'killMult'), lossMult: cv('sLoss', 'lossMult'), tofMult: cv('sTof', 'tofMult'), streakMult: cv('sStreak', 'streakMult'), ctrGood: cv('sCtrG', 'ctrGood'), ctrKill: cv('sCtrK', 'ctrKill') };
+  S.content = { killMult: S.content.killMult, lossMult: S.content.lossMult, tofMult: S.content.tofMult, cplKill: cv('sCpl', 'cplKill'), cpaKill: cv('sCpaK', 'cpaKill'), stepUp: cv('sStep', 'stepUp'), zeroCut: cv('sZero', 'zeroCut'), streakMult: cv('sStreak', 'streakMult'), ctrGood: cv('sCtrG', 'ctrGood'), ctrKill: cv('sCtrK', 'ctrKill') };
   S.maxCpa = {}; document.querySelectorAll('.mar-app [data-mc]').forEach(i => { if (+i.value) S.maxCpa[i.dataset.mc] = +i.value; });
   LS.set('settings', S); applyBrain();
   const na = $('sApi').value.trim(); if (na && na !== API) { API = na; LS.set('api', API); closeModal(); return logout(); }
