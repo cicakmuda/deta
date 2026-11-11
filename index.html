@@ -125,7 +125,9 @@
 .mar-app td{padding:10px 12px;border-bottom:1px solid var(--line2);vertical-align:middle}
 .mar-app tr:last-child td{border-bottom:0}
 .mar-app tbody tr.click{cursor:pointer}
-.mar-app tbody tr.click:hover td{background:#F8F9FB}
+.mar-app tbody tr td{transition:background-color .12s}
+.mar-app tbody tr:hover td{background:#F3F6FF}
+.mar-app tbody tr.click:hover td{background:#EBF0FF}
 .mar-app tbody tr.sel td{background:#F5F7FF}
 .mar-app tbody tr.sel td:first-child{box-shadow:inset 3px 0 0 var(--acc)}
 .mar-app .bl{border-left:1px solid var(--line2)}
@@ -466,6 +468,33 @@
 .mar-app .lstat{padding:14px 18px;border-right:1px solid var(--line2);display:flex;flex-direction:column;gap:2px}
 .mar-app .lstat:last-child{border-right:0}
 .mar-app .lstat .l{font-size:12px;color:var(--ink2)} .mar-app .lstat .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums} .mar-app .lstat .s{font-size:12px;color:var(--ink3)}
+.mar-app .cd-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+.mar-app .cd-sort{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink2);background:#fff;border:1px solid var(--line);border-radius:10px;padding:0 10px}
+.mar-app .cd-sort select{border:0;background:transparent;font:inherit;font-weight:600;color:var(--ink);height:36px}
+.mar-app #cdQ{flex:0 1 260px;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 12px;font:inherit;font-size:13px;background:#fff}
+.mar-app .cd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;align-items:start}
+.mar-app .cd-card{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 0 rgba(0,0,0,.04);overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.mar-app .cd-h{padding:14px 16px 12px}
+.mar-app .cd-t{display:flex;gap:8px;align-items:flex-start;justify-content:space-between}
+.mar-app .cd-n{font-size:13.5px;font-weight:700;line-height:1.35;color:var(--ink);text-decoration:none;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.mar-app .cd-n:hover{color:#2F54EB}
+.mar-app .cd-st{flex:none;white-space:nowrap;font-size:11px;font-weight:600;padding:1px 6px;border-radius:5px;background:#F1F2F5;color:#636975}
+.mar-app .cd-st.on{background:#E7F5EC;color:#17804A}
+.mar-app .cd-tags{margin-top:5px}
+.mar-app .tag.cd-asc{background:#15171C;color:#fff}
+.mar-app .tag.cd-test{background:#EBEFFF;color:#2F54EB}
+.mar-app .cd-tw{max-height:300px;overflow-y:auto;border-top:1px solid #EEF0F3}
+.mar-app .cd-tb{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums;min-width:0}
+.mar-app .cd-tb th{position:sticky;top:0;z-index:1;background:#F7F8FA;font-size:11.5px;font-weight:600;color:#555B67;padding:7px 6px;border-bottom:1px solid #EEF0F3;text-align:left;white-space:nowrap}
+.mar-app .cd-tb td{padding:5px 6px;border-bottom:1px solid #F3F4F6;white-space:nowrap}
+.mar-app .cd-tb th.num,.mar-app .cd-tb td.num{text-align:right}
+.mar-app .cd-tb th:first-child,.mar-app .cd-tb td:first-child{padding-left:16px}
+.mar-app .cd-tb th:last-child,.mar-app .cd-tb td:last-child{padding-right:16px}
+.mar-app .cd-tb .chip{font-size:11.5px;padding:1px 6px}
+.mar-app .cd-tb tr.cd-today td{background:#F5F8FF;font-weight:600}
+.mar-app .cd-f{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:9px 16px;border-top:1px solid #EEF0F3;font-size:12px;color:var(--muted,#636975)}
+.mar-app .cd-f a{color:#2F54EB;font-weight:600;text-decoration:none;white-space:nowrap}
+.mar-app .cd-lg{margin-top:12px}
 .mar-app .seg button .cnt{font-size:11px;opacity:.7;margin-left:2px}
 .mar-app .ltab td{padding-top:9px;padding-bottom:9px}
 .mar-app .ltab tr.lday td{background:#F7F8FA;font-size:12px;font-weight:700;color:#3A3F49;padding:9px 16px 7px;border-top:1px solid var(--line2)}
@@ -546,7 +575,7 @@
       </div>
       <nav class="nav" aria-label="Main menu">
         <div class="navg"><div class="navl">Monitor</div>
-          <a href="#" data-page="today" title="Today"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span class="lbl">Today</span></a>
+          <a href="#" data-page="today" title="Rekap harian campaign"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span class="lbl">Rekap harian</span></a>
           <a href="#" data-page="trend" title="Trends"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg><span class="lbl">Trends</span></a>
         </div>
         <div class="navg"><div class="navl">Decide</div>
@@ -923,7 +952,7 @@ function brainRows(level, onlyId, allAcc) {
 /** kenaikan/penurunan budget di campaign & ad set induk sebuah iklan */
 function leadOn(a) {
   const ds = ST.main; if (!ds) return true;
-  if (!ST._leadOn || ST._leadOn.gen !== ds.gen) { const t = todayJkt(), m = {}; agg(ds, addD(t, -30), t, ad => ad.a, -1).forEach((v, k) => { m[k] = v[M.lead] > 0; }); ST._leadOn = { gen: ds.gen, m }; }
+  if (!ST._leadOn || ST._leadOn.gen !== ds.gen) { const t = todayJkt(), m = {}; agg(ds, addD(t, -30), t, ad => ad.a, -1).forEach((v, k) => { m[k] = v[M.contact] > 0; }); ST._leadOn = { gen: ds.gen, m }; }
   return ST._leadOn.m[a] !== false;
 }
 function adBudgetEvents(e, ds) {
@@ -952,7 +981,7 @@ function sopRows() {
 }
 function asCopy(r) {
   const ds = ST.main;
-  return `Pindah ke ASC (${ds.accounts[r.e.a].label}) — dari ${String(r.e.n).replace(/\s*-\s*\d{4}$/, '')}:\n` + r.good.map(g => `- ${g.e.n} (ID iklan ${g.e.id}) — ${nf(g.rule.m.purch)} purchase, CPA ${rp(g.rule.m.cpa)}${g.rule.m.leads ? ', biaya/lead ' + rp(g.rule.m.cpl) : ''}`).join('\n');
+  return `Pindah ke ASC (${ds.accounts[r.e.a].label}) — dari ${String(r.e.n).replace(/\s*-\s*\d{4}$/, '')}:\n` + r.good.map(g => `- ${g.e.n} (ID iklan ${g.e.id}) — ${nf(g.rule.m.purch)} purchase, CPA ${rp(g.rule.m.cpa)}${g.rule.m.leads ? ', cost/contact ' + rp(g.rule.m.cpl) : ''}`).join('\n');
 }
 const SOPT = { kill: 'c-r', down: 'c-y', up: 'c-g', hold: 'c-n', wait: 'c-b', off: 'c-n' };
 function sopDone() { const k = 'sopDone_' + todayJkt(); return { k, m: LS.get(k, {}) }; }
@@ -983,7 +1012,7 @@ function decideSop() {
   if (mvItems.length) {
     const all = mv.map(asCopy).join('\n\n');
     td += `<div class="sop2-grp"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span class="sop2-gh">Pindah ke ASC</span><button type="button" class="btn sm" data-copy="${esc(all)}">Salin semua (${mvItems.length})</button></div>
-      ${mvItems.map(x => todo('m' + x.g.e.id, 'Pindah', 'c-g', esc(x.g.e.n), 'dari ' + shortCamp(x.r.e.n, 40) + ' · ' + nf(x.g.rule.m.purch) + ' purchase · CPA ' + rp(x.g.rule.m.cpa) + (x.g.rule.m.leads ? ' · per lead ' + rp(x.g.rule.m.cpl) : ''), ruleChip(x.g.rule))).join('')}</div>`;
+      ${mvItems.map(x => todo('m' + x.g.e.id, 'Pindah', 'c-g', esc(x.g.e.n), 'dari ' + shortCamp(x.r.e.n, 40) + ' · ' + nf(x.g.rule.m.purch) + ' purchase · CPA ' + rp(x.g.rule.m.cpa) + (x.g.rule.m.leads ? ' · per contact ' + rp(x.g.rule.m.cpl) : ''), ruleChip(x.g.rule))).join('')}</div>`;
   }
   td += `<span class="small muted">Centang tersimpan di browser ini sampai besok. Dashboard tidak mengubah apa pun di akun.</span></section>`;
   // ringkasan
@@ -1014,7 +1043,7 @@ function decideSop() {
             + ck(m.z < K.zeroCut, 'Kurang dari ' + K.zeroCut + ' hari tanpa purchase', m.z + ' hari', m.z === K.zeroCut - 1) + ck(!!m.isEval, 'Hari evaluasi', m.isEval ? 'hari ini' : fd(s.next));
         const vl = va.sort((a, b) => (Brain.RULES[a.rule.key].order - Brain.RULES[b.rule.key].order) || (b.rule.m.spend - a.rule.m.spend));
         det = `<div class="sop2-det"><div class="sop2-why"><b>Kenapa "${esc(s.label)}"</b>${checks}<div class="sop2-note">${esc(s.reasons.join(' '))}</div></div>
-          <div class="tw" style="margin:0"><table style="min-width:640px"><thead><tr><th>Video</th><th class="num">Spend 30D</th><th class="num">Lead · per lead</th><th class="num">Purchase · CPA</th><th>Status</th></tr></thead><tbody>
+          <div class="tw" style="margin:0"><table style="min-width:640px"><thead><tr><th>Video</th><th class="num">Spend 30D</th><th class="num">Contact · per contact</th><th class="num">Purchase · CPA</th><th>Status</th></tr></thead><tbody>
           ${vl.map(x => { const q = x.rule.m; return `<tr><td><div class="nm" style="max-width:280px" title="${esc(x.e.n)}">${esc(x.e.n)}</div></td><td class="num">${rp(q.spend)}</td><td class="num">${nf(q.leads)} · <span class="${q.cpl > K.cplKill ? 'dn' : ''}">${q.leads ? rp(q.cpl) : '–'}</span></td><td class="num">${nf(q.purch)} · <span class="${q.purch && q.cpa > K.cpaKill ? 'dn' : ''}">${q.purch ? rp(q.cpa) : '–'}</span></td><td style="white-space:normal;min-width:200px">${ruleChip(x.rule, true)}<div class="sub2">${esc(x.rule.reasons[0] || '')}</div></td></tr>`; }).join('') || '<tr><td colspan="5" class="empty">Belum ada video aktif</td></tr>'}
           </tbody></table></div></div>`;
       }
@@ -1034,7 +1063,7 @@ function sopChecklist() {
   if (!ST.main) return '';
   const h = hourJkt(), slots = [10, 15, 17, 21], cur = [...slots].reverse().find(x => h >= x), K = Brain.cfg.content;
   let n = {}; try { sopRows().forEach(r => { n[r.sop.act] = (n[r.sop.act] || 0) + 1; }); } catch (e) { n = {}; }
-  const job = { 10: 'Keputusan budget SOP (data kemarin)', 15: 'Pantau spend, iklan ditolak, tracking', 17: 'Pantau pacing &amp; biaya per lead', 21: 'Tutup hari, catat anomali' };
+  const job = { 10: 'Keputusan budget SOP (data kemarin)', 15: 'Pantau spend, iklan ditolak, tracking', 17: 'Pantau pacing &amp; cost per contact', 21: 'Tutup hari, catat anomali' };
   return `<section class="card sop-ck"><div class="card-h"><h2>Rutinitas cek</h2><a href="#" data-gosop="1">SOP budget →</a></div><div class="sop-sl">${slots.map(x => `<div class="${x === cur ? 'now' : h > x ? 'past' : ''}"><b>${x}:00</b><span>${job[x]}</span>${x === 10 ? `<span class="sop-n">${n.kill || 0} matikan · ${n.down || 0} turun · ${n.up || 0} naik ${Math.round(K.stepUp * 100)}%</span>` : ''}${x === cur ? '<i>sekarang</i>' : ''}</div>`).join('')}</div></section>`;
 }
 
@@ -1686,6 +1715,48 @@ async function pageToday() {
   return html;
 }
 
+/* =====================================================================
+   REKAP HARIAN CAMPAIGN (halaman utama, pengganti Today)
+   ===================================================================== */
+function pageCampDaily() {
+  const ds = ST.main, t = todayJkt(), since = addD(t, -29) < ds.since ? ds.since : addD(t, -29);
+  const maps = dailyMaps(ds, ad => ad.c, since, t);
+  const cpcMax = S.maxCpc || DEF.maxCpc, cpaKill = Brain.cfg.content.cpaKill, MC = {};
+  const mc = a => (MC[a] != null ? MC[a] : (MC[a] = maxCpa(a, ds)));
+  const f = ST.cd || (ST.cd = LS.get('cd', { st: 'all', sort: 'spend', q: '' }));
+  let list = ds.campIds.map(id => { const c = ds.campaigns[id]; if (ST.acc >= 0 && c.a !== ST.acc) return null;
+    const m = maps[id] || {}, days = Object.keys(m).filter(d => m[d][M.spend] > 0).sort().reverse(), on = campActive(c);
+    if (!days.length && !on) return null;
+    const T = new Array(NM).fill(0); days.forEach(d => { for (let i = 0; i < NM; i++) T[i] += m[d][i]; });
+    return { id, c, on, m, days, T: der(T), last: days[0] || '' }; }).filter(Boolean);
+  const cnt = { all: list.length, on: list.filter(x => x.on).length, off: list.filter(x => !x.on).length };
+  if (f.st !== 'all') list = list.filter(x => (f.st === 'on') === x.on);
+  if (f.q) { const q = f.q.toLowerCase(); list = list.filter(x => String(x.c.n).toLowerCase().includes(q)); }
+  const SO = { spend: (a, b) => b.T.spend - a.T.spend, roas: (a, b) => (b.T.roas || 0) - (a.T.roas || 0) || b.T.spend - a.T.spend,
+    cpa: (a, b) => (a.T.purch ? a.T.cpa : 1e15) - (b.T.purch ? b.T.cpa : 1e15), last: (a, b) => (b.on - a.on) || b.last.localeCompare(a.last) };
+  list.sort(SO[f.sort] || SO.spend);
+  const typ = n => /asc/i.test(n) ? ['ASC', 'cd-asc'] : /testing/i.test(n) ? ['Testing', 'cd-test'] : null;
+  const cpaC = (d, a) => { if (!d.purch) return d.spend ? '<span class="small muted">0p</span>' : '–'; const ok = mc(a);
+    return `<span class="chip ${fin(ok) && d.cpa <= ok ? 'c-g' : d.cpa <= cpaKill ? 'c-y' : 'c-r'}">${rp(d.cpa)}</span>`; };
+  const cpcC = d => d.contact ? `<span class="chip ${d.cpc <= cpcMax ? 'c-g' : 'c-r'}">${rp(d.cpc)}</span>` : '–';
+  const roasC = d => d.purch ? roasChip(d.roas, d.spend) : (d.spend ? '<span class="chip c-n">0,00×</span>' : '–');
+  let html = head('Rekap harian campaign', `Satu kartu per campaign · ${fd(since)} – ${fd(t)} · hari ini masih berjalan (s/d ${String(hourJkt()).padStart(2, '0')}:59 WIB) · klik nama untuk diagnosis`, accSeg());
+  html += `<div class="cd-bar"><div class="seg" role="group" aria-label="Status">${[['all', 'Semua'], ['on', 'Sedang berjalan'], ['off', 'Pernah berjalan']].map(x => `<button type="button" class="${f.st === x[0] ? 'on' : ''}" data-cdst="${x[0]}">${x[1]} <span class="cnt">${cnt[x[0]]}</span></button>`).join('')}</div>
+    <label class="cd-sort">Urutkan <select id="cdSort">${[['spend', 'Spend 30 hari'], ['roas', 'ROAS 30 hari'], ['cpa', 'CPA terendah'], ['last', 'Terakhir berjalan']].map(x => `<option value="${x[0]}" ${f.sort === x[0] ? 'selected' : ''}>${x[1]}</option>`).join('')}</select></label>
+    <input type="search" id="cdQ" placeholder="Cari campaign…" aria-label="Cari campaign" value="${esc(f.q || '')}"></div>`;
+  if (!list.length) return html + `<div class="card">Tidak ada campaign${f.q ? ' yang cocok' : ''} dalam 30 hari terakhir.</div>`;
+  html += `<div class="cd-grid">${list.map(x => { const ty = typ(x.c.n);
+    return `<section class="cd-card"><div class="cd-h"><div class="cd-t"><a href="#" class="cd-n" data-camp="${x.id}" data-go="diag" title="${esc(x.c.n)}">${shortCamp(x.c.n)}</a>
+        <span class="cd-st ${x.on ? 'on' : ''}">${x.on ? '● Berjalan' : 'Off' + (x.last ? ' sejak ' + fd(x.last) : '')}</span></div>
+      <div class="cd-tags">${accChip(ds, x.c.a)}${ty ? `<span class="tag ${ty[1]}">${ty[0]}</span>` : ''}</div></div>
+      <div class="cd-tw"><table class="cd-tb"><thead><tr><th>Tanggal</th><th class="num">Spend</th><th class="num">ROAS</th><th class="num">CPA</th><th class="num">Cost/contact</th></tr></thead><tbody>
+      ${x.days.map(d => { const v = der(x.m[d]); return `<tr${d === t ? ' class="cd-today"' : ''}><td>${fd(d)}</td><td class="num">${rp(v.spend)}</td><td class="num">${roasC(v)}</td><td class="num">${cpaC(v, x.c.a)}</td><td class="num">${cpcC(v)}</td></tr>`; }).join('') || '<tr><td colspan="5" class="empty">Belum ada spend</td></tr>'}
+      </tbody></table></div>
+      <div class="cd-f"><span>${x.days.length} hari berjalan · ${nf(x.T.purch)} purchase · ${x.T.val ? rp(x.T.val) : 'Rp0'}</span><a href="#" data-camp="${x.id}" data-go="diag">Diagnosis →</a></div></section>`; }).join('')}</div>`;
+  html += `<div class="small muted cd-lg">ROAS: hijau ≥ ${xx(S.minRoas)} · kuning ${xx(S.cutoff)}–${xx(S.minRoas)} · merah di bawahnya &nbsp;·&nbsp; CPA: hijau ≤ CPA maks akun · kuning ≤ ${rp(cpaKill)} · merah di atasnya &nbsp;·&nbsp; Cost/contact: hijau ≤ ${rp(cpcMax)} · merah di atasnya &nbsp;·&nbsp; hari tanpa spend tidak ditampilkan</div>`;
+  return html;
+}
+
 /** bandingkan jumlah baris per iklan dengan total akun (7 hari terakhir + hari ini) */
 function syncCheck(ds, accs) {
   if (!ds.accDaily) return null;
@@ -2292,7 +2363,7 @@ async function render() {
   try {
     let html;
     switch (ST.page) {
-      case 'today': html = await pageToday(); break;
+      case 'today': html = pageCampDaily(); break;
       case 'decide': html = await pageDecide(); break;
       case 'trend': html = await pageTrend(); break;
       case 'audit': html = await pageAudit(false); break;
@@ -2350,13 +2421,14 @@ function setSidebar(c) {
 /* =====================================================================
    EVENTS
    ===================================================================== */
-const SEL = '[data-sopf],[data-sopopen],[data-gosop],[data-dtab],[data-audtab],[data-audrun],[data-audall],[data-audheat],[data-lbm],[data-rules],[data-logrow],[data-lact],[data-lcat],[data-decnav],[data-page],[data-acc],[data-camp],[data-concept],[data-copy],[data-sort],[data-del],[data-declevel],[data-dcls],[data-sel],[data-addnote],[data-tmode],[data-tdays],[data-tgran],[data-tmetric],[data-tm1],[data-trm],[data-ent],[data-cmp],[data-cview],[data-pace],[data-pix],[data-atab],[data-pvnav],[data-pvad],[data-pfmt],[data-close],#noteAdd,#audRef,#mclose,#refBtn,#setBtn,#dApply,#trApply,#loginBtn,#saveSet,#logoutBtn,#sbToggle';
+const SEL = '[data-cdst],[data-sopf],[data-sopopen],[data-gosop],[data-dtab],[data-audtab],[data-audrun],[data-audall],[data-audheat],[data-lbm],[data-rules],[data-logrow],[data-lact],[data-lcat],[data-decnav],[data-page],[data-acc],[data-camp],[data-concept],[data-copy],[data-sort],[data-del],[data-declevel],[data-dcls],[data-sel],[data-addnote],[data-tmode],[data-tdays],[data-tgran],[data-tmetric],[data-tm1],[data-trm],[data-ent],[data-cmp],[data-cview],[data-pace],[data-pix],[data-atab],[data-pvnav],[data-pvad],[data-pfmt],[data-close],#noteAdd,#audRef,#mclose,#refBtn,#setBtn,#dApply,#trApply,#loginBtn,#saveSet,#logoutBtn,#sbToggle';
 document.addEventListener('click', async e => {
   const el = e.target.closest(SEL);
   if (!el || !el.closest('.mar-app')) return;
   const D = el.dataset;
   if (el.tagName === 'A') e.preventDefault();
   if (D.copy) { e.stopPropagation(); return copy(D.copy); }
+  if (D.cdst) { ST.cd.st = D.cdst; LS.set('cd', ST.cd); return render(); }
   if (D.sopf) { ST.sopF = D.sopf; return render(); }
   if (D.sopopen) { ST.sopOpen = ST.sopOpen === D.sopopen ? null : D.sopopen; return render(); }
   if (D.gosop) { e.preventDefault(); ST.decLevel = 'sop'; LS.set('decLevel', 'sop'); ST.page = 'decide'; LS.set('page', 'decide'); loadingView(); window.scrollTo(0, 0); return render(); }
@@ -2429,6 +2501,7 @@ document.addEventListener('change', e => {
     if (t.value === 'custom') { const [s, u] = curRange(); ST.since = s === 'lifetime' ? addD(todayJkt(), -30) : s; ST.until = u === 'lifetime' ? addD(todayJkt(), -1) : u; }
     ST.preset = t.value; LS.set('preset', ST.preset); LS.set('since', ST.since); LS.set('until', ST.until); loadingView(); return render();
   }
+  if (t.id === 'cdSort') { ST.cd.sort = t.value; LS.set('cd', ST.cd); return render(); }
   if (t.id === 'diagSel') { ST.diagCamp = t.value; return render(); }
   if (t.id === 'audDays') { audS().days = +t.value; audSave(); loadingView(); return render(); }
   if (t.dataset && t.dataset.sopdone) { const sd = sopDone(); sd.m[t.dataset.sopdone] = t.checked; LS.set(sd.k, sd.m); return render(); }
@@ -2452,6 +2525,7 @@ document.addEventListener('change', e => {
   if (map[t.id]) { ST.cf[map[t.id][0]] = map[t.id][1]; LS.set('cf', ST.cf); return render(); }
 });
 document.addEventListener('input', e => {
+  if (e.target.id === 'cdQ') { clearTimeout(window._cq); const v = e.target.value; window._cq = setTimeout(() => { ST.cd.q = v; LS.set('cd', ST.cd); render().then(() => { const q = $('cdQ'); if (q) { q.focus(); q.setSelectionRange(v.length, v.length); } }); }, 250); return; }
   if (e.target.id === 'trQ') { ST.trQ = e.target.value; const pl = $('plist'); if (pl) pl.innerHTML = pickerList(); return; }
   if (e.target.id === 'logQ') { clearTimeout(window._lq); const v = e.target.value; window._lq = setTimeout(() => { ST.logF = Object.assign({ cat: 'all', actor: '', q: '', merge: true }, ST.logF, { q: v }); render().then(() => { const q = $('logQ'); if (q) { q.focus(); q.setSelectionRange(v.length, v.length); } }); }, 300); return; }
   if (e.target.id === 'audQ') { clearTimeout(window._aq); const v = e.target.value; window._aq = setTimeout(() => { audS().q = v; render().then(() => { const q = $('audQ'); if (q) { q.focus(); q.setSelectionRange(v.length, v.length); } }); }, 250); return; }
@@ -2610,7 +2684,7 @@ async function pageBoard() {
 
 /* ---------- BLACKHOLE (rulebook B1–B7) ---------- */
 const RULEBOOK_URL = 'https://claude.ai/artifact/CNpxcruZqazmcCimWFioQt';
-const BH_NAME = { B1: 'Biaya per lead lewat batas', B1b: 'CPA lewat batas', B2: 'Hook gagal', B3: 'Trafik sampah', B4: 'Kosong 3 hari → turun budget', B5: 'Penempatan bocor', B6: 'Segmen bocor', B7: 'Campaign jelek → matikan' };
+const BH_NAME = { B1: 'Cost per contact lewat batas', B1b: 'CPA lewat batas', B2: 'Hook gagal', B3: 'Trafik sampah', B4: 'Kosong 3 hari → turun budget', B5: 'Penempatan bocor', B6: 'Segmen bocor', B7: 'Campaign jelek → matikan' };
 const PLAT = { facebook: 'Facebook', instagram: 'Instagram', audience_network: 'Audience Network', messenger: 'Messenger', whatsapp: 'WhatsApp', threads: 'Threads', unknown: 'Lainnya' };
 /* =====================================================================
    AUDIENCE INSIGHTS — demografi, platform, perilaku, perangkat
@@ -2932,10 +3006,10 @@ function openRules() {
   const pcx = n => String(+(n * 100).toFixed(1)).replace('.', ',') + '%';
   const st = Math.round(K.stepUp * 100) + '%';
   const rows = [
-    ['1', 'test', 'Masih testing', `Belum ada purchase, biaya per lead ≤ ${rp(K.cplKill)} (atau spend &lt; ${rp(K.cplKill)}), spend &lt; ${rp(K.cpaKill)}.`, 'Lanjut. Iklan yang hampir tidak dapat budget di ASC/CBO belum benar-benar dites, bukan jelek.'],
-    ['2', 'kill', 'Matikan', `• <b>B1</b> spend ≥ ${rp(K.cplKill)} &amp; biaya per lead &gt; ${rp(K.cplKill)} (0 lead termasuk) di jendela 3D/7D/14D — kecuali sudah laku dengan CPA ≤ ${rp(K.cpaKill)}<br>• <b>B1b</b> spend ≥ ${rp(K.cpaKill)} &amp; CPA &gt; ${rp(K.cpaKill)} (0 purchase termasuk) di jendela 3D/7D/14D<br>• <b>B2</b> hook gagal: Link CTR &lt; ${pcx(K.ctrKill)} setelah ${K.earlyImpr.toLocaleString('id-ID')} impresi<br>• <b>B3</b> trafik sampah`, 'Matikan. Tidak ada "sehari lagi".'],
-    ['3', 'diag', 'Angka awal bagus, 0 purchase', `Link CTR ≥ ${pcx(K.ctrGood)} &amp; LPV/klik ≥ ${pcx(K.lpvGood)}, lead sehat, belum ada purchase. Batas akhir ${rp(K.cpaKill)} tanpa purchase (B1b).`, 'Ada initiate checkout → cek checkout / pembayaran / tracking. Tidak ada → copy tidak nyambung dengan landing page.'],
-    ['', 'good', 'Konten bagus', `≥ ${K.goodP} purchase, CPA ≤ ${rp(K.cpaKill)}, biaya per lead ≤ ${rp(K.cplKill)}.`, 'Kandidat dipindah ke campaign ASC (wajib kalau campaign testing-nya dimatikan).'],
+    ['1', 'test', 'Masih testing', `Belum ada purchase, cost per contact ≤ ${rp(K.cplKill)} (atau spend &lt; ${rp(K.cplKill)}), spend &lt; ${rp(K.cpaKill)}.`, 'Lanjut. Iklan yang hampir tidak dapat budget di ASC/CBO belum benar-benar dites, bukan jelek.'],
+    ['2', 'kill', 'Matikan', `• <b>B1</b> spend ≥ ${rp(K.cplKill)} &amp; cost per contact &gt; ${rp(K.cplKill)} (0 contact termasuk) di jendela 3D/7D/14D — kecuali sudah laku dengan CPA ≤ ${rp(K.cpaKill)}<br>• <b>B1b</b> spend ≥ ${rp(K.cpaKill)} &amp; CPA &gt; ${rp(K.cpaKill)} (0 purchase termasuk) di jendela 3D/7D/14D<br>• <b>B2</b> hook gagal: Link CTR &lt; ${pcx(K.ctrKill)} setelah ${K.earlyImpr.toLocaleString('id-ID')} impresi<br>• <b>B3</b> trafik sampah`, 'Matikan. Tidak ada "sehari lagi".'],
+    ['3', 'diag', 'Angka awal bagus, 0 purchase', `Link CTR ≥ ${pcx(K.ctrGood)} &amp; LPV/klik ≥ ${pcx(K.lpvGood)}, cost per contact sehat, belum ada purchase. Batas akhir ${rp(K.cpaKill)} tanpa purchase (B1b).`, 'Ada initiate checkout → cek checkout / pembayaran / tracking. Tidak ada → copy tidak nyambung dengan landing page.'],
+    ['', 'good', 'Konten bagus', `≥ ${K.goodP} purchase, CPA ≤ ${rp(K.cpaKill)}, cost per contact ≤ ${rp(K.cplKill)}.`, 'Kandidat dipindah ke campaign ASC (wajib kalau campaign testing-nya dimatikan).'],
     ['4', 'refresh', 'Pernah purchase, lalu kosong', `Terbukti = ≥ ${K.provenP} purchase &amp; ROAS ≥ ${xx(C.cutoff)} dalam ${lb} hari. Kosong masih wajar selama spend kosong &lt; ${k(K.streakMult)} CPA historis iklan itu.`, `Di bawah batas → <b>Tahan</b>. Lewat batas → turunkan ${st}; ada tanda jenuh → buat hook 3 detik baru, body tetap.`],
     ['5', 'revert', 'Winner gagal setelah scale', `Budget naik dalam ${K.scaleLook} hari terakhir, sebelumnya ROAS ≥ ${xx(C.cutoff)}, sesudahnya 0 purchase atau ROAS &lt; ${xx(C.cutoff)}.`, `Tunggu ${K.waitScale} hari → kembalikan ke budget lama, jangan pause.`],
     ['', 'winner', 'Winner', `≥ ${K.winP} purchase di ≥ ${K.winDays} hari berbeda, ROAS ≥ ${xx(C.minRoas)}, spend ≥ ${k(K.winSpendMult)} CPA maks (${v(K.winSpendMult)}).`, `Siap scale: naik ${st} saat ROAS 3D &amp; 7D ≥ ${xx(C.minRoas)}, atau pindahkan ke ASC dengan post ID yang sama.`]
@@ -2947,7 +3021,7 @@ function openRules() {
   </tbody></table></div>
   <h3 style="font-size:15px;margin:18px 0 6px">Blackhole B1–B7 <span class="small muted" style="font-weight:400">— cukup satu terpenuhi; tampil di Decision Board</span></h3>
   <div class="tw"><table class="rtab" style="min-width:640px"><thead><tr><th>Kode</th><th>Kriteria</th><th>Batas</th></tr></thead><tbody>
-  <tr><td>B1</td><td>Biaya per lead lewat batas (3D/7D/14D)</td><td>Spend ≥ ${rp(K.cplKill)} &amp; biaya per lead &gt; ${rp(K.cplKill)}</td></tr>
+  <tr><td>B1</td><td>Cost per contact lewat batas (3D/7D/14D)</td><td>Spend ≥ ${rp(K.cplKill)} &amp; cost per contact &gt; ${rp(K.cplKill)}</td></tr>
   <tr><td>B1b</td><td>CPA lewat batas (3D/7D/14D)</td><td>Spend ≥ ${rp(K.cpaKill)} &amp; CPA &gt; ${rp(K.cpaKill)}</td></tr>
   <tr><td>B2</td><td>Hook gagal</td><td>Link CTR &lt; ${pcx(K.ctrKill)} setelah ${K.earlyImpr.toLocaleString('id-ID')} impresi &amp; ${rp(K.earlySpend)}</td></tr>
   <tr><td>B3</td><td>Trafik sampah: LPV banyak, 0 checkout (30 hari atau 7 hari terakhir)</td><td>LPV ≥ ${k(K.junkMult)} LPV per purchase di closing sehat (${accs.map(a => `<span style="white-space:nowrap">${esc(a.l)} <b>${fin((TH(a.i) || {}).junkLpv) ? Math.round(TH(a.i).junkLpv) : K.junkLpv} LPV</b></span>`).join(' · ')})</td></tr>
@@ -2965,7 +3039,7 @@ function openRules() {
   <tr><td>Selain itu</td><td>—</td><td>Tahan</td></tr>
   </tbody></table></div>
   <div class="small muted" style="margin-top:6px">Sebelum mematikan, cek pengecualian di <a href="${RULEBOOK_URL}" target="_blank" rel="noopener">rulebook</a>: winner yang kosong &lt; 2× CPA historis, baru di-scale atau dipindah (&lt; 3 hari), hampir tidak dapat budget, campaign WA yang closing-nya belum terlacak.</div>
-  <div class="small muted" style="margin-top:10px">Urutan cek (rulebook v2): kasus 5 → trafik sampah (B3) → CPA lewat batas (B1b) → biaya per lead lewat batas (B1) → belum pernah purchase (hook gagal → diagnosa → testing) → konten bagus → kasus 4 → winner. Dashboard hanya memberi label — tidak mengubah apa pun di akun.</div>`, 'wide pad');
+  <div class="small muted" style="margin-top:10px">Urutan cek (rulebook v2): kasus 5 → trafik sampah (B3) → CPA lewat batas (B1b) → cost per contact lewat batas (B1) → belum pernah purchase (hook gagal → diagnosa → testing) → konten bagus → kasus 4 → winner. Dashboard hanya memberi label — tidak mengubah apa pun di akun.</div>`, 'wide pad');
 }
 
 /* ---------- settings ---------- */
@@ -2979,7 +3053,7 @@ function openSettings() {
     <div><label>Umur minimal sebelum evaluasi (hari)</label><input class="inp" id="sAge" type="number" value="${S.minAge}"></div>
     <div><label>Cost per contact maksimal (Rp)</label><input class="inp" id="sCpc" type="number" value="${S.maxCpc}"></div>
     <div style="grid-column:1/-1;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><b style="font-size:14px">Rule konten &amp; SOP (rulebook v2)</b> <span class="small muted">— berlaku untuk semua iklan; SOP budget untuk campaign Testing &amp; ASC</span></div>
-    <div><label>B1 · Matikan kalau biaya per lead &gt; (Rp)</label><input class="inp" id="sCpl" type="number" step="10000" value="${S.content.cplKill}"></div>
+    <div><label>B1 · Matikan kalau cost per contact &gt; (Rp)</label><input class="inp" id="sCpl" type="number" step="10000" value="${S.content.cplKill}"></div>
     <div><label>B1b · Matikan kalau CPA &gt; (Rp) · juga batas konten bagus</label><input class="inp" id="sCpaK" type="number" step="50000" value="${S.content.cpaKill}"></div>
     <div><label>SOP · naik / turun budget (%)</label><input class="inp" id="sStep" type="number" step="1" value="${S.content.stepUp}"></div>
     <div><label>SOP · hari tanpa purchase sebelum turun budget</label><input class="inp" id="sZero" type="number" step="1" value="${S.content.zeroCut}"></div>

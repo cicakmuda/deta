@@ -50,7 +50,7 @@
       placeMult: 1.5,    // B5: penempatan spend ≥ 1,5× CPA maks, 0 checkout
       segMult: 3,        // B6: segmen usia/gender spend ≥ 3× CPA maks, ≤ 1 purchase
       // ---- Rulebook v2 (SOP testing & ASC) ----
-      cplKill: 250000,   // B1: spend ≥ ini & biaya per lead (pixel Lead) > ini → matikan
+      cplKill: 250000,   // B1: spend ≥ ini & cost per contact (event Contact) > ini → matikan
       cpaKill: 1500000,  // B1b: spend ≥ ini & CPA > ini → matikan; konten bagus = CPA ≤ ini
       sopWin: [3, 7, 14],// jendela hari untuk B1/B1b
       goodP: 1,          // konten bagus: minimal purchase
@@ -300,7 +300,7 @@
     var hist = p ? sp / p : NaN, leak = leakStreak(map, t);
     var m = { spend: sp, purch: p, value: all[9], roas: R, ctr: ct, lpvRate: lpvR, ic: all[7], impr: all[1], cpa: hist,
       s7: d7[0], p7: d7[8], r7: roas(d7), streakN: leak.n, streakSpend: leak.spend, age: ctx.age, maxCpa: mc,
-      leads: all[17] || 0, cpl: all[17] ? sp / all[17] : NaN, cpaKill: K.cpaKill, cplKill: K.cplKill };
+      leads: all[10] || 0, cpl: all[10] ? sp / all[10] : NaN, cpaKill: K.cpaKill, cplKill: K.cplKill };
     var leadOn = ctx.leadOn !== false;
     var goodLead = all[1] >= K.earlyImpr && ct >= K.ctrGood && (!all[5] || !(all[4] >= 30) || lpvR >= K.lpvGood);
     var pDays = 0; [t].concat(days(t, K.lookback)).forEach(function (d) { if (map[d] && map[d][8] > 0) pDays++; });
@@ -351,8 +351,8 @@
       return out('kill', 'Matikan — trafik sampah', 'B3');
     }
 
-    // ---- Rulebook v2 · B1 biaya per lead & B1b CPA batas, jendela 3D/7D/14D (termasuk hari ini) ----
-    var W = K.sopWin.map(function (n) { var v = sum(map, [t].concat(days(t, n - 1))); return { n: n, sp: v[0], ld: v[17] || 0, p: v[8] }; });
+    // ---- Rulebook v2 · B1 cost per contact & B1b CPA batas, jendela 3D/7D/14D (termasuk hari ini) ----
+    var W = K.sopWin.map(function (n) { var v = sum(map, [t].concat(days(t, n - 1))); return { n: n, sp: v[0], ld: v[10] || 0, p: v[8] }; });
     m.win = W;
     for (var wi = 0; wi < W.length; wi++) {
       var w = W[wi];
@@ -364,11 +364,11 @@
     }
     if (leadOn) for (var wj = 0; wj < W.length; wj++) {
       var u = W[wj];
-      if (u.p && u.sp / u.p <= K.cpaKill) continue;            // sudah laku dengan CPA wajar → lead tidak jadi patokan
+      if (u.p && u.sp / u.p <= K.cpaKill) continue;            // sudah laku dengan CPA wajar → contact tidak jadi patokan
       if (u.sp >= K.cplKill && (!u.ld || u.sp / u.ld > K.cplKill)) {
-        res.reasons.push('Dalam ' + u.n + ' hari: spend ' + rp(u.sp) + ', ' + (u.ld ? u.ld + ' lead (biaya per lead ' + rp(u.sp / u.ld) + ')' : '0 lead') + ' — lewat batas ' + rp(K.cplKill) + ' per lead.');
-        lim(u.ld ? u.sp / u.ld : u.sp, K.cplKill, 'Biaya per lead ' + u.n + 'D vs batas ' + rp(K.cplKill));
-        return out('kill', 'Matikan — biaya per lead lewat batas', 'B1');
+        res.reasons.push('Dalam ' + u.n + ' hari: spend ' + rp(u.sp) + ', ' + (u.ld ? u.ld + ' contact (cost per contact ' + rp(u.sp / u.ld) + ')' : '0 contact') + ' — lewat batas ' + rp(K.cplKill) + ' per contact.');
+        lim(u.ld ? u.sp / u.ld : u.sp, K.cplKill, 'Cost per contact ' + u.n + 'D vs batas ' + rp(K.cplKill));
+        return out('kill', 'Matikan — cost per contact lewat batas', 'B1');
       }
     }
 
@@ -380,14 +380,14 @@
         return out('kill', 'Matikan — hook gagal', 'B2');
       }
       lim(sp, K.cpaKill, 'Spend vs batas ' + rp(K.cpaKill) + ' tanpa purchase');
-      var cplTxt = leadOn ? (m.leads ? m.leads + ' lead, biaya per lead ' + rp(m.cpl) : '0 lead') : 'lead tidak terlacak di akun ini';
+      var cplTxt = leadOn ? (m.leads ? m.leads + ' contact, cost per contact ' + rp(m.cpl) : '0 contact') : 'contact tidak terlacak di akun ini';
       if (goodLead) {
         res.reasons.push(ctrTxt + ' bagus' + (fin(lpvR) ? ', LPV/klik ' + pct(lpvR) : '') + ', ' + cplTxt + ', tapi belum ada purchase dari ' + rp(sp) + '. Batas matikan: ' + rp(K.cpaKill) + ' tanpa purchase.');
         if (all[7] > 0) res.reasons.push('Sudah ada ' + all[7] + ' initiate checkout → cek proses checkout / pembayaran / tracking. Cocokkan dengan order di backend.');
         else res.reasons.push('Belum ada initiate checkout → janji di iklan tidak nyambung dengan landing page, atau menarik orang yang cuma penasaran.');
         return out('diag');
       }
-      res.reasons.push('Spend ' + rp(sp) + (young ? ', umur ' + ctx.age + ' hari' : '') + ', ' + cplTxt + ' — masih dites. Matikan kalau biaya per lead > ' + rp(K.cplKill) + ' (setelah spend ' + rp(K.cplKill) + ') atau spend ' + rp(K.cpaKill) + ' tanpa purchase.');
+      res.reasons.push('Spend ' + rp(sp) + (young ? ', umur ' + ctx.age + ' hari' : '') + ', ' + cplTxt + ' — masih dites. Matikan kalau cost per contact > ' + rp(K.cplKill) + ' (setelah spend ' + rp(K.cplKill) + ') atau spend ' + rp(K.cpaKill) + ' tanpa purchase.');
       if (sp < 50000 && ctx.age >= 3) res.reasons.push('Hampir tidak dapat budget — di ASC/CBO berarti belum benar-benar dites, bukan jelek.');
       return out('test');
     }
@@ -400,7 +400,7 @@
         return out('kill', 'Matikan — CPA lewat batas', 'B1b');
       }
       if (p >= K.goodP && hist <= K.cpaKill && (!leadOn || !(m.cpl > K.cplKill))) {
-        res.reasons.push(p + ' purchase, CPA ' + rp(hist) + ' (≤ ' + rp(K.cpaKill) + ')' + (leadOn && m.leads ? ', biaya per lead ' + rp(m.cpl) : '') + ' — konten bagus. Kandidat dipindah ke campaign ASC.');
+        res.reasons.push(p + ' purchase, CPA ' + rp(hist) + ' (≤ ' + rp(K.cpaKill) + ')' + (leadOn && m.leads ? ', cost per contact ' + rp(m.cpl) : '') + ' — konten bagus. Kandidat dipindah ke campaign ASC.');
         res.reasons.push('Belum winner: perlu ≥ ' + K.winP + ' purchase di ≥ ' + K.winDays + ' hari berbeda dengan ROAS ≥ ' + x(C.minRoas) + '.');
         lim(sp, K.cpaKill * Math.max(1, p), 'Spend vs batas CPA ' + rp(K.cpaKill) + ' × purchase');
         return out('good', 'Konten bagus — kandidat ASC');
