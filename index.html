@@ -513,7 +513,7 @@ let SESSION = LS.get('session', null);
 
 /* ---------- state ---------- */
 const ST = { main: null, ds: null, life: null, hourly: {}, reach: {}, pixels: null,
-  acc: LS.get('acc', -1), preset: LS.get('preset', '7d'), since: null, until: null,
+  acc: LS.get('acc', -1), preset: LS.get('preset', '7d'), since: LS.get('since', null), until: LS.get('until', null),
   page: ({ pixel: 'audit' })[LS.get('page', 'today')] || LS.get('page', 'today'), diagCamp: '', showInactive: false,
   audit: null, acts: null, reach7: null, rs: {}, decLevel: LS.get('decLevel', 'campaign'), trQ: '',
   pace: 'spend', decCls: 'all', decSel: null, cview: LS.get('cview', 'grid'), audSel: null, audTab: 'opt', pv: null, pvCache: {},
@@ -538,7 +538,7 @@ const xx = v => fin(v) ? v.toFixed(2).replace('.', ',') + '×' : '–';
 const dv = (a, b) => b ? a / b : NaN;
 function todayJkt() { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); }
 function hourJkt() { return parseInt(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Jakarta', hour: '2-digit', hour12: false }).format(new Date()), 10) % 24; }
-function addD(s, n) { const p = s.split('-').map(Number); return new Date(Date.UTC(p[0], p[1] - 1, p[2] + n, 12)).toISOString().slice(0, 10); }
+function addD(s, n) { if (!s) s = todayJkt(); const p = String(s).split('-').map(Number); return new Date(Date.UTC(p[0], p[1] - 1, p[2] + n, 12)).toISOString().slice(0, 10); }
 function diffD(a, b) { return Math.round((Date.parse(b + 'T12:00:00Z') - Date.parse(a + 'T12:00:00Z')) / 864e5); }
 const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 function fd(s) { if (!s || s === 'lifetime') return 'Lifetime'; const p = s.split('-'); return +p[2] + ' ' + BULAN[+p[1] - 1]; }
@@ -684,7 +684,13 @@ function presetRange(p) {
   if (n) return [addD(t, -n), addD(t, -1)];           // N hari penuh, s/d kemarin (seperti Ads Manager)
   return ['lifetime', 'lifetime'];
 }
-function curRange() { return ST.preset === 'custom' ? [ST.since, ST.until] : presetRange(ST.preset); }
+function curRange() {
+  if (ST.preset === 'custom') {
+    if (!ST.since || !ST.until) { const t = todayJkt(); ST.since = ST.since || addD(t, -7); ST.until = ST.until || addD(t, -1); }
+    return [ST.since, ST.until];
+  }
+  return presetRange(ST.preset);
+}
 function prevRange() { const [s, u] = curRange(); if (s === 'lifetime') return null; const len = diffD(s, u) + 1; return [addD(s, -len), addD(s, -1)]; }
 function rangeLabel() { const [s, u] = curRange(); if (s === 'lifetime') return 'Lifetime (seumur iklan)'; return s === u ? fd(s) : fd(s) + ' – ' + fd(u); }
 
@@ -2012,7 +2018,7 @@ async function render() {
     v.innerHTML = html;
     bindCharts();
   } catch (e) {
-    v.innerHTML = `<div class="card"><b>Gagal memuat:</b> ${esc(e.message)}</div>`;
+    console.error(e); v.innerHTML = `<div class="card"><b>Gagal memuat:</b> ${esc(e.message)} <span class="small muted">(halaman ${esc(ST.page)}, periode ${esc(ST.preset)})</span></div>`;
   }
   updLabel(); updBadges();
 }
@@ -2111,7 +2117,7 @@ document.addEventListener('click', async e => {
     case 'setBtn': return openSettings();
     case 'sbToggle': return setSidebar(!$('app').classList.contains('sbc'));
     case 'dApply': { const s = $('dSince').value, u = $('dUntil').value; if (!s || !u || s > u) return toast('Rentang tanggal tidak valid');
-      ST.preset = 'custom'; ST.since = s; ST.until = u > todayJkt() ? todayJkt() : u; loadingView(); return render(); }
+      ST.preset = 'custom'; ST.since = s; ST.until = u > todayJkt() ? todayJkt() : u; LS.set('preset', 'custom'); LS.set('since', ST.since); LS.set('until', ST.until); loadingView(); return render(); }
     case 'trApply': { const s = $('trS').value, u = $('trU').value; if (!s || !u || s > u) return toast('Rentang tanggal tidak valid');
       ST.tr.days = 'custom'; ST.tr.since = s; ST.tr.until = u > todayJkt() ? todayJkt() : u; LS.set('tr', ST.tr); loadingView(); return render(); }
     case 'loginBtn': return doLogin();
@@ -2128,7 +2134,7 @@ document.addEventListener('change', e => {
   const t = e.target; if (!t.closest('.mar-app')) return;
   if (t.id === 'perSel') {
     if (t.value === 'custom') { const [s, u] = curRange(); ST.since = s === 'lifetime' ? addD(todayJkt(), -30) : s; ST.until = u === 'lifetime' ? addD(todayJkt(), -1) : u; }
-    ST.preset = t.value; LS.set('preset', ST.preset); loadingView(); return render();
+    ST.preset = t.value; LS.set('preset', ST.preset); LS.set('since', ST.since); LS.set('until', ST.until); loadingView(); return render();
   }
   if (t.id === 'diagSel') { ST.diagCamp = t.value; return render(); }
   if (t.id === 'audDays') { audS().days = +t.value; audSave(); loadingView(); return render(); }
