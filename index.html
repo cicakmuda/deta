@@ -209,6 +209,60 @@
 .mar-app .rmeter .lbl span{white-space:nowrap}
 .mar-app .rmeter .lbl{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 8px;font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums}
 .mar-app .rbox{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.mar-app .sop2-strip{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 14px;margin-bottom:14px}
+.mar-app .sop2-slot{font-size:12px;padding:4px 10px;border-radius:999px;background:#F1F2F5;color:#3A3F49}
+.mar-app .sop2-slot.past{color:#9AA1AD;text-decoration:line-through}
+.mar-app .sop2-slot.now{background:var(--acc);color:#fff;font-weight:600}
+.mar-app .sop2-top{display:grid;grid-template-columns:minmax(0,2fr) minmax(260px,1fr);gap:16px;align-items:start;margin-bottom:16px}
+@media (max-width:960px){.mar-app .sop2-top{grid-template-columns:minmax(0,1fr)}}
+.mar-app .sop2-todo-card{display:flex;flex-direction:column;gap:14px;padding:18px 20px}
+.mar-app .sop2-todo-card .card-h{margin:0}
+.mar-app .sop2-grp{display:flex;flex-direction:column;gap:6px}
+.mar-app .sop2-gh{font-size:12px;font-weight:600;color:var(--ink2);text-transform:uppercase;letter-spacing:.04em}
+.mar-app .sop2-todo{display:flex;gap:10px;align-items:center;border:1px solid var(--line2);border-radius:10px;padding:10px 12px;font-size:13px;cursor:pointer;background:#fff}
+.mar-app .sop2-todo input{width:18px;height:18px;accent-color:var(--acc);flex:none}
+.mar-app .sop2-todo .t{flex:1;min-width:0;display:flex;flex-direction:column}
+.mar-app .sop2-todo .t .small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mar-app .sop2-todo .r{white-space:nowrap}
+.mar-app .sop2-todo.done{opacity:.5;background:#FAFAFB}
+.mar-app .sop2-todo.done b{text-decoration:line-through}
+.mar-app .sop2-empty{display:flex;gap:10px;align-items:center;background:#F4F5F7;border-radius:10px;padding:12px 14px;font-size:13px;color:#3A3F49}
+.mar-app .sop2-empty span{width:22px;height:22px;border-radius:50%;background:var(--g-soft);color:var(--g);display:grid;place-items:center;font-weight:700;flex:none}
+.mar-app .sop2-side{display:flex;flex-direction:column;gap:10px;padding:18px 20px}
+.mar-app .sop2-sr{display:grid;grid-template-columns:100px 1fr 24px;gap:10px;align-items:center;font-size:13px}
+.mar-app .sop2-sr b{text-align:right}
+.mar-app .sop2-nx{border-top:1px solid var(--line2);padding-top:12px;display:flex;flex-direction:column;gap:6px}
+.mar-app .sop2-nx>div{display:flex;justify-content:space-between;gap:8px;font-size:13px}
+.mar-app .sop2-nx span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mar-app .sop2-nx b,.mar-app .sop2-grid b{white-space:nowrap}
+.mar-app b.today{color:var(--acc)}
+.mar-app b.warn{color:#8A5A00}
+.mar-app .sop2-list{padding:0;overflow:hidden}
+.mar-app .sop2-lh{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line2)}
+.mar-app .sop2-scroll{overflow-x:auto}
+.mar-app .sop2-grid{display:grid;grid-template-columns:minmax(220px,2fr) 140px 120px 120px 130px minmax(160px,1.2fr) 100px;gap:12px;padding:12px 16px;align-items:center;min-width:1000px}
+.mar-app .sop2-grid>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.mar-app .sop2-hd{background:#F7F8FA;font-size:12px;font-weight:600;color:var(--ink2);padding-top:10px;padding-bottom:10px}
+.mar-app .sop2-row{border-top:1px solid var(--line2)}
+.mar-app .sop2-row>.sop2-grid{cursor:pointer}
+.mar-app .sop2-row>.sop2-grid:hover,.mar-app .sop2-row.open>.sop2-grid{background:#F7F9FF}
+.mar-app .sop2-nm{display:flex;gap:6px;align-items:center;min-width:0}
+.mar-app .sop2-nm b{overflow:hidden;text-overflow:ellipsis}
+.mar-app .sop2-tb{font-size:11px;font-weight:700;padding:1px 6px;border-radius:5px;flex:none}
+.mar-app .sop2-tb.asc{background:var(--ink);color:#fff}
+.mar-app .sop2-tb.testing{background:#EBEFFF;color:var(--acc)}
+.mar-app .sop2-grid>.sop2-r{flex-direction:row;gap:4px}
+.mar-app .sop2-vb{display:flex;height:8px;border-radius:4px;overflow:hidden;background:#F1F2F5;gap:1px}
+.mar-app .sop2-vb i{display:block}
+.mar-app .sop2-act{font-size:13px;padding:4px 12px}
+.mar-app .sop2-det{display:grid;grid-template-columns:minmax(260px,340px) minmax(0,1fr);gap:18px;padding:16px;background:#FAFBFC;border-top:1px dashed var(--line);min-width:1000px}
+.mar-app .sop2-why{display:flex;flex-direction:column;gap:8px}
+.mar-app .sop2-ck{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:center;font-size:13px}
+.mar-app .sop2-ck>span:first-child{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;background:#F1F2F5;color:#9AA1AD}
+.mar-app .sop2-ck>span.ok{background:var(--g-soft);color:var(--g)}
+.mar-app .sop2-ck>span.warn{background:#FFF4DB;color:#8A5A00}
+.mar-app .sop2-ck b.ok{color:var(--g)}
+.mar-app .sop2-note{font-size:12px;color:#3A3F49;background:#fff;border:1px solid var(--line2);border-radius:8px;padding:8px 10px}
 .mar-app .sop-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
 .mar-app .sop-sum .card{display:flex;align-items:baseline;gap:8px;padding:12px 14px;flex-wrap:wrap}
 .mar-app .sop-sum b{font-size:22px}
@@ -901,33 +955,79 @@ function asCopy(r) {
   return `Pindah ke ASC (${ds.accounts[r.e.a].label}) — dari ${String(r.e.n).replace(/\s*-\s*\d{4}$/, '')}:\n` + r.good.map(g => `- ${g.e.n} (ID iklan ${g.e.id}) — ${nf(g.rule.m.purch)} purchase, CPA ${rp(g.rule.m.cpa)}${g.rule.m.leads ? ', biaya/lead ' + rp(g.rule.m.cpl) : ''}`).join('\n');
 }
 const SOPT = { kill: 'c-r', down: 'c-y', up: 'c-g', hold: 'c-n', wait: 'c-b', off: 'c-n' };
+function sopDone() { const k = 'sopDone_' + todayJkt(); return { k, m: LS.get(k, {}) }; }
 function decideSop() {
-  const ds = ST.main, y = addD(todayJkt(), -1), K = Brain.cfg.content, rows = sopRows(), st = Math.round(K.stepUp * 100);
-  const cnt = {}; rows.forEach(r => { cnt[r.sop.act] = (cnt[r.sop.act] || 0) + 1; });
-  let html = head('Decision Board', `SOP budget · campaign Testing &amp; ASC · keputusan di cek jam 10:00 memakai data s/d kemarin (${fd(y)})`,
+  const ds = ST.main, t = todayJkt(), y = addD(t, -1), K = Brain.cfg.content, rows = sopRows(), st = Math.round(K.stepUp * 100), C = Brain.cfg;
+  const done = sopDone().m, h = hourJkt();
+  let html = head('Decision Board', `SOP budget · campaign Testing &amp; ASC${ST.acc >= 0 ? ' · ' + esc(ds.accounts[ST.acc].label) : ''}`,
     `<button type="button" class="btn" data-rules="1">Lihat aturan</button><div class="seg" role="group" aria-label="Level">${LVTABS().map(l => `<button type="button" class="${l[0] === 'sop' ? 'on' : ''}" data-declevel="${l[0]}">${l[1]}</button>`).join('')}</div>${accSeg()}`);
-  if (hourJkt() < 10) html += `<div class="callout" style="margin-bottom:12px">Belum jam 10:00. Saran di bawah sudah memakai data kemarin yang lengkap — eksekusi di cek jam 10 sesuai SOP.</div>`;
-  html += `<div class="sop-sum">${[['kill', 'Matikan'], ['down', 'Turun ' + st + '%'], ['up', 'Naik ' + st + '%'], ['hold', 'Tahan'], ['wait', 'Tunggu hari ke-' + K.evalDays[0]]].map(x => `<div class="card"><span class="chip ${SOPT[x[0]]}">${x[1]}</span><b>${cnt[x[0]] || 0}</b><span class="small muted">campaign</span></div>`).join('')}</div>`;
-  const mv = rows.filter(r => r.e.active && r.sop.type === 'testing' && r.good.length && (r.sop.act === 'kill' || (r.sop.day || 0) >= K.killDay));
-  if (mv.length) html += `<div class="card sop-asc"><div class="card-h"><h2>Pindah ke ASC</h2><span class="small muted">konten bagus = ada purchase, CPA ≤ ${rp(K.cpaKill)}, biaya per lead ≤ ${rp(K.cplKill)}</span></div>
-    ${mv.map(r => `<div class="sop-mv"><div style="min-width:0;flex:1"><b>${shortCamp(r.e.n)}</b> ${r.sop.act === 'kill' ? '<span class="chip c-r">campaign dimatikan → wajib pindah</span>' : '<span class="chip c-b">hari ke-' + r.sop.day + ' · kandidat</span>'}
-      <ul>${r.good.map(g => `<li>${esc(g.e.n)} <span class="small muted">· ${nf(g.rule.m.purch)} purchase · CPA ${rp(g.rule.m.cpa)}${g.rule.m.leads ? ' · biaya/lead ' + rp(g.rule.m.cpl) : ''}</span> ${ruleChip(g.rule)}</li>`).join('')}</ul></div>
-      <button type="button" class="btn sm" data-copy="${esc(asCopy(r))}">Salin daftar</button></div>`).join('')}</div>`;
+  // rutinitas cek
+  const slots = [[10, 'keputusan budget'], [15, 'pantau'], [17, 'pantau'], [21, 'tutup hari']], cur = [...slots].reverse().find(x => h >= x[0]);
+  html += `<div class="card sop2-strip"><span class="small muted">Rutinitas cek</span>${slots.map(x => `<span class="sop2-slot ${cur && x[0] === cur[0] ? 'now' : h > x[0] ? 'past' : ''}">${x[0]}:00 · ${x[1]}</span>`).join('')}<span class="small muted" style="margin-left:auto">Keputusan budget memakai data s/d kemarin (${fd(y)})</span></div>`;
   if (!rows.length) return html + `<div class="card">Tidak ada campaign Testing / ASC yang berjalan${ST.acc >= 0 ? ' di akun ini' : ''}. Campaign dikenali dari nama: <b>…Testing…</b> (tanggal di awal nama = hari ke-1, mis. <i>11Nov26 Testing …</i>) dan <b>ASC</b>.</div>`;
-  const VK = [['kill', 'matikan'], ['good', 'bagus'], ['winner', 'winner'], ['test', 'dites'], ['diag', 'diagnosa'], ['watch', 'pantau'], ['refresh', 'refresh'], ['revert', 'kembalikan'], ['hold', 'tahan']];
-  html += rows.map(r => { const s = r.sop, m = s.m, kc = {}; r.list.filter(x => x.e.active).forEach(x => { kc[x.rule.key] = (kc[x.rule.key] || 0) + 1; });
-    const vid = VK.filter(x => kc[x[0]]).map(x => `<span class="chip ${RTONE[Brain.RULES[x[0]].tone]}">${kc[x[0]]} ${x[1]}</span>`).join(' ');
-    const vl = r.list.filter(x => x.e.active).sort((a, b) => (Brain.RULES[a.rule.key].order - Brain.RULES[b.rule.key].order) || (b.rule.m.spend - a.rule.m.spend));
-    return `<details class="card sop-c" ${s.act === 'kill' || s.act === 'down' || s.act === 'up' ? 'open' : ''}><summary>
-      <div class="sop-h"><div style="min-width:0">${accChip(ds, r.e.a)}<b>${shortCamp(r.e.n, 60)}</b><div class="small muted">${s.type === 'testing' ? 'Testing' : 'ASC'}${s.day ? ' · hari ke-' + s.day : ''}${s.next ? ' · evaluasi berikutnya ' + fd(s.next) : ''}</div></div>
-        <div class="sop-k"><span><small>Budget/hari</small><b>${r.budget ? rp(r.budget) : '–'}${s.newBudget ? ' → ' + rp(s.newBudget) : ''}</b></span><span><small>ROAS 3D · 7D</small><b>${roasChip(m.r3, m.s3)} ${roasChip(m.r7, m.s7)}</b></span><span><small>Tanpa purchase</small><b>${m.z ? m.z + ' hari' : '–'}</b></span><span class="chip ${SOPT[s.act]} sop-act">${esc(s.label)}</span></div></div>
-      <div class="small" style="margin-top:6px;color:#3A3F49">${esc(s.reasons[0] || '')}${s.reasons[1] ? ' ' + esc(s.reasons[1]) : ''}</div>
-      <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">${vid || '<span class="small muted">belum ada iklan berjalan</span>'}</div></summary>
-      ${vl.length ? `<div class="tw" style="margin-top:10px"><table style="min-width:860px"><thead><tr><th>Video / iklan</th><th class="num">Spend 30D</th><th class="num">Lead · biaya/lead</th><th class="num">Purchase · CPA</th><th>Rule</th></tr></thead><tbody>
-      ${vl.map(x => { const q = x.rule.m; return `<tr><td><div class="nm" style="max-width:320px" title="${esc(x.e.n)}">${esc(x.e.n)}</div></td><td class="num">${rp(q.spend)}</td><td class="num">${nf(q.leads)} · <span class="${q.cpl > K.cplKill ? 'dn' : ''}">${q.leads ? rp(q.cpl) : '–'}</span></td><td class="num">${nf(q.purch)} · <span class="${q.purch && q.cpa > K.cpaKill ? 'dn' : ''}">${q.purch ? rp(q.cpa) : '–'}</span></td><td style="white-space:normal;min-width:260px">${ruleChip(x.rule, true)} <div class="sub2">${esc(x.rule.reasons[0] || '')}</div></td></tr>`; }).join('')}
-      </tbody></table></div>` : ''}</details>`; }).join('');
-  html += `<label class="small muted" style="display:flex;gap:6px;align-items:center;margin-top:8px"><input type="checkbox" id="inact" ${ST.showInactive ? 'checked' : ''}> tampilkan yang tidak aktif</label>
-    <div class="small muted" style="margin-top:6px">Dashboard tidak mengubah apa pun di akun. Naik/turun dihitung dari budget harian campaign (atau jumlah budget ad set aktif). Lead = event Lead pixel.</div>`;
+  const live = rows.filter(r => r.e.active);
+  // to-do
+  const todo = (id, pill, tone, title, sub, right) => `<label class="sop2-todo ${done[id] ? 'done' : ''}"><input type="checkbox" data-sopdone="${esc(id)}" ${done[id] ? 'checked' : ''}><span class="chip ${tone}">${pill}</span><span class="t"><b>${title}</b><span class="small muted">${sub}</span></span><span class="r">${right || ''}</span></label>`;
+  const bud = live.filter(r => ['up', 'down', 'kill'].includes(r.sop.act));
+  const kills = live.map(r => ({ r, k: r.list.filter(x => x.e.active && x.rule.key === 'kill') })).filter(x => x.k.length);
+  const mv = live.filter(r => r.sop.type === 'testing' && r.good.length && (r.sop.act === 'kill' || (r.sop.day || 0) >= K.killDay));
+  const mvItems = mv.flatMap(r => r.good.map(g => ({ r, g })));
+  const ids = [].concat(bud.map(r => 'b' + r.e.id), kills.flatMap(x => x.k.map(a => 'k' + a.e.id)), mvItems.map(x => 'm' + x.g.e.id));
+  const nDone = ids.filter(i => done[i]).length;
+  const holdN = live.filter(r => r.sop.act === 'hold').length, waitN = live.filter(r => r.sop.act === 'wait').length;
+  const actTxt = { up: 'Naikkan', down: 'Turunkan', kill: 'Matikan' };
+  let td = `<section class="card sop2-todo-card"><div class="card-h"><h2>Yang dikerjakan hari ini</h2><span class="small muted">${ids.length ? nDone + ' dari ' + ids.length + ' selesai' : 'tidak ada tugas'}</span></div>`;
+  td += `<div class="sop2-grp"><span class="sop2-gh">Budget campaign</span>${bud.length ? bud.map(r => todo('b' + r.e.id, actTxt[r.sop.act] + (r.sop.act !== 'kill' ? ' ' + st + '%' : ''), SOPT[r.sop.act], shortCamp(r.e.n, 60), esc(r.sop.reasons[0] || ''), r.sop.newBudget ? `<b>${rp(r.budget)} → ${rp(r.sop.newBudget)}</b>` : '')).join('')
+    : `<div class="sop2-empty"><span>✓</span>Tidak ada perubahan budget hari ini${holdN || waitN ? ' — ' + [holdN ? holdN + ' campaign ditahan' : '', waitN ? waitN + ' menunggu hari ke-' + K.evalDays[0] : ''].filter(Boolean).join(', ') : ''}.</div>`}</div>`;
+  if (kills.length) td += `<div class="sop2-grp"><span class="sop2-gh">Matikan video</span>${kills.flatMap(x => x.k.map(a => todo('k' + a.e.id, 'Matikan', 'c-r', esc(a.e.n), shortCamp(x.r.e.n, 40) + ' · ' + esc(a.rule.reasons[0] || ''), `<span class="chip c-r">${a.rule.code || ''}</span>`))).join('')}</div>`;
+  if (mvItems.length) {
+    const all = mv.map(asCopy).join('\n\n');
+    td += `<div class="sop2-grp"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span class="sop2-gh">Pindah ke ASC</span><button type="button" class="btn sm" data-copy="${esc(all)}">Salin semua (${mvItems.length})</button></div>
+      ${mvItems.map(x => todo('m' + x.g.e.id, 'Pindah', 'c-g', esc(x.g.e.n), 'dari ' + shortCamp(x.r.e.n, 40) + ' · ' + nf(x.g.rule.m.purch) + ' purchase · CPA ' + rp(x.g.rule.m.cpa) + (x.g.rule.m.leads ? ' · per lead ' + rp(x.g.rule.m.cpl) : ''), ruleChip(x.g.rule))).join('')}</div>`;
+  }
+  td += `<span class="small muted">Centang tersimpan di browser ini sampai besok. Dashboard tidak mengubah apa pun di akun.</span></section>`;
+  // ringkasan
+  const cnt = {}; live.forEach(r => { cnt[r.sop.act] = (cnt[r.sop.act] || 0) + 1; });
+  const S = [['up', 'Naik ' + st + '%', '#17804A'], ['down', 'Turun ' + st + '%', '#E8A23B'], ['kill', 'Matikan', '#C0352F'], ['hold', 'Tahan', '#9AA1AD'], ['wait', 'Tunggu', '#2F54EB']];
+  const nexts = live.filter(r => r.sop.next).sort((a, b) => a.sop.next < b.sop.next ? -1 : 1).slice(0, 6);
+  const side = `<aside class="card sop2-side"><b style="font-size:15px">Status ${live.length} campaign</b>${S.map(s => `<div class="sop2-sr"><span class="chip ${SOPT[s[0]]}">${s[1]}</span><span class="aud-bar"><i style="width:${(cnt[s[0]] || 0) / Math.max(1, live.length) * 100}%;background:${s[2]}"></i></span><b>${cnt[s[0]] || 0}</b></div>`).join('')}
+    <div class="sop2-nx"><b style="font-size:13px">Evaluasi berikutnya</b>${nexts.map(r => `<div><span>${shortCamp(r.e.n, 34)}</span><b class="${r.sop.next === t ? 'today' : ''}">${r.sop.next === t ? 'Hari ini' : fd(r.sop.next)}</b></div>`).join('') || '<span class="small muted">–</span>'}</div></aside>`;
+  html += `<div class="sop2-top">${td}${side}</div>`;
+  // daftar campaign
+  const grp = r => ['up', 'down', 'kill'].includes(r.sop.act) ? 'act' : r.sop.act === 'wait' ? 'wait' : r.sop.act === 'hold' ? 'hold' : 'off';
+  const f = ST.sopF || 'all', list = rows.filter(r => f === 'all' || grp(r) === f);
+  const fc = k => rows.filter(r => k === 'all' || grp(r) === k).length;
+  const VC = { kill: '#C0352F', good: '#17804A', winner: '#0F5E35', test: '#2F54EB', diag: '#6E8BFF', watch: '#E8A23B', refresh: '#E8A23B', revert: '#C0352F', hold: '#9AA1AD', tof: '#E8A23B' };
+  const VN = { kill: 'matikan', good: 'bagus', winner: 'winner', test: 'dites', diag: 'diagnosa', watch: 'pantau', refresh: 'refresh', revert: 'kembalikan', hold: 'tahan', tof: 'top funnel' };
+  const ck = (ok, n, v, warn) => `<div class="sop2-ck"><span class="${ok ? 'ok' : warn ? 'warn' : ''}">${ok ? '✓' : warn ? '!' : '✕'}</span><span>${n}</span><b class="${ok ? 'ok' : warn ? 'warn' : ''}">${v}</b></div>`;
+  html += `<section class="card sop2-list"><div class="sop2-lh"><div class="seg soft" role="tablist" aria-label="Filter">${[['all', 'Semua'], ['act', 'Perlu aksi'], ['hold', 'Tahan'], ['wait', 'Tunggu']].map(x => `<button type="button" class="${f === x[0] ? 'on' : ''}" data-sopf="${x[0]}">${x[1]} <b>${fc(x[0])}</b></button>`).join('')}</div><span class="small muted">Klik baris untuk melihat alasan &amp; video</span></div>
+    <div class="sop2-scroll"><div class="sop2-grid sop2-hd"><span>Campaign</span><span>Jadwal evaluasi</span><span>Budget/hari</span><span>ROAS 3D · 7D</span><span>Tanpa purchase</span><span>Video</span><span style="text-align:right">Saran</span></div>
+    ${list.map(r => { const s = r.sop, m = s.m, open = ST.sopOpen === r.e.id;
+      const va = r.list.filter(x => x.e.active), kc = {}; va.forEach(x => { kc[x.rule.key] = (kc[x.rule.key] || 0) + 1; });
+      const ks = Object.keys(kc).sort((a, b) => Brain.RULES[a].order - Brain.RULES[b].order);
+      const zTxt = m.z >= K.zeroCut ? 'lewat batas ' + K.zeroCut + ' hari' : m.z === K.zeroCut - 1 ? 'besok kosong lagi → turun ' + st + '%' : m.z ? 'masih aman' : 'ada purchase kemarin';
+      const dayTxt = s.type === 'testing' ? 'Testing · hari ke-' + (s.day || '?') : 'ASC · tiap ' + K.evalEvery + ' hari';
+      let det = '';
+      if (open) {
+        const checks = (s.type === 'testing' && s.day != null && s.day < K.evalDays[0]) ? ck(false, 'Hari ke-' + K.evalDays[0] + ' tercapai', 'hari ke-' + s.day) + ck(true, 'Aturan per video', 'aktif')
+          : ck(m.r3 >= C.minRoas && m.p3 >= 1, 'ROAS 3D ≥ ' + xx(C.minRoas), xx(m.r3)) + ck(m.r7 >= C.minRoas, 'ROAS 7D ≥ ' + xx(C.minRoas), xx(m.r7))
+            + ck(m.z < K.zeroCut, 'Kurang dari ' + K.zeroCut + ' hari tanpa purchase', m.z + ' hari', m.z === K.zeroCut - 1) + ck(!!m.isEval, 'Hari evaluasi', m.isEval ? 'hari ini' : fd(s.next));
+        const vl = va.sort((a, b) => (Brain.RULES[a.rule.key].order - Brain.RULES[b.rule.key].order) || (b.rule.m.spend - a.rule.m.spend));
+        det = `<div class="sop2-det"><div class="sop2-why"><b>Kenapa "${esc(s.label)}"</b>${checks}<div class="sop2-note">${esc(s.reasons.join(' '))}</div></div>
+          <div class="tw" style="margin:0"><table style="min-width:640px"><thead><tr><th>Video</th><th class="num">Spend 30D</th><th class="num">Lead · per lead</th><th class="num">Purchase · CPA</th><th>Status</th></tr></thead><tbody>
+          ${vl.map(x => { const q = x.rule.m; return `<tr><td><div class="nm" style="max-width:280px" title="${esc(x.e.n)}">${esc(x.e.n)}</div></td><td class="num">${rp(q.spend)}</td><td class="num">${nf(q.leads)} · <span class="${q.cpl > K.cplKill ? 'dn' : ''}">${q.leads ? rp(q.cpl) : '–'}</span></td><td class="num">${nf(q.purch)} · <span class="${q.purch && q.cpa > K.cpaKill ? 'dn' : ''}">${q.purch ? rp(q.cpa) : '–'}</span></td><td style="white-space:normal;min-width:200px">${ruleChip(x.rule, true)}<div class="sub2">${esc(x.rule.reasons[0] || '')}</div></td></tr>`; }).join('') || '<tr><td colspan="5" class="empty">Belum ada video aktif</td></tr>'}
+          </tbody></table></div></div>`;
+      }
+      return `<div class="sop2-row ${open ? 'open' : ''}"><div class="sop2-grid" role="button" tabindex="0" data-sopopen="${r.e.id}">
+        <div style="min-width:0"><div class="sop2-nm"><span class="sop2-tb ${s.type}">${s.type === 'testing' ? 'Testing' : 'ASC'}</span>${accChip(ds, r.e.a)}<b title="${esc(r.e.n)}">${shortCamp(r.e.n, 60)}</b></div></div>
+        <div><b class="${s.next === t ? 'today' : ''}">${s.act === 'off' ? '–' : s.next === t ? 'Hari ini' : s.next ? fd(s.next) : '–'}</b><span class="small muted">${dayTxt}</span></div>
+        <div><b>${r.budget ? rp(r.budget) : '–'}</b><span class="small ${s.newBudget ? '' : 'muted'}">${s.newBudget ? '→ ' + rp(s.newBudget) : 'tetap'}</span></div>
+        <div class="sop2-r">${roasChip(m.r3, m.s3)}${roasChip(m.r7, m.s7)}</div>
+        <div><b class="${m.z >= K.zeroCut ? 'dn' : m.z === K.zeroCut - 1 ? 'warn' : ''}">${m.z} hari</b><span class="small muted">${zTxt}</span></div>
+        <div><span class="sop2-vb">${ks.map(k => `<i style="flex:${kc[k]};background:${VC[k] || '#9AA1AD'}"></i>`).join('')}</span><span class="small">${ks.map(k => kc[k] + ' ' + (VN[k] || k)).join(' · ') || 'belum ada video'}</span></div>
+        <div style="text-align:right"><span class="chip ${SOPT[s.act]} sop2-act">${esc(s.label)}</span></div></div>${det}</div>`; }).join('') || '<div class="empty" style="padding:16px">Tidak ada campaign di filter ini.</div>'}
+    </div></div></section>
+    <label class="small muted" style="display:flex;gap:6px;align-items:center;margin-top:8px"><input type="checkbox" id="inact" ${ST.showInactive ? 'checked' : ''}> tampilkan yang tidak aktif</label>`;
   return html;
 }
 function sopChecklist() {
@@ -2238,13 +2338,15 @@ function setSidebar(c) {
 /* =====================================================================
    EVENTS
    ===================================================================== */
-const SEL = '[data-gosop],[data-dtab],[data-audtab],[data-audrun],[data-audall],[data-audheat],[data-lbm],[data-rules],[data-logrow],[data-lact],[data-lcat],[data-decnav],[data-page],[data-acc],[data-camp],[data-concept],[data-copy],[data-sort],[data-del],[data-declevel],[data-dcls],[data-sel],[data-addnote],[data-tmode],[data-tdays],[data-tgran],[data-tmetric],[data-tm1],[data-trm],[data-ent],[data-cmp],[data-cview],[data-pace],[data-pix],[data-atab],[data-pvnav],[data-pvad],[data-pfmt],[data-close],#noteAdd,#audRef,#mclose,#refBtn,#setBtn,#dApply,#trApply,#loginBtn,#saveSet,#logoutBtn,#sbToggle';
+const SEL = '[data-sopf],[data-sopopen],[data-gosop],[data-dtab],[data-audtab],[data-audrun],[data-audall],[data-audheat],[data-lbm],[data-rules],[data-logrow],[data-lact],[data-lcat],[data-decnav],[data-page],[data-acc],[data-camp],[data-concept],[data-copy],[data-sort],[data-del],[data-declevel],[data-dcls],[data-sel],[data-addnote],[data-tmode],[data-tdays],[data-tgran],[data-tmetric],[data-tm1],[data-trm],[data-ent],[data-cmp],[data-cview],[data-pace],[data-pix],[data-atab],[data-pvnav],[data-pvad],[data-pfmt],[data-close],#noteAdd,#audRef,#mclose,#refBtn,#setBtn,#dApply,#trApply,#loginBtn,#saveSet,#logoutBtn,#sbToggle';
 document.addEventListener('click', async e => {
   const el = e.target.closest(SEL);
   if (!el || !el.closest('.mar-app')) return;
   const D = el.dataset;
   if (el.tagName === 'A') e.preventDefault();
   if (D.copy) { e.stopPropagation(); return copy(D.copy); }
+  if (D.sopf) { ST.sopF = D.sopf; return render(); }
+  if (D.sopopen) { ST.sopOpen = ST.sopOpen === D.sopopen ? null : D.sopopen; return render(); }
   if (D.gosop) { e.preventDefault(); ST.decLevel = 'sop'; LS.set('decLevel', 'sop'); ST.page = 'decide'; LS.set('page', 'decide'); loadingView(); window.scrollTo(0, 0); return render(); }
   if (D.dtab) { e.preventDefault(); ST.diagTab = D.dtab; LS.set('diagTab', D.dtab); return render(); }
   if (D.audtab) { audS().tab = D.audtab; audSave(); return render(); }
@@ -2317,6 +2419,7 @@ document.addEventListener('change', e => {
   }
   if (t.id === 'diagSel') { ST.diagCamp = t.value; return render(); }
   if (t.id === 'audDays') { audS().days = +t.value; audSave(); loadingView(); return render(); }
+  if (t.dataset && t.dataset.sopdone) { const sd = sopDone(); sd.m[t.dataset.sopdone] = t.checked; LS.set(sd.k, sd.m); return render(); }
   if (t.id === 'audSort') { audS().sort = t.value; audSave(); return render(); }
   if (t.id === 'audCmp') { audS().cmp = t.checked; audSave(); return render(); }
   if (t.dataset && t.dataset.audc) { audS(); if (t.checked) delete ST.audX[t.dataset.audc]; else ST.audX[t.dataset.audc] = 1; audSave(); return render(); }
