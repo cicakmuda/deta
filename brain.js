@@ -509,7 +509,9 @@
     if (type === 'testing' && day != null) {
       var nx = K.evalDays.filter(function (d) { return d > day; })[0]; if (nx == null) nx = day + (K.evalEvery - (day - K.killDay) % K.evalEvery);
       res.next = addD(start, nx - 1);
-    } else res.next = ev[0] ? addD(ev[0].date, K.evalEvery) : null;
+    } else res.next = ev[0] ? addD(ev[0].date, K.evalEvery) : t;
+    if (res.next && res.next < t) res.next = t;
+    m.isEval = isEval;
     // matikan: 3 hari tanpa purchase setelah dipotong, atau 6 hari kosong beruntun
     var sinceCut = lastDown ? diffD(lastDown.date, y) + 1 : 0;
     if ((lastDown && sinceCut >= K.zeroCut && z >= sinceCut) || z >= 2 * K.zeroCut) {
