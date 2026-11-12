@@ -468,6 +468,73 @@
 .mar-app .lstat{padding:14px 18px;border-right:1px solid var(--line2);display:flex;flex-direction:column;gap:2px}
 .mar-app .lstat:last-child{border-right:0}
 .mar-app .lstat .l{font-size:12px;color:var(--ink2)} .mar-app .lstat .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums} .mar-app .lstat .s{font-size:12px;color:var(--ink3)}
+.mar-app .modal.drw{padding:0;justify-content:flex-end;align-items:stretch}
+.mar-app .mbox.drw{max-width:460px;border-radius:0;min-height:100%;box-shadow:-8px 0 24px rgba(0,0,0,.12)}
+.mar-app .am-dr{display:flex;flex-direction:column;min-height:100%}
+.mar-app .am-drh{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line2);position:sticky;top:0;background:#fff;z-index:2}
+.mar-app .am-drh h2{font-size:16px;margin:2px 0 0;line-height:1.3;word-break:break-word}
+.mar-app .am-why{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.mar-app .am-drb{padding:16px 20px 24px;display:flex;flex-direction:column;gap:16px}
+.mar-app .am-tiles{grid-template-columns:repeat(3,1fr)}
+.mar-app .am-kv{display:grid;grid-template-columns:130px 1fr;gap:8px;font-size:13px;padding:7px 0;border-top:1px solid #F1F2F5}
+.mar-app .am-kv span:first-child{color:var(--ink3)}
+.mar-app .am-ptabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:14px}
+.mar-app .am-ptabs button{height:40px;padding:0 14px;border:0;background:transparent;font-size:14px;color:var(--ink2);border-bottom:2px solid transparent;margin-bottom:-1px}
+.mar-app .am-ptabs button.on{color:var(--ink);font-weight:600;border-bottom-color:var(--acc)}
+.mar-app .am-views{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.mar-app .am-views button{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:10px;background:#fff;border:1px solid #D5D9E0;font-size:14px;color:var(--ink)}
+.mar-app .am-views button.on{border:1.5px solid #1D4FD8;color:#1D4FD8;font-weight:600}
+.mar-app .am-filter{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px 8px;margin-bottom:14px}
+.mar-app .am-fchip{display:inline-flex;align-items:center;gap:6px;background:#F1F2F5;border:1px solid var(--line);border-radius:7px;padding:3px 4px 3px 10px;font-size:13px}
+.mar-app .am-fchip button{border:0;background:transparent;width:24px;height:24px;color:var(--ink2)}
+.mar-app #amQ{flex:1 1 220px;height:32px;border:0;font:inherit;font-size:13px;outline:none;background:transparent}
+.mar-app .am-tabs{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end}
+.mar-app .am-tab{display:flex;align-items:center;gap:8px;padding:11px 16px;border-radius:12px 12px 0 0;cursor:pointer;font-size:14px;font-weight:600;border:1px solid var(--line);border-bottom:0;background:#EDEFF3;color:var(--ink)}
+.mar-app .am-tab.on{background:#fff;color:#1D4FD8;position:relative;z-index:1;padding-bottom:13px;margin-bottom:-1px}
+.mar-app .am-sel{display:inline-flex;align-items:center;background:#1D4FD8;color:#fff;border-radius:6px;padding:2px 4px 2px 8px;font-size:12px}
+.mar-app .am-sel button{border:0;background:transparent;color:#fff;font-size:12px;padding:0 2px 0 6px}
+.mar-app .am-card{border-top-left-radius:0;padding:0;overflow:hidden}
+.mar-app .am-bar{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--line2)}
+.mar-app .am-tw{border:0;border-radius:0}
+.mar-app .am-tb{min-width:1180px}
+.mar-app .am-tb .am-ck{width:36px;padding-right:0}
+.mar-app .am-tb .am-nm{min-width:240px;max-width:340px}
+.mar-app .am-n{display:flex;gap:8px;align-items:center;min-width:0}
+.mar-app .am-dot{flex:none;width:8px;height:8px;border-radius:50%;background:#B7BCC6}
+.mar-app .am-dot.on{background:#1F9D55}
+.mar-app .am-th{flex:none;width:30px;height:38px;border-radius:5px;object-fit:cover;background:linear-gradient(160deg,#D9DEE7,#B9C0CC)}
+.mar-app .am-link{border:0;background:transparent;padding:0;font:inherit;font-weight:600;color:var(--ink);text-align:left;max-width:290px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.mar-app .am-link:hover{color:var(--acc);text-decoration:underline}
+.mar-app .am-tb tr.am-on td{background:#F2F6FF}
+.mar-app .am-tb tr.am-tot td{background:#F7F8FA;font-weight:700}
+.mar-app .am-sctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+.mar-app .am-rec{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin-bottom:18px}
+.mar-app .am-rc{display:flex;flex-direction:column;gap:10px}
+.mar-app .am-rc.best{border:1.5px solid #1F9D55}
+.mar-app .am-rch{display:flex;justify-content:space-between;align-items:center}
+.mar-app .am-rc.best .am-rch b{color:var(--g)}
+.mar-app .am-tags{display:flex;flex-wrap:wrap;gap:5px}
+.mar-app .am-tags span{font-size:12px;background:#F1F2F5;border-radius:6px;padding:3px 8px}
+.mar-app .am-tags.blue span{background:#EBEFFF;color:#2F54EB;font-weight:600}
+.mar-app .am-rk{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mar-app .am-rk small{display:block;font-size:11.5px;color:var(--ink3)}
+.mar-app .am-rk b{font-size:17px}
+.mar-app .am-rf{border-top:1px solid #F1F2F5;padding-top:8px}
+.mar-app .am-dims{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:14px;margin-bottom:18px}
+.mar-app .am-dim{display:flex;flex-direction:column;gap:8px}
+.mar-app .am-dh{display:flex;justify-content:space-between;align-items:baseline}
+.mar-app .am-dr2{display:grid;grid-template-columns:minmax(110px,1.2fr) 2fr 52px 70px;gap:8px;align-items:center;font-size:13px;font-variant-numeric:tabular-nums}
+.mar-app .am-dr2.hd{font-size:11px;font-weight:600;color:var(--ink3)}
+.mar-app .am-dr2>span:nth-child(3),.mar-app .am-dr2>span:nth-child(4){text-align:right;color:var(--ink2)}
+.mar-app .am-dr2.best .am-dl{font-weight:700}
+.mar-app .am-dr2.thin{color:#8A8F99}
+.mar-app .am-dl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mar-app .am-bw{display:flex;align-items:center;gap:8px}
+.mar-app .am-bw b{width:62px;text-align:right;font-size:12.5px}
+.mar-app .am-b{flex:1;height:10px;background:#F1F2F5;border-radius:5px;overflow:hidden}
+.mar-app .am-b i{display:block;height:10px;border-radius:5px}
+.mar-app .am-b i.t-g{background:#1F9D55}.mar-app .am-b i.t-y{background:#D99A1E}.mar-app .am-b i.t-r{background:#D9534F}.mar-app .am-b i.t-n{background:#C5CAD3}
+.mar-app .am-take{font-size:12px;color:#3A3F49;background:#F7F8FA;border-radius:8px;padding:7px 10px}
 .mar-app .cd-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
 .mar-app .cd-sort{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink2);background:#fff;border:1px solid var(--line);border-radius:10px;padding:0 10px}
 .mar-app .cd-sort select{border:0;background:transparent;font:inherit;font-weight:600;color:var(--ink);height:36px}
@@ -483,8 +550,23 @@
 .mar-app .cd-tags{margin-top:5px}
 .mar-app .tag.cd-asc{background:#15171C;color:#fff}
 .mar-app .tag.cd-test{background:#EBEFFF;color:#2F54EB}
-.mar-app .cd-tw{max-height:300px;overflow-y:auto;border-top:1px solid #EEF0F3}
-.mar-app .cd-tb{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums;min-width:0}
+.mar-app .cd-tw{max-height:300px;overflow:auto;border-top:1px solid #EEF0F3}
+.mar-app .cd-tb{min-width:600px}
+.mar-app .cd-tb th:first-child,.mar-app .cd-tb td:first-child{position:sticky;left:0;background:#fff;z-index:1;box-shadow:inset -1px 0 0 #F1F2F5}
+.mar-app .cd-tb th:first-child{background:#F7F8FA;z-index:3}
+.mar-app .cd-tb tr.cd-today td:first-child{background:#F5F8FF}
+.mar-app .cd-tb tbody tr:hover td:first-child{background:#F3F6FF}
+.mar-app .cd-mk{font-size:10.5px;font-weight:700;padding:0 4px;border-radius:4px}
+.mar-app .cd-mk.dn,.mar-app .cd-evc.dn{background:#FFF4DB;color:#8A5A00}
+.mar-app .cd-mk.up,.mar-app .cd-evc.up{background:#E7F5EC;color:#17804A}
+.mar-app .cd-ev{border-top:1px solid #EEF0F3;padding:10px 16px;display:flex;flex-direction:column;gap:6px;background:#FFFCF5}
+.mar-app .cd-evh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12px}
+.mar-app .cd-evh span{font-size:11.5px;color:var(--ink3)}
+.mar-app .cd-evr{display:flex;align-items:center;gap:8px;font-size:12.5px;font-variant-numeric:tabular-nums}
+.mar-app .cd-evc{flex:none;font-size:11.5px;font-weight:700;padding:1px 7px;border-radius:6px}
+.mar-app .cd-evd{color:var(--ink2);min-width:0;line-height:1.3}
+.mar-app .cd-eva{margin-left:auto;white-space:nowrap}
+.mar-app .cd-tb{width:100%;border-collapse:separate;border-spacing:0;font-size:12.5px;font-variant-numeric:tabular-nums}
 .mar-app .cd-tb th{position:sticky;top:0;z-index:1;background:#F7F8FA;font-size:11.5px;font-weight:600;color:#555B67;padding:7px 6px;border-bottom:1px solid #EEF0F3;text-align:left;white-space:nowrap}
 .mar-app .cd-tb td{padding:5px 6px;border-bottom:1px solid #F3F4F6;white-space:nowrap}
 .mar-app .cd-tb th.num,.mar-app .cd-tb td.num{text-align:right}
@@ -585,7 +667,7 @@
         <div class="navg"><div class="navl">Analyze</div>
           <a href="#" data-page="creative" title="Creative Lab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9l5 3-5 3z"/></svg><span class="lbl">Creative Lab</span></a>
           <a href="#" data-page="board" title="Leaderboard"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span class="lbl">Leaderboard</span></a>
-          <a href="#" data-page="cpa" title="CPA &amp; Profit"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v12H3z"/><path d="M16 13h2M3 10h18"/></svg><span class="lbl">CPA &amp; Profit</span></a>
+          <a href="#" data-page="cpa" title="Ads Manager"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10"/></svg><span class="lbl">Ads Manager</span></a>
           <a href="#" data-page="audience" title="Audience Insights"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c1.9.7 3.1 2.4 3.5 5.2"/></svg><span class="lbl">Audience Insights</span></a>
         </div>
         <div class="navg"><div class="navl">Health</div>
@@ -1718,17 +1800,18 @@ async function pageToday() {
 /* =====================================================================
    REKAP HARIAN CAMPAIGN (halaman utama, pengganti Today)
    ===================================================================== */
-function pageCampDaily() {
+async function pageCampDaily() {
+  await ensureSide(false);
   const ds = ST.main, t = todayJkt(), since = addD(t, -29) < ds.since ? ds.since : addD(t, -29);
-  const maps = dailyMaps(ds, ad => ad.c, since, t);
+  const maps = dailyMaps(ds, ad => ad.c, addD(since, -7) < ds.since ? ds.since : addD(since, -7), t);
   const cpcMax = S.maxCpc || DEF.maxCpc, cpaKill = Brain.cfg.content.cpaKill, MC = {};
   const mc = a => (MC[a] != null ? MC[a] : (MC[a] = maxCpa(a, ds)));
   const f = ST.cd || (ST.cd = LS.get('cd', { st: 'all', sort: 'spend', q: '' }));
   let list = ds.campIds.map(id => { const c = ds.campaigns[id]; if (ST.acc >= 0 && c.a !== ST.acc) return null;
-    const m = maps[id] || {}, days = Object.keys(m).filter(d => m[d][M.spend] > 0).sort().reverse(), on = campActive(c);
+    const m = maps[id] || {}, days = Object.keys(m).filter(d => d >= since && m[d][M.spend] > 0).sort().reverse(), on = campActive(c);
     if (!days.length && !on) return null;
     const T = new Array(NM).fill(0); days.forEach(d => { for (let i = 0; i < NM; i++) T[i] += m[d][i]; });
-    return { id, c, on, m, days, T: der(T), last: days[0] || '' }; }).filter(Boolean);
+    return { id, c, on, m, days, T: der(T), last: days[0] || '', ev: cdBudgetEv(ds, id, m, since) }; }).filter(Boolean);
   const cnt = { all: list.length, on: list.filter(x => x.on).length, off: list.filter(x => !x.on).length };
   if (f.st !== 'all') list = list.filter(x => (f.st === 'on') === x.on);
   if (f.q) { const q = f.q.toLowerCase(); list = list.filter(x => String(x.c.n).toLowerCase().includes(q)); }
@@ -1749,11 +1832,201 @@ function pageCampDaily() {
     return `<section class="cd-card"><div class="cd-h"><div class="cd-t"><a href="#" class="cd-n" data-camp="${x.id}" data-go="diag" title="${esc(x.c.n)}">${shortCamp(x.c.n)}</a>
         <span class="cd-st ${x.on ? 'on' : ''}">${x.on ? '● Berjalan' : 'Off' + (x.last ? ' sejak ' + fd(x.last) : '')}</span></div>
       <div class="cd-tags">${accChip(ds, x.c.a)}${ty ? `<span class="tag ${ty[1]}">${ty[0]}</span>` : ''}</div></div>
-      <div class="cd-tw"><table class="cd-tb"><thead><tr><th>Tanggal</th><th class="num">Spend</th><th class="num">ROAS</th><th class="num">CPA</th><th class="num">Cost/contact</th></tr></thead><tbody>
-      ${x.days.map(d => { const v = der(x.m[d]); return `<tr${d === t ? ' class="cd-today"' : ''}><td>${fd(d)}</td><td class="num">${rp(v.spend)}</td><td class="num">${roasC(v)}</td><td class="num">${cpaC(v, x.c.a)}</td><td class="num">${cpcC(v)}</td></tr>`; }).join('') || '<tr><td colspan="5" class="empty">Belum ada spend</td></tr>'}
+      <div class="cd-tw"><table class="cd-tb"><thead><tr><th>Tanggal</th><th class="num">Spend</th><th class="num">ROAS</th><th class="num">CPA</th><th class="num">Cost/contact</th><th class="num">LP view</th><th class="num">Contacts</th><th class="num">Purchase</th></tr></thead><tbody>
+      ${x.days.map(d => { const v = der(x.m[d]), e = x.ev.find(q => q.date === d); return `<tr${d === t ? ' class="cd-today"' : ''}><td>${fd(d)}${e ? ` <span class="cd-mk ${e.dn ? 'dn' : 'up'}" title="Budget ${rp(e.old)} → ${rp(e.nw)}">${e.dn ? '↓' : '↑'}</span>` : ''}</td><td class="num">${rp(v.spend)}</td><td class="num">${roasC(v)}</td><td class="num">${cpaC(v, x.c.a)}</td><td class="num">${cpcC(v)}</td><td class="num">${nf(v.lpv)}</td><td class="num">${nf(v.contact)}</td><td class="num">${nf(v.purch)}</td></tr>`; }).join('') || '<tr><td colspan="8" class="empty">Belum ada spend</td></tr>'}
       </tbody></table></div>
+      ${x.ev.length ? `<div class="cd-ev"><div class="cd-evh"><b>Perubahan budget</b>${x.on && campBudget(ds, x.id) ? `<span>budget sekarang ${rp(campBudget(ds, x.id))}/hari</span>` : ''}</div>${x.ev.map(e => `<div class="cd-evr"><span class="cd-evc ${e.dn ? 'dn' : 'up'}">${e.dn ? '↓ Turun' : '↑ Naik'} ${Math.round(Math.abs(e.nw - e.old) / e.old * 100)}%</span><span class="cd-evd">${fd(e.date)}${e.why ? ' · ' + e.why : ''}</span><span class="cd-eva">${rp(e.old)} → <b>${rp(e.nw)}</b></span></div>`).join('')}</div>` : ''}
       <div class="cd-f"><span>${x.days.length} hari berjalan · ${nf(x.T.purch)} purchase · ${x.T.val ? rp(x.T.val) : 'Rp0'}</span><a href="#" data-camp="${x.id}" data-go="diag">Diagnosis →</a></div></section>`; }).join('')}</div>`;
   html += `<div class="small muted cd-lg">ROAS: hijau ≥ ${xx(S.minRoas)} · kuning ${xx(S.cutoff)}–${xx(S.minRoas)} · merah di bawahnya &nbsp;·&nbsp; CPA: hijau ≤ CPA maks akun · kuning ≤ ${rp(cpaKill)} · merah di atasnya &nbsp;·&nbsp; Cost/contact: hijau ≤ ${rp(cpcMax)} · merah di atasnya &nbsp;·&nbsp; hari tanpa spend tidak ditampilkan</div>`;
+  return html;
+}
+
+/** perubahan budget campaign (dari Change Log) dalam periode kartu, terbaru dulu; alasan ditebak dari aturan SOP */
+function cdBudgetEv(ds, id, m, since) {
+  const K = Brain.cfg.content, Z = n => new Array(NM).fill(0);
+  const sumBack = (d, n) => { const s = Z(); for (let k = 1; k <= n; k++) { const v = m[addD(d, -k)]; if (v) for (let i = 0; i < NM; i++) s[i] += v[i]; } return s; };
+  const seen = new Set();
+  return budgetEvents('campaign', id, ds).filter(e => e.date >= since && e.old > 0 && e.nw > 0 && e.nw !== e.old).map(e => {
+    const dn = e.nw < e.old; let why = '';
+    if (dn) { let z = 0; for (let k = 1; k <= 7; k++) { const v = m[addD(e.date, -k)]; if (v && v[M.purch] > 0) break; z++; } if (z >= (K.zeroCut || 3)) why = 'SOP: ' + z + ' hari tanpa purchase'; }
+    else { const a = sumBack(e.date, 3), b = sumBack(e.date, 7); if (a[M.spend] && b[M.spend] && a[M.val] / a[M.spend] >= S.minRoas && b[M.val] / b[M.spend] >= S.minRoas) why = 'ROAS 3D & 7D ≥ ' + xx(S.minRoas); }
+    return { date: e.date, old: e.old, nw: e.nw, dn, why };
+  }).filter(e => { const k = e.date + '|' + e.old + '|' + e.nw; if (seen.has(k)) return false; seen.add(k); return true; })
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
+
+/* =====================================================================
+   ADS MANAGER (pengganti CPA & Profit): tabel campaign › ad set › iklan + Setup terbaik
+   ===================================================================== */
+function amS() { if (!ST.am) ST.am = Object.assign({ tab: 'table', view: 'had', lv: 'c', selC: [], selS: [], q: '', sdays: 60, smet: 'roas', purchOnly: true }, LS.get('am', {})); return ST.am; }
+function amSave() { const a = ST.am; LS.set('am', { tab: a.tab, view: a.view, lv: a.lv, selC: a.selC, selS: a.selS, sdays: a.sdays, smet: a.smet, purchOnly: a.purchOnly }); }
+const AM_LV = { c: 'campaign', s: 'adset', a: 'ad' };
+function amActId(ds, a) { return String((ds.accounts[a] || {}).id || '').replace(/^act_/, ''); }
+function amMetaLink(ds, lv, e) {
+  const act = amActId(ds, e.a), k = { c: 'campaigns', s: 'adsets', a: 'ads' }[lv];
+  return `https://adsmanager.facebook.com/adsmanager/manage/${k}?act=${act}&selected_${k.replace(/s$/, '')}_ids=${e.id}`;
+}
+function amEntities(ds, lv) {
+  if (lv === 'c') return ds.campIds.map(id => { const c = ds.campaigns[id]; return { id, n: c.n, a: c.a, on: campActive(c), par: null, c: id, obj: c }; });
+  if (lv === 's') return Object.values(ds.adsets).map(s => { const c = ds.campaigns[s.c] || {}; return { id: s.id, n: s.n, a: s.a, on: s.st === 'ACTIVE' && campActive(c), par: s.c, c: s.c, obj: s }; });
+  return ds.ads.map(a => { const c = ds.campaigns[a.c] || {}, s = ds.adsets[a.as] || {}; return { id: a.id, n: a.n, a: a.a, on: a.st === 'ACTIVE' && (!s.st || s.st === 'ACTIVE') && campActive(c), par: a.as, c: a.c, obj: a }; });
+}
+function amFmtPlace(tg) {
+  if (!tg || !(tg.pp || []).length) return 'Advantage+ placements';
+  const P = { feed: 'Feed', facebook_reels: 'Reels', reels: 'Reels', story: 'Story', instream_video: 'In-stream', stream: 'Feed', explore: 'Explore', explore_home: 'Explore', marketplace: 'Marketplace', video_feeds: 'Video feed', search: 'Search', profile_feed: 'Profil', right_hand_column: 'Kolom kanan', facebook_reels_overlay: 'Reels overlay', ig_search: 'Search' };
+  const set = new Set(); (tg.fp || []).concat(tg.ip || []).forEach(x => set.add(P[x] || x));
+  if (!set.size) return 'Manual: ' + tg.pp.map(x => x === 'facebook' ? 'FB' : x === 'instagram' ? 'IG' : x).join(' + ');
+  const order = ['Feed', 'Reels', 'Story', 'In-stream', 'Explore'];
+  return 'Manual: ' + [...set].sort((a, b) => ((order.indexOf(a) + 1) || 99) - ((order.indexOf(b) + 1) || 99)).slice(0, 4).join(' + ');
+}
+function amGender(tg) { return !tg || !tg.g ? 'Semua' : tg.g === '2' ? 'Wanita' : tg.g === '1' ? 'Pria' : 'Semua'; }
+function amAudType(s, ds) {
+  const tg = s.tg, c = ds.campaigns[s.c] || {};
+  if (/\basc\b/i.test(c.n || '')) return 'ASC (Advantage+ shopping)';
+  if (!tg) return '–';
+  if ((tg.ca || []).length) return (tg.ca.some(n => /lookalike|\blal\b|serupa|\blla\b/i.test(n)) ? 'Lookalike' : 'Retargeting / custom');
+  if (tg.nit) return 'Minat';
+  return tg.adv ? 'Advantage+ audience' : 'Broad';
+}
+function amExcl(tg) { if (!tg) return '–'; const l = tg.ex || []; if (!l.length) return 'Tanpa pengecualian'; const t = l.slice().sort().join(' + '); return t.length > 48 ? t.slice(0, 46) + '…' : t; }
+function amBudBucket(ds, s) { const b = adsetBudget(ds, s.id) || campBudget(ds, s.c); if (!b) return '–'; return b <= 300000 ? '≤ Rp300rb' : b <= 700000 ? 'Rp300–700rb' : '> Rp700rb'; }
+function amSetupText(ds, s) { const tg = s.tg; if (!tg) return '–'; return `${amGender(tg)} ${tg.amin}–${tg.amax} · ${amAudType(s, ds)} · ${amExcl(tg)} · ${amFmtPlace(tg)}`; }
+
+async function pageAdsMgr() {
+  const a = amS();
+  const tabs = `<div class="am-ptabs" role="tablist">${[['table', 'Campaign / ad set / iklan'], ['setup', 'Setup terbaik']].map(x => `<button type="button" role="tab" aria-selected="${a.tab === x[0]}" class="${a.tab === x[0] ? 'on' : ''}" data-amtab="${x[0]}">${x[1]}</button>`).join('')}</div>`;
+  if (a.tab === 'setup') return amSetup(tabs);
+  const ds = ST.ds, [s, u] = curRange();
+  let html = head('Ads Manager', `${rangeLabel()} · campaign → ad set → iklan dalam satu tabel · hanya baca, tidak mengubah akun`, periodCtl(false) + accSeg()) + tabs;
+  const VIEWS = [['all', 'Semua', 'M4 6h16M4 12h16M4 18h16'], ['had', 'Ada tayangan', 'M3 8l9 6 9-6M3 8v10h18V8'], ['act', 'Aktif', 'M5 12l14-7-5 14-2-6z'], ['roas', 'ROAS < minimum', 'M12 3v9l6 4']];
+  html += `<div class="am-views" role="group" aria-label="Tampilan">${VIEWS.map(v => `<button type="button" class="${a.view === v[0] ? 'on' : ''}" data-amview="${v[0]}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${v[2]}"/></svg>${v[1]}</button>`).join('')}</div>`;
+  const chip = { had: 'Tayangan > 0', act: 'Status = aktif', roas: 'ROAS < ' + xx(S.minRoas) }[a.view];
+  html += `<div class="am-filter">${chip ? `<span class="am-fchip">${chip}<button type="button" aria-label="Hapus filter" data-amview="all">✕</button></span>` : ''}<input type="search" id="amQ" placeholder="Cari nama atau ID…" aria-label="Cari" value="${esc(a.q || '')}"></div>`;
+  // data per level
+  const keyFn = { c: ad => ad.c, s: ad => ad.as, a: ad => ad.id };
+  const per = agg(ds, s, u, keyFn[a.lv]);
+  const passView = (e, v) => a.view === 'all' || (a.view === 'had' && v[M.impr] > 0) || (a.view === 'act' && e.on) || (a.view === 'roas' && v[M.spend] > 0 && v[M.val] / v[M.spend] < S.minRoas);
+  const selC = a.selC.filter(id => ds.campaigns[id]), selS = a.selS.filter(id => ds.adsets[id]);
+  let list = amEntities(ds, a.lv).filter(e => ST.acc < 0 || e.a === ST.acc).map(e => ({ e, v: per.get(e.id) || Z() }));
+  if (a.lv === 's' && selC.length) list = list.filter(x => selC.includes(x.e.par));
+  if (a.lv === 'a') { if (selS.length) list = list.filter(x => selS.includes(x.e.par)); else if (selC.length) list = list.filter(x => selC.includes(x.e.c)); }
+  list = list.filter(x => passView(x.e, x.v));
+  if (a.q) { const q = a.q.toLowerCase(); list = list.filter(x => String(x.e.n).toLowerCase().includes(q) || String(x.e.id).includes(q)); }
+  list.sort((p, q) => (q.v[M.spend] - p.v[M.spend]) || (q.e.on - p.e.on));
+  const nC = selC.length, nS = selS.length;
+  const TABS = [['c', 'Campaign', nC, 'M4 20V6l8-3 8 3v14'], ['s', nS ? 'Ad set' : nC ? `Ad set dari ${nC} campaign` : 'Ad set', nS, 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z'], ['a', nS ? `Iklan dari ${nS} ad set` : nC ? `Iklan dari ${nC} campaign` : 'Iklan', 0, 'M4 5h16v14H4zM4 9h16']];
+  html += `<div class="am-tabs" role="tablist">${TABS.map(t => `<div role="tab" tabindex="0" aria-selected="${a.lv === t[0]}" class="am-tab ${a.lv === t[0] ? 'on' : ''}" data-amlv="${t[0]}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="${t[3]}"/></svg>${t[1]}${t[2] ? `<span class="am-sel">${t[2]} dipilih<button type="button" aria-label="Hapus pilihan" data-amclr="${t[0]}">✕</button></span>` : ''}</div>`).join('')}</div>`;
+  // otak
+  const BR = {}; if (a.lv !== 'a') brainRows(AM_LV[a.lv]).forEach(r => { BR[r.e.id] = r; });
+  const RM = a.lv === 'a' ? adRules() : {};
+  const brainCell = e => { if (a.lv === 'a') { const r = RM[e.id]; return r && r.rule ? ruleChip(r.rule) : '–'; } const r = BR[e.id]; return r ? `<span class="chip ${CLS[r.res.cls]}" title="${esc(r.res.action)}">${r.res.cls}</span>` : '–'; };
+  const budCell = e => { if (a.lv === 'a') return ''; if (a.lv === 'c') { const b = campBudget(ds, e.id), c = ds.campaigns[e.id]; return b ? rp(b) + (c && c.db ? '' : ' <span class="sub2" style="display:inline">ABO</span>') : '–'; } const b = adsetBudget(ds, e.id); return b ? rp(b) : '<span class="muted small">CBO</span>'; };
+  const subOf = e => a.lv === 'c' ? `${esc((ds.accounts[e.a] || {}).label || '')} · ${Object.values(ds.adsets).filter(x => x.c === e.id).length} ad set` : a.lv === 's' ? shortCamp((ds.campaigns[e.par] || {}).n || '', 48) : esc(((ds.adsets[e.par] || {}).n || '').slice(0, 48));
+  const sel = a.lv === 'c' ? selC : a.lv === 's' ? selS : [];
+  const cpaOk = e => maxCpa(e.a, ST.main || ds), cpcMax = S.maxCpc || DEF.maxCpc, cpaKill = Brain.cfg.content.cpaKill;
+  const T = Z(); list.forEach(x => { for (let i = 0; i < NM; i++) T[i] += x.v[i]; });
+  const td = der(T);
+  html += `<section class="card am-card"><div class="am-bar"><span class="small muted">${a.lv === 'c' ? (nC ? `${nC} campaign dipilih → buka tab Ad set / Iklan` : 'Centang campaign untuk menyaring tab Ad set &amp; Iklan') : a.lv === 's' ? (nS ? `${nS} ad set dipilih → buka tab Iklan` : 'Centang ad set untuk menyaring tab Iklan') : 'Klik nama iklan untuk melihat preview'} · klik nama untuk detail</span><span class="small muted">${list.length} ${a.lv === 'c' ? 'campaign' : a.lv === 's' ? 'ad set' : 'iklan'}</span></div>
+    <div class="tw am-tw"><table class="am-tb"><thead><tr>${a.lv !== 'a' ? `<th class="am-ck"><input type="checkbox" aria-label="Pilih semua" data-amall="1" ${list.length && list.every(x => sel.includes(x.e.id)) ? 'checked' : ''}></th>` : ''}<th class="am-nm">${a.lv === 'c' ? 'Campaign' : a.lv === 's' ? 'Ad set' : 'Iklan'}</th><th>Status otak</th>${a.lv !== 'a' ? '<th class="num">Budget</th>' : ''}<th class="num">Spend</th><th class="num">CPM</th><th class="num">LP view</th><th class="num">Contacts</th><th class="num">Cost/contact</th><th class="num">Purchase</th><th class="num">Value</th><th class="num">ROAS</th><th class="num">CPA</th></tr></thead><tbody>
+    ${list.map(({ e, v }) => { const d = der(v), ck = sel.includes(e.id), ok = cpaOk(e);
+      return `<tr class="${ck ? 'am-on' : ''}">${a.lv !== 'a' ? `<td class="am-ck"><input type="checkbox" data-amck="${e.id}" aria-label="Pilih ${esc(e.n)}" ${ck ? 'checked' : ''}></td>` : ''}
+      <td class="am-nm"><div class="am-n"><span class="am-dot ${e.on ? 'on' : ''}" title="${e.on ? 'Aktif' : 'Tidak aktif'}"></span>${a.lv === 'a' ? (e.obj.th ? `<img class="am-th" src="${esc(e.obj.th)}" alt="" loading="lazy">` : '<span class="am-th"></span>') : ''}<div style="min-width:0"><button type="button" class="am-link" data-amopen="${a.lv}:${e.id}" title="${esc(e.n)}">${esc(e.n)}</button><div class="sub2">${subOf(e)}</div></div></div></td>
+      <td>${brainCell(e)}</td>${a.lv !== 'a' ? `<td class="num">${budCell(e)}</td>` : ''}<td class="num">${rp(d.spend)}</td><td class="num">${d.impr ? rp(d.cpm) : '–'}</td><td class="num">${nf(d.lpv)}</td><td class="num">${nf(d.contact)}</td>
+      <td class="num">${d.contact ? `<span class="chip ${d.cpc <= cpcMax ? 'c-g' : 'c-r'}">${rp(d.cpc)}</span>` : '–'}</td><td class="num">${nf(d.purch)}</td><td class="num">${d.val ? rp(d.val) : '–'}</td>
+      <td class="num">${d.purch ? roasChip(d.roas, d.spend) : (d.spend ? '<span class="chip c-n">0,00×</span>' : '–')}</td><td class="num">${d.purch ? `<span class="chip ${fin(ok) && d.cpa <= ok ? 'c-g' : d.cpa <= cpaKill ? 'c-y' : 'c-r'}">${rp(d.cpa)}</span>` : '–'}</td></tr>`; }).join('') || `<tr><td colspan="13" class="empty">Tidak ada data untuk tampilan ini</td></tr>`}
+    ${list.length ? `<tr class="am-tot">${a.lv !== 'a' ? '<td></td>' : ''}<td class="am-nm">Total ${list.length} ${a.lv === 'c' ? 'campaign' : a.lv === 's' ? 'ad set' : 'iklan'}</td><td></td>${a.lv !== 'a' ? '<td></td>' : ''}<td class="num">${rp(td.spend)}</td><td class="num">${td.impr ? rp(td.cpm) : '–'}</td><td class="num">${nf(td.lpv)}</td><td class="num">${nf(td.contact)}</td><td class="num">${td.contact ? rp(td.cpc) : '–'}</td><td class="num">${nf(td.purch)}</td><td class="num">${rp(td.val)}</td><td class="num">${td.spend ? xx(td.roas) : '–'}</td><td class="num">${td.purch ? rp(td.cpa) : '–'}</td></tr>` : ''}
+    </tbody></table></div></section>
+    <div class="small muted" style="margin-top:8px">Centang baris lalu buka tab berikutnya (seperti Ads Manager) · warna: ROAS ≥ ${xx(S.minRoas)} hijau · CPA ≤ CPA maks akun hijau, ≤ ${rp(cpaKill)} kuning · cost/contact ≤ ${rp(cpcMax)} hijau</div>`;
+  return html;
+}
+
+/** panel detail kanan */
+function amOpen(lv, id) {
+  const ds = ST.ds || ST.main, [s, u] = curRange();
+  const e = amEntities(ds, lv).find(x => x.id === id); if (!e) return;
+  const keyFn = { c: ad => ad.c, s: ad => ad.as, a: ad => ad.id }[lv];
+  const d = der(agg(ds, s, u, ad => (keyFn(ad) === id ? 't' : null), -1).get('t') || Z());
+  let chipH = '', why = '';
+  if (lv === 'a') { const r = adRules()[id]; if (r && r.rule) { chipH = ruleChip(r.rule); why = r.rule.reasons[0] || ''; } }
+  else { const r = brainRows(AM_LV[lv], id, true)[0]; if (r) { chipH = `<span class="chip ${CLS[r.res.cls]}">${r.res.cls}</span>`; why = r.res.action || ''; } }
+  const ok = maxCpa(e.a, ST.main || ds), roasCol = d.spend ? (d.roas >= S.minRoas ? 'var(--g)' : d.roas >= S.cutoff ? 'var(--y)' : 'var(--r)') : '';
+  const tiles = [['Spend', rp(d.spend)], ['ROAS', d.purch ? xx(d.roas) : '0,00×', d.purch ? roasCol : ''], ['Purchase', nf(d.purch)], ['CPA', d.purch ? rp(d.cpa) : '–', d.purch ? (d.cpa <= ok ? 'var(--g)' : 'var(--r)') : ''], ['Cost/contact', d.contact ? rp(d.cpc) : '–', d.contact ? (d.cpc <= (S.maxCpc || DEF.maxCpc) ? 'var(--g)' : 'var(--r)') : ''], ['CPM', d.impr ? rp(d.cpm) : '–']];
+  let body = `<div class="tiles am-tiles">${tiles.map(x => `<div class="tile"><div class="l">${x[0]}</div><div class="v" style="${x[2] ? 'color:' + x[2] : ''}">${x[1]}</div></div>`).join('')}</div>`;
+  if (lv === 'a') {
+    ST.pv = { key: null, ad: id, fmt: (ST.pv && ST.pv.fmt) || 'MOBILE_FEED_STANDARD' };
+    body += `<div><div class="seg soft full" role="group" aria-label="Penempatan" style="max-width:360px;margin:0 auto 8px">${PFMT.map(p => `<button type="button" class="${ST.pv.fmt === p[0] ? 'on' : ''}" data-amfmt="${p[0]}">${p[1]}</button>`).join('')}</div><div class="pv-frame" id="pvFrame"><span class="muted small"><span class="spin"></span> Memuat preview dari Meta…</span></div></div>`;
+  }
+  if (lv === 's') {
+    const sObj = ds.adsets[id] || {}, tg = sObj.tg, c = ds.campaigns[sObj.c] || {};
+    const rows = tg ? [['Usia', tg.amin + '–' + tg.amax], ['Gender', amGender(tg)], ['Lokasi', tg.geo || '–'], ['Tipe audiens', amAudType(sObj, ds)], ['Audiens custom', (tg.ca || []).join(', ') || '–'], ['Minat', tg.nit ? tg.it.join(', ') + (tg.nit > tg.it.length ? ` +${tg.nit - tg.it.length}` : '') : '–'], ['Pengecualian', (tg.ex || []).join(', ') || '–'], ['Advantage+ audience', tg.adv ? 'Aktif' : 'Tidak'], ['Placement', amFmtPlace(tg)]] : [['Targeting', 'Belum ada — deploy Code.gs versi baru lalu Refresh']];
+    rows.push(['Optimasi', [sObj.goal, sObj.ev].filter(Boolean).join(' · ').toLowerCase().replace(/_/g, ' ') || '–'], ['Budget', adsetBudget(ds, id) ? rp(adsetBudget(ds, id)) + '/hari' : (c.db ? 'CBO · ' + rp(campBudget(ds, c.id)) + '/hari' : '–')], ['Mulai', fd(((sObj.sd || sObj.ct || '') + '').slice(0, 10)) || '–']);
+    body += `<div><div class="fl">Pengaturan ad set</div>${rows.map(r => `<div class="am-kv"><span>${r[0]}</span><span>${esc(r[1])}</span></div>`).join('')}</div>`;
+  }
+  if (lv === 'c') {
+    const c = ds.campaigns[id] || {}, sets = Object.values(ds.adsets).filter(x => x.c === id);
+    body += `<div><div class="fl">Campaign</div>${[['Tujuan', String(c.obj || '–').replace('OUTCOME_', '').toLowerCase()], ['Budget', campBudget(ds, id) ? rp(campBudget(ds, id)) + '/hari' + (c.db ? ' (CBO)' : ' (ABO)') : '–'], ['Mulai', fd(campStart(c)) || '–'], ['Ad set', sets.length + ' (' + sets.filter(x => x.st === 'ACTIVE').length + ' aktif)']].map(r => `<div class="am-kv"><span>${r[0]}</span><span>${esc(r[1])}</span></div>`).join('')}</div>`;
+  }
+  const html = `<div class="am-dr"><div class="am-drh"><div style="min-width:0"><div class="small muted">${{ c: 'Campaign', s: 'Ad set', a: 'Iklan' }[lv]} · ${esc((ds.accounts[e.a] || {}).label || '')} · ${rangeLabel()}</div><h2>${esc(e.n)}</h2><div class="am-why">${chipH}${why ? `<span class="small">${esc(why)}</span>` : ''}</div></div><button type="button" class="ib x" data-close="1" aria-label="Tutup">×</button></div>
+    <div class="am-drb">${body}<div class="btns"><button type="button" class="btn" data-ent="${e.id}" data-entlevel="${AM_LV[lv]}">Lihat trend</button><button type="button" class="btn" data-camp="${e.c}" data-go="diag">Diagnosis campaign</button><a class="btn pri" href="${esc(amMetaLink(ds, lv, e))}" target="_blank" rel="noopener">Buka di Ads Manager ↗</a></div></div></div>`;
+  openModal(html, 'drw');
+  if (lv === 'a') loadPreviewFrame(e.obj);
+}
+
+/** tab Setup terbaik */
+function amSetup(tabs) {
+  const a = amS(), ds = ST.main, t = todayJkt(), N = a.sdays || 60, since = addD(t, -(N - 1)) < ds.since ? ds.since : addD(t, -(N - 1));
+  let html = head('Ads Manager', `Setup ad set mana yang paling menghasilkan · ${fd(since)} – ${fd(t)} · ad set dengan spend ≥ Rp500rb`,
+    `<div class="seg" role="group" aria-label="Periode">${[[30, '30 hari'], [60, '60 hari']].map(x => `<button type="button" class="${N === x[0] ? 'on' : ''}" data-amdays="${x[0]}">${x[1]}</button>`).join('')}</div>` + accSeg()) + tabs;
+  const sets = Object.values(ds.adsets).filter(s => (ST.acc < 0 || s.a === ST.acc));
+  if (!sets.some(s => s.tg)) return html + `<div class="card">Data targeting ad set belum ada. Deploy <b>Code.gs</b> versi terbaru (Deploy → Manage deployments → Edit → New version), lalu klik <b>Refresh</b>.</div>`;
+  const per = agg(ds, since, t, ad => ad.as);
+  const isPurch = s => !a.purchOnly || /PURCHASE/i.test(s.ev || '') || (/OFFSITE_CONVERSIONS|VALUE/i.test(s.goal || '') && !s.ev);
+  const items = sets.map(s => ({ s, v: per.get(s.id) || Z() })).filter(x => x.v[M.spend] >= 500000 && x.s.tg && isPurch(x.s));
+  html += `<div class="am-sctl"><span class="small muted">Peringkat berdasarkan</span><div class="seg" role="group" aria-label="Metrik">${[['roas', 'ROAS'], ['cpa', 'CPA'], ['cpc', 'Cost per contact']].map(x => `<button type="button" class="${a.smet === x[0] ? 'on' : ''}" data-ammet="${x[0]}">${x[1]}</button>`).join('')}</div>
+    <label class="small" style="display:flex;gap:6px;align-items:center;margin-left:auto"><input type="checkbox" id="amPurch" ${a.purchOnly ? 'checked' : ''}> Hanya optimasi Purchase</label></div>`;
+  if (!items.length) return html + `<div class="card">Belum ada ad set dengan spend ≥ Rp500rb di periode ini${a.purchOnly ? ' (coba matikan "Hanya optimasi Purchase")' : ''}.</div>`;
+  const met = a.smet, MLAB = { roas: 'ROAS', cpa: 'CPA', cpc: 'Cost per contact' }[met];
+  const cpaOk = ST.acc >= 0 ? maxCpa(ST.acc, ds) : Math.min(...ds.accounts.map((x, i) => maxCpa(i, ds))), cpcMax = S.maxCpc || DEF.maxCpc, cpaKill = Brain.cfg.content.cpaKill;
+  const val = v => met === 'roas' ? (v[M.spend] ? v[M.val] / v[M.spend] : 0) : met === 'cpa' ? (v[M.purch] ? v[M.spend] / v[M.purch] : Infinity) : (v[M.contact] ? v[M.spend] / v[M.contact] : Infinity);
+  const better = (p, q) => met === 'roas' ? q - p : p - q;
+  const fmt = v => { const x = val(v); return met === 'roas' ? xx(x) : fin(x) ? rp(x) : '–'; };
+  const tone = v => { const x = val(v); if (met === 'roas') return !v[M.purch] ? 'n' : x >= S.minRoas ? 'g' : x >= S.cutoff ? 'y' : 'r'; if (met === 'cpa') return !fin(x) ? 'n' : x <= cpaOk ? 'g' : x <= cpaKill ? 'y' : 'r'; return !fin(x) ? 'n' : x <= cpcMax ? 'g' : 'r'; };
+  const group = keyF => { const g = new Map(); items.forEach(x => { const k = keyF(x.s); if (!k || k === '–') return; const o = g.get(k) || { k, v: Z(), n: 0, sets: [] }; for (let i = 0; i < NM; i++) o.v[i] += x.v[i]; o.n++; o.sets.push(x); g.set(k, o); }); return [...g.values()]; };
+  const enough = o => o.n >= 3 && o.v[M.spend] >= 3e6;
+  const startOf = s => ((s.sd || s.ct || '') + '').slice(0, 10);
+  const daysRun = list => { const st = list.map(x => startOf(x.s)).filter(Boolean).sort()[0]; return st ? { st, n: diffD(st, t) + 1 } : null; };
+  // resep
+  const combos = group(s => [amGender(s.tg) + ' ' + s.tg.amin + '–' + s.tg.amax, amAudType(s, ds), amExcl(s.tg), amFmtPlace(s.tg)].join('|'))
+    .filter(o => o.n >= 2 && o.v[M.spend] >= 2e6 && fin(val(o.v)) && (met !== 'roas' || o.v[M.purch] > 0)).sort((p, q) => better(val(p.v), val(q.v))).slice(0, 3);
+  html += `<div class="sec-h"><h2>Resep ad set terbaik</h2><span class="small muted">gabungan setup dengan hasil terbaik · minimal 2 ad set &amp; Rp2jt spend</span></div>`;
+  html += combos.length ? `<div class="am-rec">${combos.map((o, i) => { const d = der(o.v), dr = daysRun(o.sets), camps = new Set(o.sets.map(x => x.s.c)).size, strong = o.n >= 3 && o.v[M.spend] >= 5e6;
+    const ex = o.sets.slice().sort((p, q) => q.v[M.spend] - p.v[M.spend]).slice(0, 2).map(x => shortCamp((ds.campaigns[x.s.c] || {}).n || '', 28) + ' · ' + esc(x.s.n.slice(0, 28))).join(', ');
+    return `<div class="card am-rc ${i ? '' : 'best'}"><div class="am-rch"><b>#${i + 1}</b><span class="chip ${strong ? 'c-g' : 'c-y'}">${strong ? 'Data kuat' : 'Data cukup'}</span></div>
+      <div class="am-tags">${o.k.split('|').map(x => `<span>${esc(x)}</span>`).join('')}</div>
+      <div class="am-rk"><div><small>ROAS</small><b style="color:${d.roas >= S.minRoas ? 'var(--g)' : d.roas >= S.cutoff ? 'var(--y)' : 'var(--r)'}">${xx(d.roas)}</b></div><div><small>CPA</small><b style="color:${!d.purch ? '' : d.cpa <= cpaOk ? 'var(--g)' : 'var(--y)'}">${d.purch ? rp(d.cpa) : '–'}</b></div><div><small>Cost/contact</small><b style="color:${!d.contact ? '' : d.cpc <= cpcMax ? 'var(--g)' : 'var(--r)'}">${d.contact ? rp(d.cpc) : '–'}</b></div></div>
+      <div class="am-tags blue">${dr ? `<span>⏱ Berjalan ${dr.n} hari · sejak ${fd(dr.st)}</span>` : ''}<span>▲ ${camps > 1 ? 'Di ' + camps + ' campaign berbeda' : 'Baru di 1 campaign'}</span></div>
+      <div class="small muted am-rf">${o.n} ad set · ${rp(d.spend)} spend · ${nf(d.purch)} purchase · contoh: ${ex}</div></div>`; }).join('')}</div>`
+    : `<div class="card small muted">Belum ada kombinasi setup yang dipakai minimal di 2 ad set dengan spend ≥ Rp2jt. Lihat per elemen di bawah.</div>`;
+  // per elemen
+  const DIMS = [['Usia', 'rentang umur', s => s.tg.amin + '–' + s.tg.amax], ['Tipe audiens', 'cara menargetkan', s => amAudType(s, ds)], ['Pengecualian', 'audiens yang dikecualikan', s => amExcl(s.tg)], ['Placement', 'tempat iklan tampil', s => amFmtPlace(s.tg)], ['Gender', '', s => amGender(s.tg)], ['Budget harian', 'budget ad set / CBO', s => amBudBucket(ds, s)]];
+  const allV = Z(); items.forEach(x => { for (let i = 0; i < NM; i++) allV[i] += x.v[i]; });
+  html += `<div class="sec-h"><h2>Per elemen setup</h2><span class="small muted">bar = ${MLAB} · ★ = terbaik di kelompoknya · abu-abu = data belum cukup (&lt; 3 ad set atau &lt; Rp3jt)</span></div><div class="am-dims">`;
+  html += DIMS.map(D => { const g = group(D[2]).sort((p, q) => { const a1 = val(p.v), b1 = val(q.v); if (!fin(a1) && !fin(b1)) return q.v[M.spend] - p.v[M.spend]; if (!fin(a1)) return 1; if (!fin(b1)) return -1; return better(a1, b1); });
+    if (!g.length) return '';
+    const best = g.filter(enough).filter(o => fin(val(o.v)) && (met !== 'roas' || o.v[M.purch] > 0))[0];
+    const fv = g.map(o => val(o.v)).filter(fin), mx = Math.max(0.0001, ...fv);
+    const take = best ? `${best.k} terbaik: ${MLAB} ${fmt(best.v)} vs rata-rata semua ad set ${fmt(allV)}.` : 'Belum ada pilihan dengan data cukup untuk disimpulkan.';
+    return `<div class="card am-dim"><div class="am-dh"><b>${D[0]}</b><span class="small muted">${D[1]}</span></div><div class="am-dr2 hd"><span></span><span></span><span>Ad set</span><span>Spend</span></div>
+      ${g.slice(0, 6).map(o => { const ok = enough(o), x = val(o.v), w = fin(x) ? Math.max(5, Math.round((met === 'roas' ? x / mx : (Math.min(...fv) / x)) * 100)) : 3, k = ok ? tone(o.v) : 'n';
+        return `<div class="am-dr2 ${o === best ? 'best' : ''} ${ok ? '' : 'thin'}"><span class="am-dl" title="${esc(o.k)}">${o === best ? '★ ' : ''}${esc(o.k)}</span><span class="am-bw"><span class="am-b"><i class="t-${k}" style="width:${w}%"></i></span><b>${fmt(o.v)}</b></span><span>${o.n}</span><span>${rp(o.v[M.spend])}</span></div>`; }).join('')}
+      <div class="am-take">${esc(take)}</div></div>`; }).join('');
+  html += `</div>`;
+  // ad set teratas
+  const top = items.filter(x => fin(val(x.v)) && (met !== 'roas' || x.v[M.purch] > 0)).sort((p, q) => better(val(p.v), val(q.v))).slice(0, 10);
+  html += `<div class="sec-h"><h2>Ad set teratas</h2><span class="small muted">klik nama untuk lihat pengaturannya</span></div><div class="tw"><table><thead><tr><th>Ad set</th><th>Setup</th><th class="num">Berjalan</th><th class="num">Spend</th><th class="num">ROAS</th><th class="num">CPA</th><th class="num">Cost/contact</th></tr></thead><tbody>
+    ${top.map(x => { const d = der(x.v), st = startOf(x.s), ok = maxCpa(x.s.a, ds);
+      return `<tr><td style="max-width:280px"><button type="button" class="am-link" data-amopen="s:${x.s.id}">${esc(x.s.n)}</button><div class="sub2">${accChip(ds, x.s.a)}${shortCamp((ds.campaigns[x.s.c] || {}).n || '', 40)}</div></td><td class="small" style="white-space:normal;min-width:260px">${esc(amSetupText(ds, x.s))}</td><td class="num">${st ? diffD(st, t) + 1 + ' hari' : '–'}</td><td class="num">${rp(d.spend)}</td><td class="num">${d.purch ? roasChip(d.roas, d.spend) : '<span class="chip c-n">0,00×</span>'}</td><td class="num">${d.purch ? `<span class="chip ${d.cpa <= ok ? 'c-g' : d.cpa <= cpaKill ? 'c-y' : 'c-r'}">${rp(d.cpa)}</span>` : '–'}</td><td class="num">${d.contact ? `<span class="chip ${d.cpc <= cpcMax ? 'c-g' : 'c-r'}">${rp(d.cpc)}</span>` : '–'}</td></tr>`; }).join('') || '<tr><td colspan="7" class="empty">–</td></tr>'}</tbody></table></div>
+    <div class="small muted" style="margin-top:8px">Hasil ad set juga dipengaruhi konten di dalamnya. Ad set dengan spend &lt; Rp500rb tidak dihitung.</div>`;
   return html;
 }
 
@@ -2363,7 +2636,7 @@ async function render() {
   try {
     let html;
     switch (ST.page) {
-      case 'today': html = pageCampDaily(); break;
+      case 'today': html = await pageCampDaily(); break;
       case 'decide': html = await pageDecide(); break;
       case 'trend': html = await pageTrend(); break;
       case 'audit': html = await pageAudit(false); break;
@@ -2373,7 +2646,7 @@ async function render() {
       default:
         if (ST.preset === 'life' && ST.page !== 'creative' && ST.page !== 'board') ST.preset = '30d';
         await ensureDs();
-        html = ST.page === 'diag' ? await pageDiag() : ST.page === 'creative' ? await pageCreative() : ST.page === 'board' ? await pageBoard() : pageCpa();
+        html = ST.page === 'diag' ? await pageDiag() : ST.page === 'creative' ? await pageCreative() : ST.page === 'board' ? await pageBoard() : await pageAdsMgr();
     }
     v.innerHTML = html;
     bindCharts();
@@ -2421,13 +2694,21 @@ function setSidebar(c) {
 /* =====================================================================
    EVENTS
    ===================================================================== */
-const SEL = '[data-cdst],[data-sopf],[data-sopopen],[data-gosop],[data-dtab],[data-audtab],[data-audrun],[data-audall],[data-audheat],[data-lbm],[data-rules],[data-logrow],[data-lact],[data-lcat],[data-decnav],[data-page],[data-acc],[data-camp],[data-concept],[data-copy],[data-sort],[data-del],[data-declevel],[data-dcls],[data-sel],[data-addnote],[data-tmode],[data-tdays],[data-tgran],[data-tmetric],[data-tm1],[data-trm],[data-ent],[data-cmp],[data-cview],[data-pace],[data-pix],[data-atab],[data-pvnav],[data-pvad],[data-pfmt],[data-close],#noteAdd,#audRef,#mclose,#refBtn,#setBtn,#dApply,#trApply,#loginBtn,#saveSet,#logoutBtn,#sbToggle';
+const SEL = '[data-amtab],[data-amview],[data-amlv],[data-amclr],[data-amopen],[data-amfmt],[data-amdays],[data-ammet],[data-cdst],[data-sopf],[data-sopopen],[data-gosop],[data-dtab],[data-audtab],[data-audrun],[data-audall],[data-audheat],[data-lbm],[data-rules],[data-logrow],[data-lact],[data-lcat],[data-decnav],[data-page],[data-acc],[data-camp],[data-concept],[data-copy],[data-sort],[data-del],[data-declevel],[data-dcls],[data-sel],[data-addnote],[data-tmode],[data-tdays],[data-tgran],[data-tmetric],[data-tm1],[data-trm],[data-ent],[data-cmp],[data-cview],[data-pace],[data-pix],[data-atab],[data-pvnav],[data-pvad],[data-pfmt],[data-close],#noteAdd,#audRef,#mclose,#refBtn,#setBtn,#dApply,#trApply,#loginBtn,#saveSet,#logoutBtn,#sbToggle';
 document.addEventListener('click', async e => {
   const el = e.target.closest(SEL);
   if (!el || !el.closest('.mar-app')) return;
   const D = el.dataset;
   if (el.tagName === 'A') e.preventDefault();
   if (D.copy) { e.stopPropagation(); return copy(D.copy); }
+  if (D.amclr) { e.stopPropagation(); const a = amS(); if (D.amclr === 'c') { a.selC = []; a.selS = []; } else a.selS = []; amSave(); return render(); }
+  if (D.amtab) { amS().tab = D.amtab; amSave(); return render(); }
+  if (D.amview) { amS().view = D.amview; amSave(); return render(); }
+  if (D.amlv) { amS().lv = D.amlv; amSave(); return render(); }
+  if (D.amopen) { const [l, id] = D.amopen.split(':'); return amOpen(l, id); }
+  if (D.amfmt) { ST.pv.fmt = D.amfmt; document.querySelectorAll('.mar-app [data-amfmt]').forEach(b => b.classList.toggle('on', b.dataset.amfmt === D.amfmt)); const ds = ST.ds || ST.main; const ad = ds.ads.find(x => x.id === ST.pv.ad); if (ad) { $('pvFrame').innerHTML = '<span class="muted small"><span class="spin"></span> Memuat preview dari Meta…</span>'; loadPreviewFrame(ad); } return; }
+  if (D.amdays) { amS().sdays = +D.amdays; amSave(); return render(); }
+  if (D.ammet) { amS().smet = D.ammet; amSave(); return render(); }
   if (D.cdst) { ST.cd.st = D.cdst; LS.set('cd', ST.cd); return render(); }
   if (D.sopf) { ST.sopF = D.sopf; return render(); }
   if (D.sopopen) { ST.sopOpen = ST.sopOpen === D.sopopen ? null : D.sopopen; return render(); }
@@ -2501,6 +2782,9 @@ document.addEventListener('change', e => {
     if (t.value === 'custom') { const [s, u] = curRange(); ST.since = s === 'lifetime' ? addD(todayJkt(), -30) : s; ST.until = u === 'lifetime' ? addD(todayJkt(), -1) : u; }
     ST.preset = t.value; LS.set('preset', ST.preset); LS.set('since', ST.since); LS.set('until', ST.until); loadingView(); return render();
   }
+  if (t.dataset && t.dataset.amck) { const a = amS(), k = a.lv === 'c' ? 'selC' : 'selS', id = t.dataset.amck; a[k] = t.checked ? [...new Set(a[k].concat(id))] : a[k].filter(x => x !== id); if (a.lv === 'c') a.selS = []; amSave(); return render(); }
+  if (t.dataset && t.dataset.amall) { const a = amS(), k = a.lv === 'c' ? 'selC' : 'selS', ids = [...document.querySelectorAll('.mar-app [data-amck]')].map(x => x.dataset.amck); a[k] = t.checked ? [...new Set(a[k].concat(ids))] : a[k].filter(x => !ids.includes(x)); if (a.lv === 'c') a.selS = []; amSave(); return render(); }
+  if (t.id === 'amPurch') { amS().purchOnly = t.checked; amSave(); return render(); }
   if (t.id === 'cdSort') { ST.cd.sort = t.value; LS.set('cd', ST.cd); return render(); }
   if (t.id === 'diagSel') { ST.diagCamp = t.value; return render(); }
   if (t.id === 'audDays') { audS().days = +t.value; audSave(); loadingView(); return render(); }
@@ -2525,6 +2809,7 @@ document.addEventListener('change', e => {
   if (map[t.id]) { ST.cf[map[t.id][0]] = map[t.id][1]; LS.set('cf', ST.cf); return render(); }
 });
 document.addEventListener('input', e => {
+  if (e.target.id === 'amQ') { clearTimeout(window._amq); const v = e.target.value; window._amq = setTimeout(() => { amS().q = v; render().then(() => { const q = $('amQ'); if (q) { q.focus(); q.setSelectionRange(v.length, v.length); } }); }, 250); return; }
   if (e.target.id === 'cdQ') { clearTimeout(window._cq); const v = e.target.value; window._cq = setTimeout(() => { ST.cd.q = v; LS.set('cd', ST.cd); render().then(() => { const q = $('cdQ'); if (q) { q.focus(); q.setSelectionRange(v.length, v.length); } }); }, 250); return; }
   if (e.target.id === 'trQ') { ST.trQ = e.target.value; const pl = $('plist'); if (pl) pl.innerHTML = pickerList(); return; }
   if (e.target.id === 'logQ') { clearTimeout(window._lq); const v = e.target.value; window._lq = setTimeout(() => { ST.logF = Object.assign({ cat: 'all', actor: '', q: '', merge: true }, ST.logF, { q: v }); render().then(() => { const q = $('logQ'); if (q) { q.focus(); q.setSelectionRange(v.length, v.length); } }); }, 300); return; }
@@ -2542,7 +2827,7 @@ document.addEventListener('keydown', e => {
 document.addEventListener('toggle', e => { if (e.target && e.target.id === 'lbPat') LS.set('lbPat', e.target.open); }, true);
 $('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
 
-function openModal(html, cls) { ST.decOpen = false; $('mboxEl').className = 'mbox ' + (cls || 'pad'); $('mclose').hidden = cls === 'wide' || cls === 'dec'; $('mbody').innerHTML = html; $('modal').hidden = false; }
+function openModal(html, cls) { ST.decOpen = false; $('modal').classList.toggle('drw', cls === 'drw'); $('mboxEl').className = 'mbox ' + (cls || 'pad'); $('mclose').hidden = cls === 'wide' || cls === 'dec'; $('mbody').innerHTML = html; $('modal').hidden = false; }
 function closeModal() { if ($('modal').hidden) return; $('modal').hidden = true; $('mbody').innerHTML = ''; ST.pv = null; ST.decOpen = false; }
 function openDecision(id) {
   const r = (ST._decRows || []).find(x => x.e.id === id); if (!r) return;
